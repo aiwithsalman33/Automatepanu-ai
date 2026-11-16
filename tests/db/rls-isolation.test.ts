@@ -16,10 +16,15 @@ import {
   isBlocked,
   isPermitted,
   openTestTransaction,
+  selectedAdapter,
   type Principal,
 } from './harness';
 import { seedFixture, type Fixture, type Member, type Tenant } from './fixture';
-import { TABLES, type TableSpec, type Tier } from './tables';
+import { physicalTable, TABLES, type TableSpec, type Tier } from './tables';
+
+/** The physical table for this adapter (e.g. profiles → account_members). */
+const ADAPTER_NAME = selectedAdapter().name;
+const T = (s: TableSpec) => physicalTable(s, ADAPTER_NAME);
 
 const RANK: Record<Member['role'], number> = {
   viewer: 1,
@@ -64,7 +69,7 @@ afterAll(async () => {
 function insertSql(spec: TableSpec, row: Record<string, unknown>) {
   const cols = Object.keys(row);
   return {
-    sql: `INSERT INTO ${spec.table} (${cols.join(', ')}) VALUES (${cols
+    sql: `INSERT INTO ${T(spec)} (${cols.join(', ')}) VALUES (${cols
       .map((_, i) => `$${i + 1}`)
       .join(', ')})`,
     params: Object.values(row),
@@ -72,12 +77,12 @@ function insertSql(spec: TableSpec, row: Record<string, unknown>) {
 }
 
 const probe = {
-  select: (s: TableSpec) => `SELECT ${s.pk} FROM ${s.table} WHERE ${s.pk} = $1`,
+  select: (s: TableSpec) => `SELECT ${s.pk} FROM ${T(s)} WHERE ${s.pk} = $1`,
   update: (s: TableSpec) => {
     const col = s.touch ?? s.pk;
-    return `UPDATE ${s.table} SET ${col} = ${col} WHERE ${s.pk} = $1`;
+    return `UPDATE ${T(s)} SET ${col} = ${col} WHERE ${s.pk} = $1`;
   },
-  delete: (s: TableSpec) => `DELETE FROM ${s.table} WHERE ${s.pk} = $1`,
+  delete: (s: TableSpec) => `DELETE FROM ${T(s)} WHERE ${s.pk} = $1`,
 };
 
 /**
@@ -96,7 +101,7 @@ async function xminOf(
   id: string
 ): Promise<string | null> {
   const { rows } = await cc.query(
-    `SELECT xmin::text AS x FROM ${spec.table} WHERE ${spec.pk} = $1`,
+    `SELECT xmin::text AS x FROM ${T(spec)} WHERE ${spec.pk} = $1`,
     [id]
   );
   return rows[0]?.x ?? null;
@@ -112,11 +117,11 @@ async function blindUpdateTouched(
   // Assign the target's own current value as a *parameter*, so the SET
   // clause reads no column (which would pull in the SELECT policy).
   const { rows } = await c.query(
-    `SELECT ${col} AS v FROM ${spec.table} WHERE ${spec.pk} = $1`,
+    `SELECT ${col} AS v FROM ${T(spec)} WHERE ${spec.pk} = $1`,
     [targetId]
   );
   return asPrincipal(c, user(m), async (cc) => {
-    await attempt(cc, `UPDATE ${spec.table} SET ${col} = $1`, [rows[0].v]);
+    await attempt(cc, `UPDATE ${T(spec)} SET ${col} = $1`, [rows[0].v]);
     await cc.query('RESET ROLE');
     return (await xminOf(cc, spec, targetId)) !== before;
   });
@@ -128,7 +133,7 @@ async function blindDeleteRemoved(
   targetId: string
 ) {
   return asPrincipal(c, user(m), async (cc) => {
-    await attempt(cc, `DELETE FROM ${spec.table}`);
+    await attempt(cc, `DELETE FROM ${T(spec)}`);
     await cc.query('RESET ROLE');
     return (await xminOf(cc, spec, targetId)) === null;
   });
@@ -153,7 +158,7 @@ describe('coverage', () => {
       "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY 1"
     );
     const actual = rows.map((r) => r.tablename as string).sort();
-    const specced = TABLES.map((t) => t.table).sort();
+    const specced = TABLES.map((t) => T(t)).sort();
     expect(specced).toEqual(actual);
   });
 
@@ -320,7 +325,7 @@ describe.each(TABLES)('$table', (spec) => {
         asPrincipal(c, user(m), async (cc) => {
           const o = await attempt(
             cc,
-            `UPDATE ${spec.table} SET ${tc.column} = $2 WHERE ${spec.pk} = $1`,
+            `UPDATE ${T(spec)} SET ${tc.column} = $2 WHERE ${spec.pk} = $1`,
             [fx.A.ids[spec.table], tc.idFrom(fx.B)]
           );
           return isBlocked(o)

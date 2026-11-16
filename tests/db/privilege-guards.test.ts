@@ -401,3 +401,72 @@ describe('internal SECURITY DEFINER functions are service-role only', () => {
     expect(rows.map((r) => r.proname)).toEqual(anonDefinerAllowlist);
   });
 });
+
+// `profiles` is the membership table on Supabase and, since 0005, a
+// compatibility VIEW over account_members on the new stack. Either way
+// the app reads it constantly, so it must isolate tenants. A view that
+// isn't security_invoker would run as its owner and bypass RLS.
+describe('profiles (table on Supabase, compat view on the new stack)', () => {
+  it('a member sees only their own account members through `profiles`', async () => {
+    await asPrincipal(c, user(fx.A.members.agent), async (cc) => {
+      const { rows } = await cc.query(
+        'SELECT user_id, account_id FROM profiles'
+      );
+      expect(rows.length).toBe(Object.keys(fx.A.members).length);
+      expect(rows.every((r) => r.account_id === fx.A.accountId)).toBe(true);
+      expect(rows.map((r) => r.user_id)).not.toContain(fx.B.ownerId);
+    });
+  });
+
+  it('writes through `profiles` still hit the identity guards', async () => {
+    const m = fx.A.members.agent;
+    const o = await asPrincipal(c, user(m), (cc) =>
+      attempt(
+        cc,
+        "UPDATE profiles SET account_role = 'owner' WHERE user_id = $1",
+        [m.userId]
+      )
+    );
+    expect(
+      o.status === 'error' && o.code === PRIVILEGE_ERROR,
+      describeOutcome(o)
+    ).toBe(true);
+  });
+
+  it.runIf(selectedAdapter().name === 'app')(
+    'new stack: profiles is a security_invoker view over account_members',
+    async () => {
+      const { rows } = await c.query(
+        `SELECT c.relkind, c.reloptions FROM pg_class c
+         WHERE c.relnamespace = 'public'::regnamespace AND c.relname = 'profiles'`
+      );
+      expect(rows[0].relkind).toBe('v');
+      expect(rows[0].reloptions).toContain('security_invoker=true');
+      const { rows: base } = await c.query(
+        `SELECT relkind FROM pg_class WHERE relnamespace = 'public'::regnamespace AND relname = 'account_members'`
+      );
+      expect(base[0].relkind).toBe('r');
+    }
+  );
+
+  it.runIf(selectedAdapter().name === 'app')(
+    'mutation: a NON-invoker view would leak, which is why the option matters',
+    async () => {
+      await c.query('SAVEPOINT leakyview');
+      try {
+        await c.query(
+          'CREATE VIEW public.zz_leaky_members AS SELECT * FROM public.account_members'
+        );
+        await c.query('GRANT SELECT ON public.zz_leaky_members TO wacrm_app');
+        await asPrincipal(c, user(fx.A.members.agent), async (cc) => {
+          const { rows } = await cc.query(
+            'SELECT user_id FROM zz_leaky_members'
+          );
+          expect(rows.map((r) => r.user_id)).toContain(fx.B.ownerId);
+        });
+      } finally {
+        await c.query('ROLLBACK TO SAVEPOINT leakyview');
+      }
+    }
+  );
+});

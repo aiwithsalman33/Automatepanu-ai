@@ -46,6 +46,17 @@ export interface TableSpec {
   row: (ctx: AccountCtx, actorId: string) => Record<string, unknown>;
   /** Seed this table? (accounts/profiles come from the signup trigger.) */
   seeded?: false;
+  /**
+   * Physical table name per adapter when it differs from `table`, e.g.
+   * profiles → account_members on the new stack (0005; `profiles` is a
+   * security_invoker compat view there, tested separately).
+   */
+  physical?: Partial<Record<string, string>>;
+}
+
+/** The real table the probes must hit for a given adapter. */
+export function physicalTable(spec: TableSpec, adapterName: string): string {
+  return spec.physical?.[adapterName] ?? spec.table;
 }
 
 const r = () => randomUUID().replace(/-/g, '').slice(0, 12);
@@ -94,6 +105,7 @@ export const TABLES: TableSpec[] = [
       account_role: 'viewer',
     }),
     seeded: false,
+    physical: { app: 'account_members' },
   },
   {
     table: 'account_invitations',

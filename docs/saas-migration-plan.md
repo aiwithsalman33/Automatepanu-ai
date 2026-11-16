@@ -1,6 +1,6 @@
 # wacrm → multi-tenant SaaS: migration plan (Phase 0)
 
-> **Status:** Phase 0 approved (decisions in §5). Baseline isolation suite (§7) and checkpoint **1a** (§8) done; next: checkpoint **1b** (auth).
+> **Status:** Phase 0 approved (§5). Baseline suite (§7), checkpoint **1a** (§8) and **1b** (§9) done; next: **1c** (server DB access).
 > **Scope:** audit of every Supabase dependency, the target architecture, the new schema, risks, the decisions that need your sign-off, and a phase-by-phase checklist.
 > **Companion doc:** [`PROJECT_ANALYSIS.md`](../PROJECT_ANALYSIS.md), the full feature and structure analysis of the current code.
 
@@ -379,7 +379,7 @@ Split into checkpoints. **I stop for your review after each one.** The isolation
   - Explicit `GRANT`s for the new roles (F1), and roles that are not the owner and not superusers (D1).
   - Schema-diff check against a replay of 001–059.
   - The isolation suite runs green on the new baseline (adapter `app`, harness `SET LOCAL ROLE`).
-- [ ] **1b: auth**
+- [x] **1b: auth** (done, see §9)
   - Better Auth: signup, login, email verification, reset, change email/password, revoke all sessions, Redis login rate limit, SMTP.
   - Custom bcrypt verify plus rehash, tested with a real GoTrue hash (D2).
   - Signup trigger on `users` → `account_members`.
@@ -544,3 +544,27 @@ No login role is a superuser.
 | **F6** | `next` 16.3.8 (pinned upstream) is affected by **critical** advisories: unauthenticated RCE in the Image Optimization API with SVG, unauthenticated RCE in `use cache` functions returning typed arrays, and a Server Actions DoS.                                                                                   | **Critical** | **Fixed:** bumped to 16.4.6 (build, typecheck, tests green). `eslint-config-next` stays 16.3.8, because 16.4.x turns new react-hooks rules into errors that the existing code breaks (26 errors); that's a separate cleanup. |
 | F7     | `npm audit --omit=dev` still reports 17 advisories (5 high) in upstream dependencies, e.g. `shadcn` (CLI package shipped as a runtime dependency), `undici`, `body-parser` (transitive), and `zod`. `node-pg-migrate` 8.0.4 carries a moderate `glob` advisory that doesn't apply to a trusted migrations directory. | Medium       | Phase 6 dependency hardening: move `shadcn` to devDependencies, bump the rest, add `npm audit` + Trivy to CI.                                                                                                                |
 | F8     | MinIO upstream stopped publishing free community images in 2025. `pgsty/minio` is a maintained community build under **AGPLv3**.                                                                                                                                                                                     | Info         | Pinned to an exact release. If AGPL is a concern for your offering, an S3 provider (R2, B2, S3) works through the same S3 API in 1f; only env vars change.                                                                   |
+
+## 9. Checkpoint 1b: native auth (done)
+
+**Delivered** (built _alongside_ Supabase Auth; the UI cuts over in 1d, so `main` stays deployable on Supabase meanwhile):
+
+| Piece                                                                                                                                                            | Where                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Better Auth 1.7.15 (pinned; a two-week-old release) with tables `auth.users` / `sessions` / `identities` / `verifications` (service-role only)                   | `db/migrations/0004_better_auth.sql`, `src/lib/auth/native/auth.ts` |
+| `/api/auth/*` handler: **404 unless** `DATABASE_URL` + `AUTH_SECRET` are set, so no parallel sign-up endpoint goes live before the cut-over                      | `src/app/api/auth/[...all]/route.ts`                                |
+| Auth DB pool logs in as `wacrm_authenticator` and assumes `wacrm_service` via startup parameters (never the bare login role)                                     | `src/lib/auth/native/db.ts`                                         |
+| Passwords: scrypt for new ones; **GoTrue bcrypt verified and rehashed to scrypt on the first successful sign-in** (tested with a real hash from GoTrue v2.195.0) | `src/lib/auth/native/password.ts`                                   |
+| Email verification (required), reset (1 h, single use, revokes sessions), change email (old address confirms first), "sign out of all devices"                   | `auth.ts`                                                           |
+| SMTP mailer (logs in dev without SMTP; refuses in production), escaped templates                                                                                 | `src/lib/email/`                                                    |
+| Redis rate limits shared across instances: atomic INCR plus a TTL set only on creation (sign-in 5/min/IP, sign-up 10/h, reset 5/h)                               | `src/lib/auth/native/secondary-storage.ts`                          |
+| **D10:** `profiles` → `account_members` (UNIQUE `user_id`), with a `profiles` **security_invoker** compatibility view                                            | `db/migrations/0005_account_members.sql`                            |
+| Next 16: `middleware.ts` → `proxy.ts`                                                                                                                            | `src/proxy.ts`                                                      |
+
+**Verification:** new stack 568 passed (553 isolation + 11 native-auth end-to-end + 4 compat-view); Supabase baseline 562; unit 1725; typecheck, lint (0 errors) and build green. The native-auth suite drives the real HTTP handler: sign-up → trigger-created tenant, verification gate, bcrypt import + rehash, rate limit → 429, CSRF from foreign and `null` origins → 403, session revocation, reset, change email, and tenant isolation of new users.
+
+**Findings**
+
+- **F9: Better Auth silently disables its origin/CSRF check in test environments** unless `advanced.disableOriginCheck` is set explicitly. It's pinned to `false`, so the check can never be switched off implicitly (for example by a stray `NODE_ENV=test`).
+- **F10:** Better Auth's sign-up is not transactional. If the identity insert fails after the user insert, an orphan user (and its trigger-created account) remains. It's rare (it needs a DB error mid-request); 1g's import and an admin cleanup job will cover orphans.
+- **F11:** Better Auth ships a telemetry package; it's disabled explicitly (`telemetry.enabled: false`).

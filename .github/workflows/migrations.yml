@@ -164,4 +164,6 @@ jobs:
         env:
           DB_TENANT_ADAPTER: app
           TEST_DATABASE_URL: postgresql://postgres:admin@localhost:5432/wacrm
+          # Native auth tests log in as the app does (wacrm_authenticator).
+          TEST_AUTHENTICATOR_DATABASE_URL: postgresql://wacrm_authenticator:authpw@localhost:5432/wacrm
         run: npm run test:db
