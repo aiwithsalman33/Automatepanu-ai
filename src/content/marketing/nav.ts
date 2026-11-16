@@ -23,10 +23,10 @@ export type SolutionSlug = (typeof SOLUTION_SLUGS)[number];
 
 /** Resources links (key under Marketing.nav.resources.*). */
 export const RESOURCES = [
-  { key: 'blog', href: '/blog' },
+  { key: 'docs', href: '/docs' },
   { key: 'changelog', href: '/changelog' },
-  { key: 'docs', href: '/blog' }, // placeholder until public docs exist
   { key: 'api', href: '/features/api' },
+  { key: 'contact', href: '/contact' },
 ] as const;
 
 export const COMPANY = [

@@ -23,13 +23,12 @@
 
 /** Top-level path segments that belong to the marketing site. */
 export const MARKETING_SEGMENTS = [
-  'pricing',
   'features',
   'solutions',
   'tools',
   'about',
   'contact',
-  'blog',
+  'docs',
   'changelog',
   'privacy',
   'terms',

@@ -119,13 +119,10 @@ export async function Footer() {
           </div>
           <Column
             title={t('footer.product')}
-            links={[
-              ...FEATURE_SLUGS.map((s) => ({
-                href: `/features/${s}`,
-                label: t(`nav.features.${s}.title`),
-              })),
-              { href: '/pricing', label: t('nav.pricing') },
-            ]}
+            links={FEATURE_SLUGS.map((s) => ({
+              href: `/features/${s}`,
+              label: t(`nav.features.${s}.title`),
+            }))}
           />
           <Column
             title={t('footer.solutions')}
@@ -147,7 +144,7 @@ export async function Footer() {
           <div className="space-y-10">
             <Column
               title={t('footer.resources')}
-              links={RESOURCES.map((r) => ({
+              links={RESOURCES.filter((r) => r.key !== 'contact').map((r) => ({
                 href: r.href,
                 label: t(`nav.resourceItems.${r.key}`),
               }))}

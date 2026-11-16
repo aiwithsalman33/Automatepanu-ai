@@ -2963,7 +2963,6 @@
     "nav": {
       "product": "Product",
       "solutions": "Solutions",
-      "pricing": "Pricing",
       "resources": "Resources",
       "freeTools": "Free tools",
       "signIn": "Sign in",
@@ -3021,10 +3020,10 @@
         }
       },
       "resourceItems": {
-        "blog": "Blog",
         "changelog": "Changelog",
-        "docs": "Docs",
-        "api": "API"
+        "docs": "Primeiros passos",
+        "api": "API",
+        "contact": "Contato"
       },
       "companyItems": {
         "about": "About",
@@ -3043,7 +3042,7 @@
       "title": "Run your WhatsApp business from one shared inbox.",
       "subtitle": "Reply as a team, follow up on every lead, send personalised broadcasts and let automations and AI handle the repetitive work — all on your own WhatsApp number.",
       "primaryCta": "Start free",
-      "secondaryCta": "See pricing",
+      "secondaryCta": "Ver recursos",
       "ticks": {
         "official": "Official Cloud API",
         "byok": "Bring your own AI key",
@@ -3182,62 +3181,6 @@
       "title": "Recent updates",
       "all": "Full changelog"
     },
-    "pricing": {
-      "eyebrow": "Pricing",
-      "title": "Simple plans that grow with you",
-      "subtitle": "Start on your own number and add your team when you're ready.",
-      "monthly": "Monthly",
-      "yearly": "Yearly",
-      "yearlyHint": "Yearly discount coming soon",
-      "comingSoon": "Coming soon",
-      "comingSoonNote": "Pricing is being finalised. Plans and prices shown here are placeholders.",
-      "mostPopular": "Most popular",
-      "compare": "Compare all features",
-      "perMonth": "/month",
-      "billedMonthly": "Billed monthly",
-      "billedYearly": "Billed yearly",
-      "intervalLabel": "Billing period"
-    },
-    "plans": {
-      "free": {
-        "name": "Free",
-        "description": "For trying it out on your own number.",
-        "cta": "Start free"
-      },
-      "growth": {
-        "name": "Growth",
-        "description": "For small teams starting to sell on WhatsApp.",
-        "cta": "Get started"
-      },
-      "pro": {
-        "name": "Pro",
-        "description": "For teams that automate and use AI.",
-        "cta": "Get started"
-      },
-      "business": {
-        "name": "Business",
-        "description": "For larger teams and agencies.",
-        "cta": "Talk to us"
-      },
-      "features": {
-        "inbox": "Shared inbox",
-        "contacts": "Contacts, tags and CSV import",
-        "oneNumber": "One WhatsApp number",
-        "templates": "Message templates",
-        "everythingFree": "Everything in Free",
-        "broadcasts": "Broadcasts",
-        "automations": "No-code automations",
-        "pipelines": "Sales pipelines",
-        "everythingGrowth": "Everything in Growth",
-        "flows": "Visual chatbot flows",
-        "aiAssistant": "AI assistant (your own key)",
-        "apiWebhooks": "API, webhooks and MCP",
-        "everythingPro": "Everything in Pro",
-        "multiNumber": "Multiple numbers (coming soon)",
-        "roles": "Advanced team roles",
-        "prioritySupport": "Priority support"
-      }
-    },
     "useCases": {
       "eyebrow": "Use cases",
       "title": "Made for the way your team works",
@@ -3329,14 +3272,6 @@
         "languages": {
           "q": "Which languages does the app support?",
           "a": "The app is available in English, Spanish, Korean and Portuguese."
-        },
-        "pricing": {
-          "q": "How much does it cost?",
-          "a": "Plans are being finalised and will be published here soon, including a free plan to get started."
-        },
-        "cancel": {
-          "q": "Can I cancel any time?",
-          "a": "Yes — you will be able to cancel your plan any time once paid plans launch. Your WhatsApp number stays yours."
         }
       }
     },

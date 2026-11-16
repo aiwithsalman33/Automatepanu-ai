@@ -59,11 +59,11 @@ describe('static assets and metadata routes pass through', () => {
 describe('marketing host', () => {
   it.each([
     '/',
-    '/pricing',
+    '/features/inbox',
     '/features/inbox',
     '/tools',
     '/tools/whatsapp-qr-code-generator',
-    '/blog/hello',
+    '/docs',
     '/privacy',
   ])('serves marketing page %s publicly (no auth lookup)', (path) => {
     expect(at(MK, path)).toEqual({ kind: 'public' });
@@ -88,7 +88,7 @@ describe('marketing host', () => {
   );
 
   it('is case-insensitive on the Host header', () => {
-    expect(at('AutomatePanuAI.Axxeler.in', '/pricing')).toEqual({
+    expect(at('AutomatePanuAI.Axxeler.in', '/features/inbox')).toEqual({
       kind: 'public',
     });
   });
@@ -100,7 +100,7 @@ describe('app host', () => {
   });
 
   it.each([
-    '/pricing',
+    '/features/inbox',
     '/tools/whatsapp-text-formatter',
     '/features/flows',
     '/about',
@@ -132,7 +132,7 @@ describe('single-domain mode and unknown hosts never redirect', () => {
       null,
     ]) {
       expect(at(host, '/')).toEqual({ kind: 'public' });
-      expect(at(host, '/pricing')).toEqual({ kind: 'public' });
+      expect(at(host, '/features/inbox')).toEqual({ kind: 'public' });
       expect(at(host, '/dashboard')).toEqual({ kind: 'app' });
     }
   });
@@ -143,7 +143,7 @@ describe('single-domain mode and unknown hosts never redirect', () => {
       appOrigin: 'https://chat.axxeler.in',
     };
     expect(
-      decideHostRouting({ host: APP, pathname: '/pricing', search: '' }, single)
+      decideHostRouting({ host: APP, pathname: '/features/inbox', search: '' }, single)
     ).toEqual({ kind: 'public' });
     expect(
       decideHostRouting({ host: APP, pathname: '/', search: '' }, single)
@@ -163,7 +163,7 @@ describe('single-domain mode and unknown hosts never redirect', () => {
     ).toEqual({ kind: 'app' });
     expect(
       decideHostRouting(
-        { host: 'x.test', pathname: '/pricing', search: '' },
+        { host: 'x.test', pathname: '/features/inbox', search: '' },
         same
       )
     ).toEqual({ kind: 'public' });
@@ -172,8 +172,8 @@ describe('single-domain mode and unknown hosts never redirect', () => {
 
 describe('isMarketingPath', () => {
   it('matches whole segments only', () => {
-    expect(isMarketingPath('/pricing')).toBe(true);
-    expect(isMarketingPath('/pricing-old')).toBe(false);
+    expect(isMarketingPath('/features/inbox')).toBe(true);
+    expect(isMarketingPath('/features-old')).toBe(false);
     expect(isMarketingPath('/toolsy')).toBe(false);
     expect(isMarketingPath('/settings')).toBe(false);
   });

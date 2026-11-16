@@ -135,7 +135,7 @@ describe('proxy — one deployment, two domains', () => {
   });
 
   it('serves marketing pages on the marketing host WITHOUT a session lookup', async () => {
-    for (const path of ['/', '/pricing', '/tools/whatsapp-link-generator']) {
+    for (const path of ['/', '/features/inbox', '/tools/whatsapp-link-generator']) {
       const res = await proxy(req(`${MK}${path}`));
       expect(res.headers.get('location'), path).toBeNull();
       expect(res.status).toBe(200);
@@ -151,9 +151,9 @@ describe('proxy — one deployment, two domains', () => {
   });
 
   it('sends marketing pages on the app host to the marketing host', async () => {
-    const res = await proxy(req(`${APP}/pricing`));
+    const res = await proxy(req(`${APP}/features/inbox`));
     expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe(`${MK}/pricing`);
+    expect(res.headers.get('location')).toBe(`${MK}/features/inbox`);
   });
 
   it('app host root → /login when signed out, /dashboard when signed in', async () => {

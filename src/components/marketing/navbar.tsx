@@ -191,14 +191,6 @@ export function Navbar() {
               )}
             </li>
           ))}
-          <li>
-            <Link
-              href="/pricing"
-              className="text-mk-heading hover:bg-mk-soft hover:text-mk-primary-hover rounded-full px-3 py-2 text-sm font-medium"
-            >
-              {t('nav.pricing')}
-            </Link>
-          </li>
         </ul>
 
         <div className="ml-auto hidden items-center gap-2 lg:flex">
@@ -260,13 +252,6 @@ export function Navbar() {
                 </ul>
               </details>
             ))}
-            <Link
-              href="/pricing"
-              onClick={() => setDrawer(false)}
-              className="text-mk-heading hover:bg-mk-bg-alt block rounded-xl px-3 py-3 font-semibold"
-            >
-              {t('nav.pricing')}
-            </Link>
             <div className="grid gap-2 pt-3">
               <a
                 href={appUrl('/signup')}

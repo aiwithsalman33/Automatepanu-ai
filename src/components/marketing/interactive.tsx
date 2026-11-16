@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Client islands for the marketing site: scroll reveal, pricing toggle,
- * use-case tabs. Everything else on the page is a server component.
+ * Client islands for the marketing site: scroll reveal and use-case
+ * tabs. Everything else on the page is a server component.
  */
 import { useTranslations } from 'next-intl';
 import {
@@ -14,12 +14,6 @@ import {
 } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  formatPlanPrice,
-  PLANS,
-  type BillingInterval,
-} from '@/content/marketing/plans.config';
-import { appUrl, mkButtonClass } from './primitives';
 
 /**
  * Fade/slide in when scrolled into view — progressive enhancement.
@@ -93,125 +87,6 @@ function useTablistKeys<T extends string>(
       ) as HTMLElement | null
     )?.focus();
   };
-}
-
-export function PricingPreview() {
-  const t = useTranslations('Marketing');
-  const [interval, setInterval] = useState<BillingInterval>('monthly');
-  const intervals = ['monthly', 'yearly'] as const;
-  const onKey = useTablistKeys(intervals, interval, setInterval);
-
-  return (
-    <div>
-      <div className="mb-10 flex flex-col items-center gap-3">
-        <div
-          role="tablist"
-          aria-label={t('pricing.intervalLabel')}
-          onKeyDown={onKey}
-          className="border-mk-border inline-flex rounded-full border bg-white p-1"
-        >
-          {intervals.map((iv) => (
-            <button
-              key={iv}
-              type="button"
-              role="tab"
-              data-tab={iv}
-              aria-selected={interval === iv}
-              tabIndex={interval === iv ? 0 : -1}
-              onClick={() => setInterval(iv)}
-              className={cn(
-                'rounded-full px-5 py-2 text-sm font-semibold transition-colors',
-                interval === iv
-                  ? 'bg-mk-primary text-white'
-                  : 'text-mk-body hover:text-mk-heading'
-              )}
-            >
-              {t(`pricing.${iv}`)}
-            </button>
-          ))}
-        </div>
-        <p className="text-mk-muted text-sm">{t('pricing.yearlyHint')}</p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {PLANS.map((plan) => {
-          const price = formatPlanPrice(plan, interval);
-          return (
-            <div
-              key={plan.id}
-              className={cn(
-                'relative flex flex-col rounded-2xl border bg-white p-6',
-                plan.mostPopular
-                  ? 'border-mk-primary shadow-mk-lg'
-                  : 'border-mk-border shadow-mk'
-              )}
-            >
-              {plan.mostPopular && (
-                <span className="bg-mk-primary absolute -top-3 left-6 rounded-full px-3 py-1 text-xs font-bold text-white">
-                  {t('pricing.mostPopular')}
-                </span>
-              )}
-              <h3 className="text-lg font-extrabold">
-                {t(`plans.${plan.messageKey}.name`)}
-              </h3>
-              <p className="text-mk-body mt-1 min-h-[3rem] text-sm">
-                {t(`plans.${plan.messageKey}.description`)}
-              </p>
-              <div className="mt-5 flex items-baseline gap-1">
-                {price ? (
-                  <>
-                    <span className="text-mk-heading text-3xl font-extrabold">
-                      {price}
-                    </span>
-                    <span className="text-mk-muted text-sm">
-                      {t('pricing.perMonth')}
-                    </span>
-                  </>
-                ) : (
-                  <span className="bg-mk-bg-alt2 text-mk-primary-hover rounded-full px-3 py-1 text-sm font-bold">
-                    {t('pricing.comingSoon')}
-                  </span>
-                )}
-              </div>
-              <p className="text-mk-muted mt-1 text-xs">
-                {interval === 'monthly'
-                  ? t('pricing.billedMonthly')
-                  : t('pricing.billedYearly')}
-              </p>
-              <ul className="mt-6 flex-1 space-y-2.5">
-                {plan.featureKeys.map((k) => (
-                  <li key={k} className="text-mk-body flex gap-2 text-sm">
-                    <Check
-                      aria-hidden
-                      className="text-mk-primary mt-0.5 h-4 w-4 shrink-0"
-                    />
-                    {t(`plans.features.${k}`)}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={
-                  plan.id === 'business'
-                    ? '/contact?topic=sales'
-                    : appUrl('/signup')
-                }
-                className={mkButtonClass(
-                  plan.mostPopular ? 'primary' : 'secondary',
-                  'md',
-                  'mt-6 w-full'
-                )}
-              >
-                {t(`plans.${plan.messageKey}.cta`)}
-              </a>
-            </div>
-          );
-        })}
-      </div>
-      <p className="text-mk-muted mt-6 text-center text-sm">
-        {t('pricing.comingSoonNote')}
-      </p>
-    </div>
-  );
 }
 
 const USE_CASES = [

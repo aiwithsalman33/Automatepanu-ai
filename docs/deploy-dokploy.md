@@ -117,6 +117,8 @@ Meta for Developers → your app → **App settings → Basic → App secret**.
      and has its own workspace at `/dashboard`.
    - `SEED_USER_EMAIL` / `SEED_USER_PASSWORD`: a normal user with their own
      workspace.
+4. The website contact / demo form (`/contact`) emails `CONTACT_EMAIL`
+   (or `PLATFORM_ADMIN_EMAIL` when that is empty). Send yourself a test.
 
    Both are created once, already verified, on first start. A later
    deploy never changes them, even if you edit the env values.

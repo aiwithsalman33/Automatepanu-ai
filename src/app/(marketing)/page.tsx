@@ -14,11 +14,7 @@ import {
   StatTile,
   ToolCard,
 } from '@/components/marketing/cards';
-import {
-  PricingPreview,
-  Reveal,
-  UseCaseTabs,
-} from '@/components/marketing/interactive';
+import { Reveal, UseCaseTabs } from '@/components/marketing/interactive';
 import {
   DeepDiveVisual,
   HeroInboxMock,
@@ -72,8 +68,6 @@ const FAQ_KEYS = [
   'roles',
   'api',
   'languages',
-  'pricing',
-  'cancel',
 ] as const;
 const STAT_KEYS = ['api', 'roles', 'providers', 'languages'] as const;
 
@@ -167,7 +161,7 @@ export default async function HomePage() {
                 {t('hero.primaryCta')}{' '}
                 <ArrowRight aria-hidden className="h-4 w-4" />
               </MkButton>
-              <MkButton href="/pricing" variant="secondary" size="lg">
+              <MkButton href="/features/inbox" variant="secondary" size="lg">
                 {t('hero.secondaryCta')}
               </MkButton>
             </div>
@@ -311,25 +305,6 @@ export default async function HomePage() {
             </Reveal>
           ))}
         </div>
-      </Section>
-
-      {/* 9. Pricing preview */}
-      <Section bg="alt" id="pricing" labelledBy="mk-pricing-title">
-        <SectionHeader
-          id="mk-pricing-title"
-          eyebrow={t('pricing.eyebrow')}
-          title={t('pricing.title')}
-          subtitle={t('pricing.subtitle')}
-        />
-        <PricingPreview />
-        <p className="mt-4 text-center">
-          <Link
-            href="/pricing"
-            className="text-mk-primary-hover text-sm font-semibold hover:underline"
-          >
-            {t('pricing.compare')} →
-          </Link>
-        </p>
       </Section>
 
       {/* 10. Use cases */}
