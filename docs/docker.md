@@ -1,9 +1,15 @@
 # Docker reference
 
-The whole stack is one Compose project: [`docker-compose.yml`](../docker-compose.yml).
+Two Compose files:
+
+| File | For | What it runs |
+| --- | --- | --- |
+| [`docker-compose.yml`](../docker-compose.yml) | **local development** | db, migrate, postgrest, redis, minio, mailpit on `127.0.0.1` ports, fixed local-only passwords. The app runs with `npm run dev`. |
+| [`docker-compose.prod.yml`](../docker-compose.prod.yml) | **production** (Dokploy) | the whole stack below, behind Caddy on :8080, every secret required, nothing published on the host. |
+
 Production deployment, step by step: [deploy-dokploy.md](./deploy-dokploy.md).
 
-## Services
+## Production services (docker-compose.prod.yml)
 
 | Service      | Image                                      | Role                                                                                                                                  |
 | ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -42,50 +48,51 @@ on boot.
 | `wacrm_service`       | no    | `BYPASSRLS`: webhook, engines, public API, scheduler. Always filters by `account_id`.     |
 | `wacrm_anon`          | no    | Signed out: invitation peek only.                                                         |
 
-## Run the stack locally
+## Local development (docker-compose.yml)
 
 ```bash
-node scripts/generate-secrets.mjs --file .env     # fresh secrets from .env.example
-# in .env: SMTP_HOST=mailpit SMTP_PORT=1025, META_APP_SECRET=anything-for-local
-docker compose up -d --build
-# catch emails locally (joins the stack's network):
-docker run -d --name mailpit --network automatepanu_default -p 8025:8025 axllent/mailpit:v1.27.0
+cp .env.example .env.local     # then replace its contents with the
+                               # "LOCAL DEVELOPMENT" block at the bottom, uncommented
+docker compose up -d           # services + migrations (first run builds the migrator)
+npm install
+npm run dev                    # http://localhost:3000
 ```
 
-Nothing is published on the host, by design. To reach it locally,
-forward the Caddy port:
+| Service | Address | Notes |
+| --- | --- | --- |
+| Postgres | `127.0.0.1:54330` | db `wacrm`, superuser `postgres` / `local-postgres` |
+| PostgREST | `http://127.0.0.1:54331` | |
+| Redis | `127.0.0.1:63790` | password `local-redis` |
+| MinIO | `http://127.0.0.1:9000`, console `:9001` | `local-minio` / `local-minio-password` |
+| Mailpit | SMTP `127.0.0.1:1025`, inbox <http://localhost:8025> | every email (sign-up, reset, invites) lands here |
+
+These credentials are fixed and local-only (ports bind to 127.0.0.1).
+Sign-in works over plain http locally (cookies are only `Secure` in
+production). Add `PLATFORM_ADMIN_*` / `SEED_USER_*` to `.env.local` to get
+ready-made accounts on first boot.
 
 ```bash
-docker run -d --name app-port --network automatepanu_default -p 127.0.0.1:8080:8080 \
-  alpine/socat:1.8.0.3 tcp-listen:8080,fork,reuseaddr tcp-connect:caddy:8080
-# http://localhost:8080   ·   emails: http://localhost:8025
+docker compose run --rm migrate   # apply new migrations
+docker compose logs -f postgrest  # follow a service
+docker compose down               # stop (data kept)
+docker compose down -v            # stop and DELETE local data
 ```
 
-Production session cookies are `Secure`, so browser sign-in needs the
-real HTTPS domain; over plain local http, test with the API.
+## Try the production stack on a PC
 
-## Local development
-
-`npm run dev` runs the app from source against services in Docker. Start
-the stack (above), then point the dev server at it by publishing what it
-needs on localhost. The simplest way is the same forwarder trick for
-`postgrest:3000` and `db:5432`, then in `.env.local`:
-
-```env
-DATABASE_URL=postgresql://wacrm_authenticator:<WACRM_AUTHENTICATOR_PASSWORD>@localhost:5432/wacrm
-POSTGREST_URL=http://localhost:3001
-POSTGREST_JWT_SECRET=<same as .env>
-AUTH_SECRET=<any 32+ chars>
-SMTP_HOST=localhost
-SMTP_PORT=1025
+```bash
+npm run secrets -- --file .env.dokploy        # fill the remaining FILL lines
+docker compose -f docker-compose.prod.yml --env-file .env.dokploy up -d --build
 ```
 
-Without SMTP, development logs each email (and its link) to the console.
+Nothing is published on the host by design (Dokploy reaches `caddy:8080`
+over Docker networking). Production cookies are `Secure`, so browser
+sign-in needs the real HTTPS domain.
 
 ## Build-time vs runtime variables
 
 - `NEXT_PUBLIC_*` are **inlined at build time** (Docker build args).
-  Change one → rebuild (`docker compose up -d --build`, or Deploy in Dokploy).
+  Change one → rebuild (Deploy in Dokploy).
 - Everything else is read at **runtime** and never baked into an image.
 
 ## Migrations
@@ -104,6 +111,8 @@ New schema changes go in new numbered files under `db/migrations/`, and
 each must `GRANT` explicitly (nothing relies on default privileges).
 
 ## Backups and restore
+
+On the server (Dokploy → the compose app → Terminal, or SSH; `-f docker-compose.prod.yml` when run from the code folder):
 
 ```bash
 docker compose exec backup sh /scripts/restore.sh                    # list dumps

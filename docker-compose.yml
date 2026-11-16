@@ -1,40 +1,31 @@
-name: automatepanu
+name: automatepanu-local
 
 # =====================================================================
-# Automate Panu AI — the whole stack in ONE Compose project, deployed and
-# started as one unit (one Dokploy service, one `docker compose up`).
+# LOCAL DEVELOPMENT stack. Production is docker-compose.prod.yml.
 #
-#   caddy      the only entry point: http :8080 → app (Dokploy: chat.axxeler.in → caddy:8080)
-#   app        Next.js: the CRM (+ the website at /), one domain
-#   cron       calls the automation / flow schedulers every minute
-#   db         PostgreSQL 17 + pgvector
-#   migrate    one-shot: roles, extensions, then every db/migrations file
-#   postgrest  private REST layer the app talks to (never public)
-#   redis      rate limits / caches (password, AOF persistence)
-#   minio      S3 object storage (+ minio-init creates the buckets)
-#   backup     pg_dump every BACKUP_INTERVAL_HOURS, keeps BACKUP_RETENTION_DAYS
+# Runs the services the app needs; the app itself runs on your machine
+# with hot reload:
 #
-# Deploy: docs/deploy-dokploy.md. Locally:
-#   cp .env.example .env   # or: node scripts/generate-secrets.mjs > .env
-#   docker compose up -d --build
+#   docker compose up -d     # db, migrations, postgrest, redis, minio, mailpit
+#   npm run dev              # http://localhost:3000 (reads .env.local)
 #
-# Networking: db, postgrest, redis and minio sit ONLY on the `backend`
-# network, which has no route to the outside world. Nothing publishes a
-# host port; Dokploy/Traefik reaches `caddy` (port 8080) by domain and
-# Caddy forwards to the app. PostgREST and the MinIO console are never
-# exposed.
+#   db         PostgreSQL 17 + pgvector    127.0.0.1:54330
+#   migrate    one-shot: roles + db/migrations (re-run: docker compose run --rm migrate)
+#   postgrest  private REST layer          127.0.0.1:54331
+#   redis      rate limits / caches        127.0.0.1:63790
+#   minio      S3 storage                  127.0.0.1:9000 (console :9001)
+#   mailpit    catches every email         SMTP 127.0.0.1:1025, inbox http://localhost:8025
 #
-# Every secret is REQUIRED (`${VAR:?…}`): Compose refuses to start and
-# names the missing one, instead of booting half-configured.
+# Credentials below are FIXED, LOCAL-ONLY values (ports bind to 127.0.0.1)
+# and match .env.example's "local development" block. Never reuse them in
+# production: docker-compose.prod.yml requires real secrets for everything.
+#
+# Reset everything (deletes local data):  docker compose down -v
 # =====================================================================
 
 x-logging: &logging
   driver: json-file
-  options:
-    max-size: '10m'
-    max-file: '5'
-
-x-db-name: &db-name ${POSTGRES_DB:-wacrm}
+  options: { max-size: '5m', max-file: '2' }
 
 services:
   db:
@@ -42,137 +33,75 @@ services:
     restart: unless-stopped
     logging: *logging
     environment:
-      POSTGRES_DB: *db-name
-      # Superuser: used ONLY by `migrate` (bootstrap) and `backup`.
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
-    # Tuned for a 4 GB / 2 vCPU VPS (docs/deploy-dokploy.md has 8 GB values).
-    command:
-      - postgres
-      - -c
-      - shared_buffers=${PG_SHARED_BUFFERS:-512MB}
-      - -c
-      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-1536MB}
-      - -c
-      - work_mem=${PG_WORK_MEM:-8MB}
-      - -c
-      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-128MB}
-      - -c
-      - max_connections=${PG_MAX_CONNECTIONS:-100}
-      - -c
-      - wal_compression=on
-      - -c
-      - log_min_duration_statement=1000
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    shm_size: 256mb
-    networks: [backend]
+      POSTGRES_DB: wacrm
+      POSTGRES_PASSWORD: local-postgres
+    ports: ['127.0.0.1:54330:5432']
+    volumes: [db-data:/var/lib/postgresql/data]
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d "$${POSTGRES_DB}"']
-      interval: 10s
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d wacrm']
+      interval: 5s
       timeout: 5s
-      retries: 10
-      start_period: 30s
-    deploy:
-      resources:
-        limits: { memory: '${DB_MEMORY_LIMIT:-1536m}' }
+      retries: 20
 
   migrate:
-    build:
-      context: .
-      target: migrate
+    build: { context: ., target: migrate }
     image: automatepanu-migrate:local
     restart: 'no'
     logging: *logging
     environment:
-      DATABASE_ADMIN_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
-      DATABASE_URL: postgresql://wacrm_owner:${WACRM_OWNER_PASSWORD:?set WACRM_OWNER_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
-      WACRM_OWNER_PASSWORD: ${WACRM_OWNER_PASSWORD}
-      WACRM_AUTHENTICATOR_PASSWORD: ${WACRM_AUTHENTICATOR_PASSWORD:?set WACRM_AUTHENTICATOR_PASSWORD}
-    networks: [backend]
-    read_only: true
+      DATABASE_ADMIN_URL: postgresql://postgres:local-postgres@db:5432/wacrm
+      DATABASE_URL: postgresql://wacrm_owner:local-owner@db:5432/wacrm
+      WACRM_OWNER_PASSWORD: local-owner
+      WACRM_AUTHENTICATOR_PASSWORD: local-authenticator
     depends_on:
-      db:
-        condition: service_healthy
+      db: { condition: service_healthy }
 
   postgrest:
     image: postgrest/postgrest:v12.2.12
     restart: unless-stopped
     logging: *logging
     environment:
-      PGRST_DB_URI: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
+      PGRST_DB_URI: postgresql://wacrm_authenticator:local-authenticator@db:5432/wacrm
       PGRST_DB_SCHEMAS: public
       PGRST_DB_ANON_ROLE: wacrm_anon
-      PGRST_JWT_SECRET: ${POSTGREST_JWT_SECRET:?set POSTGREST_JWT_SECRET (32+ chars)}
-      PGRST_DB_POOL: 10
+      PGRST_JWT_SECRET: local-postgrest-jwt-secret-0123456789abcdef
+      PGRST_DB_POOL: 5
       PGRST_SERVER_PORT: 3000
       PGRST_OPENAPI_MODE: disabled
-    networks: [backend]
-    read_only: true
-    # The image is a single static binary (no shell/curl), so there is no
-    # in-container healthcheck; `app` waits for `migrate`, and PostgREST
-    # retries its DB connection on its own.
+    ports: ['127.0.0.1:54331:3000']
     depends_on:
-      migrate:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits: { memory: 256m }
+      migrate: { condition: service_completed_successfully }
 
   redis:
     image: redis:7.4.12-alpine
     restart: unless-stopped
     logging: *logging
-    command:
-      - redis-server
-      - --requirepass
-      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
-      - --appendonly
-      - 'yes'
-      - --maxmemory
-      - 256mb
-      - --maxmemory-policy
-      - noeviction
-    environment:
-      REDISCLI_AUTH: ${REDIS_PASSWORD}
-    volumes:
-      - redis-data:/data
-    networks: [backend]
-    read_only: true
+    command: ['redis-server', '--requirepass', 'local-redis', '--appendonly', 'yes']
+    environment: { REDISCLI_AUTH: local-redis }
+    ports: ['127.0.0.1:63790:6379']
+    volumes: [redis-data:/data]
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits: { memory: 320m }
+      retries: 10
 
   minio:
-    # Maintained community build of MinIO (AGPLv3); upstream stopped
-    # publishing free images in 2025.
     image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     restart: unless-stopped
     logging: *logging
     command: ['server', '/data', '--console-address', ':9001']
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
-      MINIO_BROWSER: 'off'
-    volumes:
-      - minio-data:/data
-    # Internal only: the app is the sole client (media is served through it).
-    networks: [backend]
+      MINIO_ROOT_USER: local-minio
+      MINIO_ROOT_PASSWORD: local-minio-password
+    ports: ['127.0.0.1:9000:9000', '127.0.0.1:9001:9001']
+    volumes: [minio-data:/data]
     healthcheck:
       test: ['CMD', 'curl', '-fsS', 'http://localhost:9000/minio/health/live']
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 10s
-    deploy:
-      resources:
-        limits: { memory: 512m }
+      retries: 10
 
-  # One-shot: create the private buckets (idempotent).
   minio-init:
     image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     restart: 'no'
@@ -180,197 +109,19 @@ services:
     entrypoint: ['/bin/sh', '-c']
     command:
       - >-
-        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null &&
+        mc alias set local http://minio:9000 local-minio local-minio-password >/dev/null &&
         for b in avatars chat-media flow-media; do mc mb --ignore-existing "local/$$b"; done
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MC_CONFIG_DIR: /tmp/mc
-    networks: [backend]
+    environment: { MC_CONFIG_DIR: /tmp/mc }
     depends_on:
-      minio:
-        condition: service_healthy
+      minio: { condition: service_healthy }
 
-  app:
-    build:
-      context: .
-      target: runner
-      # NEXT_PUBLIC_* are inlined at build time; the rest only size the build.
-      args:
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
-        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
-        # 1 build worker fits a 4 GB server; raise on 8 GB+ for faster builds.
-        NEXT_BUILD_CPUS: ${NEXT_BUILD_CPUS:-1}
-        BUILD_MAX_OLD_SPACE: ${BUILD_MAX_OLD_SPACE:-2048}
-    image: automatepanu-app:local
+  mailpit:
+    image: axllent/mailpit:v1.27.0
     restart: unless-stopped
     logging: *logging
-    # An explicit list (no env_file): the app gets exactly what it uses and
-    # never sees the Postgres superuser or owner passwords.
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
-      ALLOWED_INVITE_HOSTS: ${ALLOWED_INVITE_HOSTS:-}
-      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (32+ random chars)}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY (64 hex chars)}
-      META_APP_SECRET: ${META_APP_SECRET:?set META_APP_SECRET (Meta app → Settings → Basic)}
-      META_APP_ID: ${META_APP_ID:-}
-      WHATSAPP_TEMPLATES_DRY_RUN: ${WHATSAPP_TEMPLATES_DRY_RUN:-}
-      AUTOMATION_CRON_SECRET: ${AUTOMATION_CRON_SECRET:?set AUTOMATION_CRON_SECRET}
-      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST (needed for sign-up emails)}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_SECURE: ${SMTP_SECURE:-false}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:?set SMTP_FROM, e.g. "Automate Panu AI <no-reply@your-domain>"}
-      AI_REQUEST_TIMEOUT_MS: ${AI_REQUEST_TIMEOUT_MS:-}
-      AI_CONTEXT_MESSAGE_LIMIT: ${AI_CONTEXT_MESSAGE_LIMIT:-}
-      AI_PROVIDER_ALLOWED_PRIVATE_HOSTS: ${AI_PROVIDER_ALLOWED_PRIVATE_HOSTS:-}
-      DB_POOL_MAX: ${DB_POOL_MAX:-10}
-      AUTH_DB_POOL_MAX: ${AUTH_DB_POOL_MAX:-5}
-      # First-start accounts (created once, if missing; never overwritten).
-      PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL:-}
-      PLATFORM_ADMIN_PASSWORD: ${PLATFORM_ADMIN_PASSWORD:-}
-      PLATFORM_ADMIN_NAME: ${PLATFORM_ADMIN_NAME:-}
-      SEED_USER_EMAIL: ${SEED_USER_EMAIL:-}
-      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
-      SEED_USER_NAME: ${SEED_USER_NAME:-}
-      # Logs in as wacrm_authenticator: no privileges of its own, it
-      # SET LOCAL ROLEs per request. Never the owner or superuser.
-      DATABASE_URL: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
-      POSTGREST_URL: http://postgrest:3000
-      POSTGREST_JWT_SECRET: ${POSTGREST_JWT_SECRET}
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
-      S3_ENDPOINT: http://minio:9000
-      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
-      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
-    # backend: database & co. default: outbound internet (Meta, SMTP, AI)
-    # and Caddy in front of it.
-    networks: [default, backend]
-    expose:
-      - '3000'
-    read_only: true
-    tmpfs:
-      - /tmp:mode=1777
-      - /app/.next/cache:mode=1777
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-      postgrest:
-        condition: service_started
-      redis:
-        condition: service_healthy
-      minio-init:
-        condition: service_completed_successfully
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'node',
-          '-e',
-          "fetch('http://127.0.0.1:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits: { memory: '${APP_MEMORY_LIMIT:-1024m}' }
-
-  # The single entry point. Dokploy → Domains: chat.axxeler.in → service
-  # `caddy`, port 8080 (Traefik does HTTPS, Caddy proxies to the app).
-  caddy:
-    image: caddy:2.10.2-alpine
-    restart: unless-stopped
-    logging: *logging
-    volumes:
-      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-    networks: [default]
-    expose:
-      - '8080'
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /config
-    healthcheck:
-      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8080/caddy-health']
-      interval: 30s
-      timeout: 5s
-      retries: 3
-    depends_on:
-      app:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits: { memory: 128m }
-
-  # Scheduler: automation waits/timeouts and flow timeouts every minute.
-  cron:
-    image: curlimages/curl:8.11.1
-    restart: unless-stopped
-    logging: *logging
-    entrypoint: ['/bin/sh', '-c']
-    command:
-      - >-
-        while true; do
-          for p in automations flows; do
-            curl -fsS -o /dev/null -m 50 -H "x-cron-secret: $$AUTOMATION_CRON_SECRET" "http://app:3000/api/$$p/cron" || echo "cron: $$p failed";
-          done;
-          sleep 60;
-        done
-    environment:
-      AUTOMATION_CRON_SECRET: ${AUTOMATION_CRON_SECRET}
-    read_only: true
-    depends_on:
-      app:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits: { memory: 32m }
-
-  backup:
-    image: postgres:17.12-alpine
-    restart: unless-stopped
-    logging: *logging
-    entrypoint: ['sh', '/scripts/backup.sh']
-    environment:
-      PGHOST: db
-      PGUSER: postgres
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-      PGDATABASE: *db-name
-      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}
-      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
-    volumes:
-      - ./db/scripts/backup.sh:/scripts/backup.sh:ro
-      - ./db/scripts/restore.sh:/scripts/restore.sh:ro
-      - backups:/backups
-    networks: [backend]
-    healthcheck:
-      test: ['CMD', 'pg_isready', '-q']
-      interval: 60s
-      timeout: 5s
-      retries: 3
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits: { memory: 256m }
-
-networks:
-  default: {}
-  # No route out: only the app (and the one-shot jobs) talk to these.
-  backend:
-    internal: true
+    ports: ['127.0.0.1:1025:1025', '127.0.0.1:8025:8025']
 
 volumes:
-  caddy-data:
   db-data:
   redis-data:
   minio-data:
-  backups:

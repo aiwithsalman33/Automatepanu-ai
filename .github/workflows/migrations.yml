@@ -69,7 +69,7 @@ jobs:
         run: npm run db:migrate
 
       # The private PostgREST the server data layer talks to (same image
-      # and settings as docker-compose.yml). Started after the migrations
+      # and settings as docker-compose.prod.yml). Started after the migrations
       # so its schema cache sees every table.
       - name: Start private PostgREST
         run: |

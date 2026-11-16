@@ -31,26 +31,21 @@ PostgREST, Redis, MinIO, a scheduler and nightly backups. Sign-in is
 native (Better Auth). The migration off Supabase and its checkpoint
 reports are in [docs/saas-migration-plan.md](./docs/saas-migration-plan.md).
 
-## Quick start (Docker, local)
+## Local development
 
 ```bash
-node scripts/generate-secrets.mjs --file .env   # fresh secrets from .env.example
-# edit .env: SMTP_* (or Mailpit, see docs/docker.md) and META_APP_SECRET
-docker compose up -d --build
-```
-
-## Development (without Docker for the app)
-
-```bash
+# .env.local: the "LOCAL DEVELOPMENT" block at the bottom of .env.example
+docker compose up -d        # Postgres, PostgREST, Redis, MinIO, Mailpit (docker-compose.yml)
 npm install
-npm run dev                                     # http://localhost:3000
+npm run dev                 # http://localhost:3000 · emails: http://localhost:8025
 ```
 
-The dev server needs a database, PostgREST and SMTP. See
-[docs/docker.md](./docs/docker.md#local-development). The UI language is
-set by `NEXT_PUBLIC_APP_LOCALE` (`en`, `ko`, `pt`, `es`).
+Details: [docs/docker.md](./docs/docker.md). The UI language is set by
+`NEXT_PUBLIC_APP_LOCALE` (`en`, `ko`, `pt`, `es`).
 
 ## Deploy (Dokploy)
+
+Production uses **`docker-compose.prod.yml`**.
 
 Step by step, from an empty VPS to a running app, including DNS, the
 Meta webhook, backups, restore drill, upgrades and rollback:

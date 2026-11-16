@@ -1,7 +1,7 @@
 # Deploy on Dokploy
 
 From an empty VPS to a running Automate Panu AI. One domain,
-**`chat.axxeler.in`**, and one Compose stack (`docker-compose.yml`). Nothing
+**`chat.axxeler.in`**, and one Compose stack (`docker-compose.prod.yml`). Nothing
 is hosted elsewhere except your SMTP provider and Meta.
 
 ```
@@ -26,7 +26,7 @@ Internet ──HTTPS──▶ Dokploy (Traefik, Let's Encrypt)
 
 | Size                       | Good for                    | Notes                                                                                                      |
 | -------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| 2 vCPU / 4 GB RAM / 60 GB  | launch, a few dozen tenants | the defaults in `docker-compose.yml` are tuned for this                                                    |
+| 2 vCPU / 4 GB RAM / 60 GB  | launch, a few dozen tenants | the defaults in `docker-compose.prod.yml` are tuned for this                                                    |
 | 4 vCPU / 8 GB RAM / 120 GB | growth                      | set `PG_SHARED_BUFFERS=2GB`, `PG_EFFECTIVE_CACHE_SIZE=6GB`, `DB_MEMORY_LIMIT=3g`, `APP_MEMORY_LIMIT=2048m` |
 
 Ubuntu 24.04 LTS. The image build needs about 3 GB RAM. On a 4 GB box,
@@ -81,7 +81,7 @@ Meta for Developers → your app → **App settings → Basic → App secret**.
 1. **Projects → Create project**, e.g. `automatepanu`.
 2. **Create service → Compose.**
 3. **General → Provider:** GitHub → `aiwithsalman33/Automatepanu-ai`,
-   branch **`main`**, compose path **`./docker-compose.yml`**, type
+   branch **`main`**, compose path **`./docker-compose.prod.yml`**, type
    **Docker Compose**.
 4. **Environment:** paste the whole of your `.env.dokploy` (in the repo
    folder on your PC; git-ignored). Fill the `>>> FILL <<<` lines:
