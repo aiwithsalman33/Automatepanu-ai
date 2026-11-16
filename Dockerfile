@@ -22,8 +22,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_APP_LOCALE=en
 # Two-domain routing + Sign in/Start free links (src/proxy.ts and the
@@ -31,17 +29,16 @@ ARG NEXT_PUBLIC_APP_LOCALE=en
 # server code included).
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_MARKETING_URL
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
-    NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     NEXT_PUBLIC_APP_LOCALE=$NEXT_PUBLIC_APP_LOCALE \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
     NEXT_PUBLIC_MARKETING_URL=$NEXT_PUBLIC_MARKETING_URL \
     NEXT_TELEMETRY_DISABLED=1
 
-# Fail fast with a clear message instead of a cryptic prerender error
-# ("Invalid supabaseUrl") minutes into the build.
-RUN node -e 'const u=process.env.NEXT_PUBLIC_SUPABASE_URL||"",k=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||"";const bad=[];if(!/^https?:\/\/[^\s<>]+$/.test(u)||/FILL/.test(u))bad.push("NEXT_PUBLIC_SUPABASE_URL");if(!k||/FILL/.test(k))bad.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");if(bad.length){console.error("\n  x Build stopped: "+bad.join(" and ")+" missing or still a >>> FILL <<< placeholder.\n    Set real values in Dokploy -> Environment (or .env.local), then redeploy.\n");process.exit(1)}'
+# Fail fast (seconds, not minutes into `next build`) on a malformed or
+# placeholder public URL. They are optional (the brand defaults apply),
+# but when set they are inlined into every page, so a typo ships.
+RUN node -e 'const bad=[];for(const k of ["NEXT_PUBLIC_APP_URL","NEXT_PUBLIC_MARKETING_URL","NEXT_PUBLIC_SITE_URL"]){const v=process.env[k]||"";if(v&&(!/^https?:\/\/[^\s<>\/]+(\/[^\s<>]*)?$/.test(v)||/FILL|change-me/i.test(v)))bad.push(k)}if(bad.length){console.error("\n  x Build stopped: "+bad.join(", ")+" is not a valid URL (or still a placeholder).\n    Fix it in Dokploy -> Environment (or .env), then redeploy.\n");process.exit(1)}'
 
 RUN npm run build
 

@@ -14,7 +14,10 @@
     "noAccount": "Don't have an account?",
     "createAccount": "Create account",
     "linkExpired": "That link has expired. For a password reset, use “Forgot password?” to request a new one; if you were confirming your email, sign up again.",
-    "linkInvalid": "That link couldn’t be used to sign you in. If you were confirming your email, it may already be verified — just sign in below. For a password reset, request a new link and open it in the same browser you requested it from."
+    "linkInvalid": "That link couldn’t be used to sign you in. If you were confirming your email, it may already be verified — just sign in below. For a password reset, request a new link and open it in the same browser you requested it from.",
+    "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
+    "signInFailed": "Invalid email or password."
   },
   "Sidebar": {
     "title": "CRM Template for WhatsApp",
@@ -1689,7 +1692,12 @@
       "copied": "Invite link copied",
       "clipboardBlocked": "Clipboard blocked — copy the link manually",
       "whatsappMessage": "Join {accountName} on Automate Panu AI using this link (valid for {expiresInDays} days): {url}",
-      "createFailed": "Failed to create invitation"
+      "createFailed": "Failed to create invitation",
+      "emailTitle": "Email the invite to",
+      "emailPlaceholder": "teammate@company.com",
+      "emailHint": "We'll email them the link. You can still copy or share it yourself.",
+      "emailSent": "Invite emailed to {email}",
+      "emailNotSent": "The invite was created, but the email could not be sent. Copy the link and share it instead."
     },
     "tagsAndFields": {
       "title": "Fields & tags",
@@ -2250,7 +2258,9 @@
     "creating": "Creating account...",
     "submit": "Create account",
     "haveAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "tooManyAttempts": "Too many sign-ups from this network. Try again later.",
+    "signupFailed": "Could not create your account. Please try again."
   },
   "ForgotPasswordPage": {
     "checkEmailTitle": "Check your email",
@@ -2261,7 +2271,9 @@
     "emailLabel": "Email",
     "emailPlaceholder": "you@example.com",
     "sending": "Sending...",
-    "sendLink": "Send reset link"
+    "sendLink": "Send reset link",
+    "tooManyAttempts": "Too many reset requests. Try again later.",
+    "resetFailed": "Could not send the reset email. Please try again."
   },
   "ResetPasswordPage": {
     "title": "Choose a new password",
@@ -2280,8 +2292,9 @@
     "requestNewLink": "Request a new link",
     "backToSignIn": "Back to sign in",
     "successTitle": "Password updated",
-    "successDesc": "You’re signed in with your new password.",
-    "continueToDashboard": "Continue to dashboard"
+    "successDesc": "Your password has been updated and every other session was signed out. Sign in with your new password.",
+    "continueToDashboard": "Continue to dashboard",
+    "resetFailed": "Could not update your password. Please try again."
   },
   "JoinPage": {
     "fail": {
@@ -2771,7 +2784,8 @@
         "loadFailed": "Failed to load invitations",
         "roleInvalid": "'role' must be one of admin, agent, viewer",
         "labelTooLong": "Label must be {max} characters or fewer",
-        "createFailed": "Failed to create invitation"
+        "createFailed": "Failed to create invitation",
+        "emailInvalid": "Enter a valid email address, or leave it empty to only copy the link."
       },
       "members": {
         "loadFailed": "Failed to load members",

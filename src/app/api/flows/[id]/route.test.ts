@@ -16,15 +16,15 @@ vi.mock('@/lib/flows/admin-client', async () => {
   return { supabaseAdmin: () => createFakeDb(h.tables as FakeTables) }
 })
 
-vi.mock('@/lib/supabase/server', async () => {
+vi.mock('@/lib/db/server', async () => {
   const { createFakeDb } = await import('@/lib/flows/fake-db.test-helper')
-  return {
+  return (await import('@/lib/db/testing')).requestDbMock({
     createClient: async () => ({
       ...createFakeDb(h.tables as FakeTables),
       auth: { getUser: async () => ({ data: { user: { id: 'u-1' } } }) },
       rpc: h.rpc,
     }),
-  }
+  })
 })
 
 import { PUT } from './route'

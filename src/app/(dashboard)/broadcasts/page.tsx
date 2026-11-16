@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { Broadcast } from '@/types';
 import { Button } from '@/components/ui/button';
 import {

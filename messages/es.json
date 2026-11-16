@@ -14,7 +14,10 @@
     "noAccount": "¿No tienes una cuenta?",
     "createAccount": "Crear cuenta",
     "linkExpired": "Ese enlace expiró. Para restablecer la contraseña, usa “¿Olvidaste tu contraseña?” y pide uno nuevo; si estabas confirmando tu correo, regístrate de nuevo.",
-    "linkInvalid": "No se pudo iniciar sesión con ese enlace. Si estabas confirmando tu correo, es posible que ya esté verificado; inicia sesión abajo. Para restablecer la contraseña, pide un enlace nuevo y ábrelo en el mismo navegador desde el que lo solicitaste."
+    "linkInvalid": "No se pudo iniciar sesión con ese enlace. Si estabas confirmando tu correo, es posible que ya esté verificado; inicia sesión abajo. Para restablecer la contraseña, pide un enlace nuevo y ábrelo en el mismo navegador desde el que lo solicitaste.",
+    "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
+    "signInFailed": "Invalid email or password."
   },
   "Sidebar": {
     "title": "Plantilla de CRM para WhatsApp",
@@ -1689,7 +1692,12 @@
       "copied": "Enlace de invitación copiado",
       "clipboardBlocked": "Portapapeles bloqueado: copia el enlace manualmente",
       "whatsappMessage": "Únete a {accountName} en Automate Panu AI con este enlace (válido por {expiresInDays} días): {url}",
-      "createFailed": "No se pudo crear la invitación"
+      "createFailed": "No se pudo crear la invitación",
+      "emailTitle": "Email the invite to",
+      "emailPlaceholder": "teammate@company.com",
+      "emailHint": "We'll email them the link. You can still copy or share it yourself.",
+      "emailSent": "Invite emailed to {email}",
+      "emailNotSent": "The invite was created, but the email could not be sent. Copy the link and share it instead."
     },
     "tagsAndFields": {
       "title": "Campos y etiquetas",
@@ -2250,7 +2258,9 @@
     "creating": "Creando cuenta...",
     "submit": "Crear cuenta",
     "haveAccount": "¿Ya tienes una cuenta?",
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "tooManyAttempts": "Too many sign-ups from this network. Try again later.",
+    "signupFailed": "Could not create your account. Please try again."
   },
   "ForgotPasswordPage": {
     "checkEmailTitle": "Revisa tu correo",
@@ -2261,7 +2271,9 @@
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "you@example.com",
     "sending": "Enviando...",
-    "sendLink": "Enviar enlace de restablecimiento"
+    "sendLink": "Enviar enlace de restablecimiento",
+    "tooManyAttempts": "Too many reset requests. Try again later.",
+    "resetFailed": "Could not send the reset email. Please try again."
   },
   "ResetPasswordPage": {
     "title": "Elige una nueva contraseña",
@@ -2281,7 +2293,8 @@
     "backToSignIn": "Volver a iniciar sesión",
     "successTitle": "Contraseña actualizada",
     "successDesc": "Has iniciado sesión con tu nueva contraseña.",
-    "continueToDashboard": "Ir al panel"
+    "continueToDashboard": "Ir al panel",
+    "resetFailed": "Could not update your password. Please try again."
   },
   "JoinPage": {
     "fail": {
@@ -2771,7 +2784,8 @@
         "loadFailed": "Error al cargar las invitaciones",
         "roleInvalid": "El rol debe ser admin, agent o viewer",
         "labelTooLong": "La etiqueta debe tener {max} caracteres o menos",
-        "createFailed": "Error al crear la invitación"
+        "createFailed": "Error al crear la invitación",
+        "emailInvalid": "Enter a valid email address, or leave it empty to only copy the link."
       },
       "members": {
         "loadFailed": "Error al cargar los miembros",

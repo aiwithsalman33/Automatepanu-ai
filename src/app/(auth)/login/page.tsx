@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
+import { authClient, authErrorMessage } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,13 +37,14 @@ function LoginPageInner() {
   // page to accept rather than to /dashboard.
   const inviteToken = searchParams.get("invite");
   const t = useTranslations("LoginPage");
-  // Set by /auth/callback when an emailed link (confirmation, password
-  // reset) could not be turned into a session — see src/lib/auth/callback.ts.
+  // Set when an emailed link (verification, password reset) was
+  // expired or already used: Better Auth redirects with ?error=, and
+  // /auth/callback sends old pre-migration links here too.
   const linkError = searchParams.get("error");
   const linkErrorMessage =
-    linkError === "link_expired"
+    linkError === "link_expired" || linkError === "TOKEN_EXPIRED"
       ? t("linkExpired")
-      : linkError === "link_invalid"
+      : linkError === "link_invalid" || linkError === "INVALID_TOKEN"
         ? t("linkInvalid")
         : null;
 
@@ -51,27 +52,29 @@ function LoginPageInner() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await authClient.signIn.email({ email, password });
 
     if (error) {
-      setError(error.message);
+      setError(
+        error.status === 403
+          ? t("emailNotVerified")
+          : error.status === 429
+            ? t("tooManyAttempts")
+            : authErrorMessage(error, t("signInFailed")),
+      );
       setLoading(false);
       return;
     }
 
     // Full-page navigation (not router.push) so the browser issues a
-    // fresh top-level request that carries the just-written Supabase
-    // auth cookies to the middleware gating /dashboard. A soft
+    // fresh top-level request that carries the just-written session
+    // cookie to the proxy gating /dashboard. A soft
     // client-side navigation can reach the protected route before the
     // server observes the new session, so the middleware bounces it
     // back to /login — which looks like the page "just refreshing"

@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { Loader2, Upload, Trash2, Mail, CircleAlert } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase/client';
+import { createClient as createDataClient } from '@/lib/data/client';
+import { authClient } from '@/lib/auth/client';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -141,7 +143,7 @@ export function ProfileForm() {
       }
 
       // Persist name + avatar to profiles.
-      const { error: updateError } = await supabase
+      const { error: updateError } = await createDataClient()
         .from('profiles')
         .update({
           full_name: trimmedName,
@@ -152,20 +154,22 @@ export function ProfileForm() {
         throw new Error(t('saveFailed', { message: updateError.message }));
       }
 
-      // Email change goes through Supabase Auth, which emails a
-      // confirmation to both the old and new addresses. We don't
-      // touch profiles.email — Supabase will push the change there
-      // after the user clicks the link (handled by the handle_new_user
-      // trigger pattern in production deployments).
+      // Email change: the CURRENT address gets a confirmation link
+      // first; after that the new address is verified the normal way.
+      // auth.users.email only changes once both are done, and a trigger
+      // (migration 0006) copies it onto the member row.
       let emailSent = false;
       if (trimmedEmail.toLowerCase() !== profile.email.toLowerCase()) {
-        const { error: emailError } = await supabase.auth.updateUser({
-          email: trimmedEmail,
+        const { error: emailError } = await authClient.changeEmail({
+          newEmail: trimmedEmail,
+          callbackURL: '/settings',
         });
         if (emailError) {
           // Partial success: name/avatar saved but email didn't.
           toast.success(t('profileSaved'));
-          toast.error(t('emailChangeFailed', { message: emailError.message }));
+          toast.error(
+            t('emailChangeFailed', { message: emailError.message ?? '' }),
+          );
           setSaving(false);
           await refreshProfile();
           return;

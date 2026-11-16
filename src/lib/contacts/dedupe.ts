@@ -1,4 +1,4 @@
-import type { DbClient } from '@/lib/db/types';
+import type { SharedDb } from '@/lib/db/types';
 import {
   normalizePhone,
   parseInternationalPhone,
@@ -35,7 +35,7 @@ export interface ExistingContact {
  * or null.
  */
 export async function findExistingContact(
-  db: DbClient,
+  db: SharedDb,
   accountId: string,
   phone: string,
 ): Promise<ExistingContact | null> {

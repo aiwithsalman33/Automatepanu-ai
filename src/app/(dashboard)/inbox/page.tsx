@@ -3,7 +3,8 @@
 import { Suspense, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/data/client";
+import { getCurrentUser } from "@/lib/auth/client";
 import {
   CONVERSATION_SELECT,
   normalizeConversation,
@@ -184,9 +185,8 @@ function InboxPageInner() {
     const checkConnection = async () => {
       const supabase = createClient();
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const user = session?.user;
+        data: { user },
+      } = await getCurrentUser();
 
       if (!user) return;
 

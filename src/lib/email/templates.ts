@@ -3,9 +3,10 @@
  * Supabase default templates these replace; localisation follows the UI
  * catalogue work in a later checkpoint.
  */
+import { brand } from '@/config/brand';
 import type { EmailMessage } from './mailer';
 
-const APP_NAME = 'wacrm';
+const APP_NAME = brand.name;
 
 export function escapeHtml(s: string): string {
   return s
@@ -64,6 +65,25 @@ export function resetPasswordMessage(
       'Reset your password',
       `${escapeHtml(greet(name))} use the button below to choose a new password. The link expires in 1 hour.`,
       { label: 'Reset password', url }
+    ),
+  };
+}
+
+export function inviteMessage(
+  to: string,
+  url: string,
+  opts: { accountName: string; inviterName?: string | null; role: string; expiresInDays: number }
+): EmailMessage {
+  const who = opts.inviterName?.trim() || 'A teammate';
+  const days = `${opts.expiresInDays} day${opts.expiresInDays === 1 ? '' : 's'}`;
+  return {
+    to,
+    subject: `${who} invited you to ${opts.accountName} on ${APP_NAME}`,
+    text: `Hi,\n\n${who} invited you to join ${opts.accountName} on ${APP_NAME} as ${opts.role}.\n\nAccept the invitation (the link expires in ${days}):\n${url}\n\nIf you weren't expecting this, ignore this email.`,
+    html: layout(
+      `Join ${opts.accountName}`,
+      `${escapeHtml(who)} invited you to join <strong>${escapeHtml(opts.accountName)}</strong> on ${escapeHtml(APP_NAME)} as <strong>${escapeHtml(opts.role)}</strong>. The link expires in ${days}.`,
+      { label: 'Accept invitation', url }
     ),
   };
 }

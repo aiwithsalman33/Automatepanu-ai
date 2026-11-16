@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { countAudience, type AudienceConfig } from '@/lib/broadcast-audience';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { MessageTemplate } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

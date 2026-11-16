@@ -39,8 +39,8 @@ import { applyMessageStatus } from '@/lib/whatsapp/message-status-sync'
 // plan's ceiling). Tune as needed.
 export const maxDuration = 60
 
-// Service-role client (Supabase or self-hosted PostgREST, per
-// DATA_BACKEND). Lazy: nothing connects at build time. No user session
+// Service-role client (private PostgREST as wacrm_service). Lazy:
+// nothing connects at build time. No user session
 // exists here, so every query filters by account_id.
 const supabaseAdmin = serviceDb
 

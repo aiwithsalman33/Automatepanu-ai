@@ -61,7 +61,7 @@ import {
   blankListPayload,
 } from "@/components/interactive/interactive-builder"
 import { interactivePayloadPreviewText } from "@/lib/whatsapp/interactive"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/data/client";
 import {
   childPath,
   insertAt,

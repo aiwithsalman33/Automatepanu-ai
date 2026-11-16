@@ -18,7 +18,7 @@ vi.mock('next/server', () => ({
   },
 }))
 
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('@/lib/db/server', async () => (await import('@/lib/db/testing')).requestDbMock({
   createClient: async () => ({
     auth: {
       getUser: async () => ({ data: { user: h.user }, error: null }),

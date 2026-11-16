@@ -29,7 +29,7 @@ on:
       - 'vitest.db.config.mts'
       - '.github/workflows/migrations.yml'
   push:
-    branches: [main]
+    branches: [main, 'saas/**']
     paths:
       - 'supabase/**'
       - 'tests/db/**'
@@ -181,6 +181,17 @@ jobs:
           docker logs postgrest
           exit 1
 
+      # SMTP sink for the email tests (verification / reset / invite).
+      - name: Start Mailpit
+        run: |
+          docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit:v1.27.0
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8025/readyz >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          docker logs mailpit
+          exit 1
+
       - name: Run the isolation suite on the new stack
         env:
           DB_TENANT_ADAPTER: app
@@ -190,4 +201,7 @@ jobs:
           TEST_AUTHENTICATOR_DATABASE_URL: postgresql://wacrm_authenticator:authpw@localhost:5432/wacrm
           TEST_POSTGREST_URL: http://localhost:3001
           TEST_POSTGREST_JWT_SECRET: ci-postgrest-jwt-secret-0123456789abcdef
+          TEST_SMTP_HOST: 127.0.0.1
+          TEST_SMTP_PORT: '1025'
+          TEST_MAILPIT_URL: http://localhost:8025
         run: npm run test:db

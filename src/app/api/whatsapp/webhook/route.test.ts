@@ -234,6 +234,14 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }))
 
+// The route's service client (and inbound-media storage) come from
+// @/lib/db/server; route them to the supabase-js fake above.
+vi.mock('@/lib/db/server', async () =>
+  (await import('@/lib/db/testing')).requestDbMock({
+    createClient: async () => ({}),
+  })
+)
+
 vi.mock('@/lib/whatsapp/encryption', () => ({
   decrypt: () => 'plain-token',
   encrypt: (v: string) => v,

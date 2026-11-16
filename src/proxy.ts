@@ -1,13 +1,48 @@
-import { createServerClient } from '@supabase/ssr';
+import { getSessionCookie } from 'better-auth/cookies';
 import { NextResponse, type NextRequest } from 'next/server';
 import { originOf } from '@/config/brand';
 import { decideHostRouting } from '@/lib/marketing/host-routing';
+import { getNativeSessionUser } from '@/lib/auth/native/session';
 
+/** Better Auth cookie prefix (src/lib/auth/native/auth.ts `cookiePrefix`). */
+const COOKIE_PREFIX = 'wacrm';
+
+// Every top-level route under src/app/(dashboard)/ belongs here —
+// proxy.test.ts reads that directory and fails on a missing one.
+export const PROTECTED_PATHS = [
+  '/dashboard',
+  '/inbox',
+  '/contacts',
+  '/pipelines',
+  '/broadcasts',
+  '/automations',
+  '/flows',
+  '/agents',
+  '/notifications',
+  '/settings',
+];
+
+const AUTH_PAGES = new Set(['/login', '/signup', '/forgot-password']);
+
+/**
+ * Session-aware routing. Runs on the Node.js runtime (Next 16 proxy).
+ *
+ * Session checks are only paid where they decide something: protected
+ * pages, auth pages, the app root and the cookie-authenticated
+ * /api/whatsapp/* routes. Without a session cookie there is no lookup at
+ * all; with one, the session is validated against the database, so a
+ * revoked or expired cookie never counts as signed in (and can't cause
+ * a /login <-> /dashboard redirect loop). Route handlers still check the
+ * session themselves; this is the first fence, not the only one.
+ *
+ * Never gated: /api/whatsapp/webhook (Meta signs it), /api/v1 (API
+ * keys), /api/auth (sign-in itself) and every other /api route (each
+ * authenticates on its own).
+ */
 export async function proxy(request: NextRequest) {
   // One deployment, two domains (src/lib/marketing/host-routing.ts).
   // Decided BEFORE any auth work: public marketing pages never pay for a
   // session lookup, and /api/* is never redirected on either host.
-  // The split only activates when both URLs are configured.
   const hostDecision = decideHostRouting(
     {
       host:
@@ -29,122 +64,55 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+  const isAuthPage = AUTH_PAGES.has(pathname);
+  const isGatedApi =
+    pathname.startsWith('/api/whatsapp/') && !pathname.includes('/webhook');
+  const isAppRoot = hostDecision.kind === 'app-root';
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  if (!isProtected && !isAuthPage && !isGatedApi && !isAppRoot) {
+    return NextResponse.next();
+  }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // getUser() transparently refreshes an expired access token, which
-  // ROTATES the refresh token and writes the new cookies onto
-  // `supabaseResponse` via setAll() above. Any response we return in
-  // place of `supabaseResponse` (every redirect / JSON branch below)
-  // is a fresh object that does NOT carry those Set-Cookie headers, so
-  // the rotated token never reaches the browser. The next request then
-  // replays the old, now-consumed refresh token, the refresh fails, and
-  // the session wedges — the user gets a broken reload after idling and
-  // can only recover by manually clearing cookies (issue #288). Copy the
-  // refreshed cookies onto whatever response we hand back to fix that.
-  const withRefreshedCookies = <T extends NextResponse>(response: T): T => {
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      response.cookies.set(cookie);
-    });
-    return response;
-  };
+  const signedIn =
+    getSessionCookie(request, { cookiePrefix: COOKIE_PREFIX }) !== null &&
+    (await getNativeSessionUser(request.headers).catch(() => null)) !== null;
 
   // App host root (chat.axxeler.in/): straight into the app.
-  if (hostDecision.kind === 'app-root') {
+  if (isAppRoot) {
     const url = request.nextUrl.clone();
-    url.pathname = user ? '/dashboard' : '/login';
+    url.pathname = signedIn ? '/dashboard' : '/login';
     url.search = '';
-    return withRefreshedCookies(NextResponse.redirect(url));
+    return NextResponse.redirect(url);
   }
 
-  // Auth pages - redirect to dashboard if already logged in.
-  // Exception: when an invite token is in the query string we
-  // send the already-signed-in user to /join/<token> instead so
-  // they can accept the invitation in one click. Without this,
-  // a forwarded invite link to someone who's already signed in
-  // would silently drop them on /dashboard.
-  if (
-    user &&
-    (request.nextUrl.pathname === '/login' ||
-      request.nextUrl.pathname === '/signup' ||
-      request.nextUrl.pathname === '/forgot-password')
-  ) {
+  // Auth pages: signed-in users go to the dashboard, or straight to
+  // /join/<token> when an invite token is in the query string, so a
+  // forwarded invite link works in one click.
+  if (signedIn && isAuthPage) {
     const url = request.nextUrl.clone();
     const inviteToken = request.nextUrl.searchParams.get('invite');
-    if (
-      inviteToken &&
-      (request.nextUrl.pathname === '/login' ||
-        request.nextUrl.pathname === '/signup')
-    ) {
+    if (inviteToken && pathname !== '/forgot-password') {
       url.pathname = `/join/${encodeURIComponent(inviteToken)}`;
-      url.search = '';
     } else {
       url.pathname = '/dashboard';
-      url.search = '';
     }
-    return withRefreshedCookies(NextResponse.redirect(url));
+    url.search = '';
+    return NextResponse.redirect(url);
   }
 
-  // Protected pages - redirect to login if not authenticated
-  // Every top-level route under src/app/(dashboard)/ belongs here —
-  // proxy.test.ts reads that directory and fails on a missing one.
-  const protectedPaths = [
-    '/dashboard',
-    '/inbox',
-    '/contacts',
-    '/pipelines',
-    '/broadcasts',
-    '/automations',
-    '/flows',
-    '/agents',
-    '/notifications',
-    '/settings',
-  ];
-  if (
-    !user &&
-    protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
-  ) {
+  if (!signedIn && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    return withRefreshedCookies(NextResponse.redirect(url));
+    return NextResponse.redirect(url);
   }
 
-  // API routes that need auth (not webhooks)
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/api/whatsapp/') &&
-    !request.nextUrl.pathname.includes('/webhook')
-  ) {
-    return withRefreshedCookies(
-      NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    );
+  if (!signedIn && isGatedApi) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return supabaseResponse;
+  return NextResponse.next();
 }
 
 export const config = {

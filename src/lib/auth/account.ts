@@ -3,21 +3,21 @@
 // components. Reads the caller's profile + account in one round
 // trip and verifies role on demand.
 //
-// IMPORTANT: this module is server-only. It imports the Supabase
-// SSR client (`@/lib/supabase/server`), which reads `next/headers`
-// cookies. Importing it from a client component will fail at
+// IMPORTANT: this module is server-only. It reads the session through
+// `@/lib/db/server`, which reads `next/headers` cookies. Importing it
+// from a client component fails at
 // build time with the standard Next.js "You're importing a
 // component that needs `next/headers`" error — that's the
 // boundary check; we don't need the `server-only` package.
 //
 // Calling convention
 // ------------------
-// API routes don't need to redo `supabase.auth.getUser()` — they
+// API routes don't need to look the session up themselves — they
 // receive a fully-loaded context from `requireRole`:
 //
 //   try {
 //     const ctx = await requireRole("admin");
-//     // ctx.supabase — the SSR client (RLS scoped to this user)
+//     // ctx.supabase — database client (RLS scoped to this user)
 //     // ctx.userId  — auth.uid()
 //     // ctx.accountId / ctx.role / ctx.account
 //   } catch (err) {
@@ -107,7 +107,7 @@ export interface AccountContext {
  * minimum-role check — it's a thin wrapper over this.
  */
 export async function getCurrentAccount(): Promise<AccountContext> {
-  // Supabase session or native Better Auth session, per DATA_BACKEND.
+  // The native (Better Auth) session user, RLS-scoped database client.
   const { db: supabase, user } = await getRequestDb();
   if (!user) {
     throw new UnauthorizedError();

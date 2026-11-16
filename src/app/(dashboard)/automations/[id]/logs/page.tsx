@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/data/client";
 import type {
   Automation,
   AutomationLog,

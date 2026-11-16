@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import type { CustomField } from '@/types';

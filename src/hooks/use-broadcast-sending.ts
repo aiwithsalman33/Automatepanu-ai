@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
+import { getCurrentUser } from '@/lib/auth/client';
 import { useAuth } from '@/hooks/use-auth';
 import {
   BATCH_SEND_ATTEMPTS,
@@ -213,9 +214,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
     if (csvRows.length === 0) return [];
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
+      data: { user },
+    } = await getCurrentUser();
     if (!user) {
       throw new Error(t('notSignedIn'));
     }
@@ -310,9 +310,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       // silently failing with 23502 / 42501 — the wizard would
       // no-op with no feedback.
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const user = session?.user;
+        data: { user },
+      } = await getCurrentUser();
       if (!user) {
         throw new Error(t('notSignedIn'));
       }

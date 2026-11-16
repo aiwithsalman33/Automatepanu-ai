@@ -10,8 +10,8 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/data/client";
+import { authClient } from "@/lib/auth/client";
 import { DEFAULT_CURRENCY } from "@/lib/currency";
 import {
   canEditSettings as canEditSettingsFor,
@@ -20,6 +20,15 @@ import {
   isAccountRole,
   type AccountRole,
 } from "@/lib/auth/roles";
+
+/** The signed-in user (from GET /api/me, backed by the session cookie). */
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  email_verified: boolean;
+  created_at: string;
+}
 
 interface Profile {
   id: string;
@@ -306,12 +315,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
     let mounted = true;
 
     const safetyTimer = setTimeout(() => {
       if (mounted) {
-        console.warn("[AuthProvider] getSession() timed out after 3s");
+        console.warn("[AuthProvider] session lookup timed out after 3s");
         setLoading(false);
         setProfileLoading(false);
       }
@@ -319,15 +327,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const init = async () => {
       try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-
-        if (error) console.error("[AuthProvider] getSession error:", error.message);
+        const res = await fetch("/api/me", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        const body = (await res.json().catch(() => null)) as {
+          user: User | null;
+        } | null;
+        if (!res.ok) console.error("[AuthProvider] /api/me failed:", res.status);
 
         if (!mounted) return;
-        const currentUser = session?.user ?? null;
+        const currentUser = body?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
@@ -350,39 +360,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Sign-in, sign-out and account switches all do a full navigation,
+    // so the session is read once per page load (no client-side auth
+    // event stream to subscribe to).
     init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        if (currentUser.id !== lastFetchedUserIdRef.current) {
-          fetchProfile(currentUser.id);
-        }
-      } else {
-        lastFetchedUserIdRef.current = null;
-        setProfile(null);
-        setAccount(null);
-        setProfileLoading(false);
-      }
-
-      setLoading(false);
-    });
 
     return () => {
       mounted = false;
       clearTimeout(safetyTimer);
-      subscription.unsubscribe();
     };
   }, [fetchProfile]);
 
   const signOut = useCallback(async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await authClient.signOut().catch((err: unknown) => {
+      console.error("[AuthProvider] sign-out failed:", err);
+    });
     setUser(null);
     setProfile(null);
     setAccount(null);

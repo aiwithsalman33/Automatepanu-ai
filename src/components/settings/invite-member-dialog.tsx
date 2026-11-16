@@ -80,6 +80,7 @@ export function InviteMemberDialog({
   const [role, setRole] = useState<InviteRole>('agent');
   const [expiry, setExpiry] = useState<string>('7');
   const [label, setLabel] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CreatedInvite | null>(null);
 
@@ -87,6 +88,7 @@ export function InviteMemberDialog({
     setRole('agent');
     setExpiry('7');
     setLabel('');
+    setInviteEmail('');
     setResult(null);
     setSubmitting(false);
   }
@@ -112,6 +114,7 @@ export function InviteMemberDialog({
           role,
           expiresInDays: Number(expiry),
           label: trimmedLabel || undefined,
+          email: inviteEmail.trim() || undefined,
         }),
       });
 
@@ -124,7 +127,12 @@ export function InviteMemberDialog({
       const data = (await res.json()) as {
         url: string;
         expiresInDays: number;
+        emailSent?: boolean;
       };
+      if (inviteEmail.trim()) {
+        if (data.emailSent) toast.success(t('emailSent', { email: inviteEmail.trim() }));
+        else toast.error(t('emailNotSent'));
+      }
 
       setResult({
         url: data.url,
@@ -321,6 +329,23 @@ export function InviteMemberDialog({
                 <p className="text-xs text-muted-foreground">
                   {t('labelHint')}
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="invite-email" className="text-muted-foreground">
+                  {t('emailTitle')}{' '}
+                  <span className="text-xs text-muted-foreground">{t('optional')}</span>
+                </Label>
+                <Input
+                  id="invite-email"
+                  type="email"
+                  placeholder={t('emailPlaceholder')}
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  maxLength={254}
+                  className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                />
+                <p className="text-xs text-muted-foreground">{t('emailHint')}</p>
               </div>
             </div>
 

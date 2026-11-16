@@ -52,7 +52,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { createClient } from '@/lib/supabase/client';
+import { authClient, getCurrentUser } from '@/lib/auth/client';
 import {
   RETRYABLE_PEEK_FAIL_REASONS,
   toPeekResult,
@@ -108,7 +108,7 @@ export default function JoinPage() {
         fetch(`/api/invitations/${encodeURIComponent(token)}/peek`, {
           cache: 'no-store',
         }),
-        createClient().auth.getUser(),
+        getCurrentUser(),
       ]);
       const peekBody = toPeekResult(
         peekRes.status,
@@ -136,7 +136,7 @@ export default function JoinPage() {
           fetch(`/api/invitations/${encodeURIComponent(token)}/peek`, {
             cache: 'no-store',
           }),
-          createClient().auth.getUser(),
+          getCurrentUser(),
         ]);
         const peekBody = toPeekResult(
           peekRes.status,
@@ -196,7 +196,7 @@ export default function JoinPage() {
   const handleSignOutAndRetry = useCallback(async () => {
     setSigningOut(true);
     try {
-      await createClient().auth.signOut();
+      await authClient.signOut();
       // Hard reload so the new auth state propagates everywhere
       // (middleware, AuthProvider). Preserves the invite token in
       // the URL so the rebuilt page renders the signed-out CTA path.

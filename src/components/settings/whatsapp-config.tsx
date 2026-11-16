@@ -14,7 +14,7 @@ import {
   AlertTriangle,
   RotateCcw,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -151,7 +151,9 @@ export function WhatsAppConfig() {
       // remains accurate.
       const { data, error } = await supabase
         .from('whatsapp_config')
-        .select('*')
+        .select(
+          'id, user_id, account_id, phone_number_id, waba_id, verify_token, status, connected_at, created_at, updated_at, registered_at, subscribed_apps_at, last_registration_error, mirror_inbound_media',
+        )
         .eq('account_id', acctId)
         .maybeSingle();
 

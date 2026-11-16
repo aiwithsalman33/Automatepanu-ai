@@ -3,30 +3,23 @@
 // client from.
 //
 //   getRequestDb()  user requests (route handlers / server
-//                   components). RLS-scoped to the signed-in user.
-//   serviceDb()     webhook, engines, cron, public API v1, worker.
-//                   Bypasses RLS: every query MUST filter by
-//                   account_id.
-//   serviceStorage() service-role object storage (Supabase only
-//                   until checkpoint 1f moves media to MinIO).
-//
-// Backend selected by DATA_BACKEND (see ./backend.ts):
-//   supabase    SSR cookie client + service-role key (production
-//               today; the rollback path until 1g).
-//   selfhosted  Better Auth session + private PostgREST with a
-//               short-lived JWT: role wacrm_app + sub for users,
-//               wacrm_service for service work. Same queries, same
-//               RLS policies, same results.
+//                   components): the Better Auth session user, and a
+//                   private-PostgREST client signed as wacrm_app with
+//                   sub = user id, so RLS scopes every query.
+//   serviceDb()     webhook, engines, cron, public API v1, worker:
+//                   wacrm_service. Bypasses RLS: every query MUST
+//                   filter by account_id.
+//   anonDb()        wacrm_anon: only the SECURITY DEFINER RPCs granted
+//                   to anon (invitation peek).
+//   serviceStorage() object storage for the webhook's inbound-media
+//                   mirror. Null until checkpoint 1f (MinIO); callers
+//                   fall back to the media proxy URL.
 // ============================================================
 
 import { headers } from 'next/headers';
-import { createClient as createSupabaseJs } from '@supabase/supabase-js';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { createClient as createSupabaseSsr } from '@/lib/supabase/server';
 import { getNativeSessionUser } from '@/lib/auth/native/session';
 
-import { dataBackend } from './backend';
 import { restAnon, restForUser, restService } from './postgrest';
 import type { DbClient } from './types';
 
@@ -51,49 +44,27 @@ export interface RequestDb {
  * is then anonymous) so each route keeps its own 401 wording.
  */
 export async function getRequestDb(): Promise<RequestDb> {
-  if (dataBackend() === 'selfhosted') {
-    const u = await getNativeSessionUser(await headers());
-    if (!u) return { db: restAnon(), user: null };
-    return { db: restForUser(u.id), user: { id: u.id, email: u.email } };
-  }
-
-  const supabase = await createSupabaseSsr();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) return { db: supabase, user: null };
-  return { db: supabase, user: { id: user.id, email: user.email ?? null } };
-}
-
-let supabaseService: SupabaseClient | null = null;
-function supabaseServiceClient(): SupabaseClient {
-  return (supabaseService ??= createSupabaseJs(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  ));
+  const u = await getNativeSessionUser(await headers());
+  if (!u) return { db: restAnon(), user: null };
+  return { db: restForUser(u.id), user: { id: u.id, email: u.email } };
 }
 
 /** Service-role client. Bypasses RLS: always filter by account_id. */
 export function serviceDb(): DbClient {
-  return dataBackend() === 'selfhosted'
-    ? restService()
-    : supabaseServiceClient();
+  return restService();
 }
 
-/**
- * Service-role object storage, or null when the backend has none yet.
- * The self-hosted backend gets MinIO in checkpoint 1f; until then
- * callers fall back (the webhook keeps the media proxy URL).
- */
-export function serviceStorage(): SupabaseClient['storage'] | null {
-  return dataBackend() === 'selfhosted'
-    ? null
-    : supabaseServiceClient().storage;
+/** Minimal storage surface the inbound-media mirror needs. */
+export type ServiceStorage = Parameters<
+  typeof import('@/lib/whatsapp/mirror-inbound-media').mirrorInboundMedia
+>[0]['storage'];
+
+/** Object storage for service code, or null (MinIO arrives in 1f). */
+export function serviceStorage(): ServiceStorage | null {
+  return null;
 }
 
 /** Anonymous client (SECURITY DEFINER RPCs granted to anon). */
 export async function anonDb(): Promise<DbClient> {
-  if (dataBackend() === 'selfhosted') return restAnon();
-  return createSupabaseSsr();
+  return restAnon();
 }
