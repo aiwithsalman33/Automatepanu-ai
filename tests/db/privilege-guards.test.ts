@@ -176,6 +176,71 @@ describe('member-management RPCs cannot reach another tenant', () => {
     expect(rows[0].owner_user_id).toBe(fx.A.ownerId);
   });
 
+  it('removing a member unassigns their open conversations in that account', async () => {
+    const agent = fx.A.members.agent;
+    const { rows: ct } = await c.query(
+      `INSERT INTO contacts (user_id, account_id, name, phone)
+       VALUES ($1, $2, 'unassign probe', '+15550007777') RETURNING id`,
+      [fx.A.ownerId, fx.A.accountId]
+    );
+    const { rows: cv } = await c.query(
+      `INSERT INTO conversations (user_id, account_id, contact_id, assigned_agent_id)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [fx.A.ownerId, fx.A.accountId, ct[0].id, agent.userId]
+    );
+    await asPrincipal(c, user(fx.A.members.owner), async (cc) => {
+      const o = await attempt(cc, 'SELECT remove_account_member($1)', [
+        agent.userId,
+      ]);
+      expect(o.status, describeOutcome(o)).toBe('ok');
+      // Read inside the same (rolled-back) savepoint, as the fixture role.
+      await cc.query('RESET ROLE');
+      const { rows } = await cc.query(
+        'SELECT assigned_agent_id FROM conversations WHERE id = $1',
+        [cv[0].id]
+      );
+      expect(rows[0].assigned_agent_id).toBeNull();
+      expect(
+        (
+          await cc.query('SELECT account_id FROM profiles WHERE user_id = $1', [
+            agent.userId,
+          ])
+        ).rows[0].account_id
+      ).not.toBe(fx.A.accountId);
+    });
+  });
+
+  it('redeeming an invite is refused while the caller still has data in their own account', async () => {
+    const { rows: u } = await c.query(
+      `INSERT INTO auth.users (id, email, raw_user_meta_data)
+       VALUES (gen_random_uuid(), 'joiner.' || gen_random_uuid() || '@guards.test', '{"full_name":"Joiner"}')
+       RETURNING id`
+    );
+    const joiner = u[0].id as string;
+    const { rows: acct } = await c.query(
+      'SELECT account_id FROM profiles WHERE user_id = $1',
+      [joiner]
+    );
+    await c.query(
+      `INSERT INTO contacts (user_id, account_id, name, phone)
+       VALUES ($1, $2, 'own data', '+15550008888')`,
+      [joiner, acct[0].account_id]
+    );
+    await c.query(
+      `INSERT INTO account_invitations (account_id, token_hash, role, created_by_user_id, expires_at)
+       VALUES ($1, 'guards-test-hash', 'agent', $2, now() + interval '1 day')`,
+      [fx.A.accountId, fx.A.ownerId]
+    );
+    const o = await asPrincipal(
+      c,
+      { kind: 'user', userId: joiner, label: 'joiner' },
+      (cc) => attempt(cc, "SELECT redeem_invitation('guards-test-hash')")
+    );
+    expect(o.status, describeOutcome(o)).toBe('error');
+    expect(o.status === 'error' && o.code).toBe('23505');
+    expect((await roleOf(joiner)).account_id).toBe(acct[0].account_id);
+  });
+
   // Supabase: anon may EXECUTE these, but each refuses without a user.
   // New stack: anon lacks EXECUTE entirely (0003_hardening). Either way:
   // every call errors and nothing changes.

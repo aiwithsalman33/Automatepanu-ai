@@ -9,8 +9,8 @@
 
 ---
 
-- **App:** <https://chat.axxeler.in>
-- **Website:** <https://automatepanuai.axxeler.in> (marketing site in progress)
+- **App and website:** <https://chat.axxeler.in> (website at `/`, the CRM after sign-in)
+- **Admin panel:** <https://chat.axxeler.in/admin> (platform admins only)
 
 ## Features
 
@@ -21,7 +21,7 @@
 - **No-code automations** and a **visual chatbot flow builder**.
 - **AI reply assistant**: bring your own OpenAI, Anthropic or OpenAI-compatible key. One-click drafts, an optional auto-reply bot with human handoff, and a knowledge base.
 - **Teams and roles** (owner / admin / agent / viewer), with tenant isolation enforced by Postgres row-level security.
-- **Public REST API** (`/api/v1`), outbound webhooks and an **MCP server** for AI assistants.
+- **Public REST API** (`/api/v1`) and outbound webhooks.
 
 ## Stack
 
@@ -58,28 +58,24 @@ Meta webhook, backups, restore drill, upgrades and rollback:
 
 ## Commands
 
-| Command                                           | What it does                                                                      |
-| ------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `npm run dev`                                     | Dev server                                                                        |
-| `npm run lint` / `npm run typecheck` / `npm test` | Checks (CI runs all of them plus `build`)                                         |
-| `npm run db:migrate`                              | Bootstrap and migrate the self-hosted database (`db/migrations`)                  |
-| `npm run db:baseline`                             | Regenerate the squashed baseline from `supabase/migrations`                       |
-| `npm run test:db`                                 | Tenant-isolation suite against a real Postgres ([tests/db](./tests/db/README.md)) |
+| Command                                           | What it does                                                              |
+| ------------------------------------------------- | ------------------------------------------------------------------------- |
+| `npm run dev`                                     | Dev server                                                                |
+| `npm run lint` / `npm run typecheck` / `npm test` | Checks (CI runs all of them plus `build`)                                 |
+| `npm run db:migrate`                              | Bootstrap and migrate the self-hosted database (`db/migrations`)          |
+| `npm run test:db`                                 | Database suite against a real Postgres ([tests/db](./tests/db/README.md)) |
 
 On Windows, run commands from the canonical path (`D:\…`, not `d:\…`).
 A lower-case drive letter makes vitest load twice.
 
-More docs: [public API](./docs/public-api.md) · [MCP server](./docs/mcp.md) ·
+More docs: [public API](./docs/public-api.md) ·
 [multiple WABAs](./docs/multi-waba.md) · [auth emails](./docs/auth-emails.md) ·
 [WhatsApp connection troubleshooting](./docs/whatsapp-connection-troubleshooting.md)
 
 ## Editing the marketing site
 
-The public site lives in `src/app/(marketing)/` and is served on
-`automatepanuai.axxeler.in`; the app is served on `chat.axxeler.in`.
-Both come from the same deployment, and `src/proxy.ts` routes by host
-([src/lib/marketing/host-routing.ts](./src/lib/marketing/host-routing.ts)).
-`/api/*` (including the Meta webhook and `/api/v1`) is never redirected.
+The public site lives in `src/app/(marketing)/` and is served at `/` on
+`chat.axxeler.in`, the same domain as the CRM (`/login`, `/dashboard`, …).
 
 | What                                                          | Where                                   |
 | ------------------------------------------------------------- | --------------------------------------- |
@@ -93,15 +89,16 @@ Both come from the same deployment, and `src/proxy.ts` routes by host
 | Design tokens (white + light purple)                          | `src/app/globals.css` → `.mk` block     |
 | Components and product mocks                                  | `src/components/marketing/`             |
 
-Two env vars turn on the domain split (both are in `.env.example`):
-`NEXT_PUBLIC_MARKETING_URL` and `NEXT_PUBLIC_APP_URL`. Without them,
-everything is served from one host (marketing at `/`, app at `/dashboard`).
+A separate website domain is optional: setting `NEXT_PUBLIC_MARKETING_URL`
+(next to `NEXT_PUBLIC_APP_URL`) turns on host-based routing
+([src/lib/marketing/host-routing.ts](./src/lib/marketing/host-routing.ts));
+`/api/*` is never redirected.
 
 ## Brand assets
 
 Logo files live in [`public/brand/`](./public/brand): `logo.svg` (light
 backgrounds), `logo-white.svg` (dark backgrounds), `logo-mark.svg` (icon),
-plus PNG exports. The lettering is outlined, so the files don't depend on
+plus PNGs (`logo-mark-512.png` fits a WhatsApp profile photo). The lettering is outlined, so the files don't depend on
 an installed font.
 
 ## License

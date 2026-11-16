@@ -1,0 +1,52 @@
+# Caddy: the stack's single entry point, plain HTTP on :8080.
+#
+# Dokploy (Traefik) terminates HTTPS for chat.axxeler.in and forwards to
+# caddy:8080. Caddy then proxies to the app and adds compression and
+# security headers. Nothing else in the stack is reachable from outside.
+{
+	admin off
+	auto_https off
+	# Requests arrive from Dokploy's Traefik on the private Docker network:
+	# trust its X-Forwarded-* headers so rate limits see the real client IP.
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+	}
+}
+
+:8080 {
+	encode zstd gzip
+
+	# WhatsApp media / CSV imports stay well under this.
+	request_body {
+		max_size 50MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		Permissions-Policy "camera=(), geolocation=(), payment=()"
+		-Server
+	}
+
+	# Liveness of Caddy itself (the app has its own /api/health).
+	handle /caddy-health {
+		respond "ok" 200
+	}
+
+	handle {
+		reverse_proxy app:3000 {
+			# The real client IP, for Better Auth's per-IP rate limits.
+			header_up X-Real-IP {client_ip}
+			# X-Forwarded-Host / -Proto: Caddy passes Traefik's values on
+			# (trusted proxy), so the app sees https://chat.axxeler.in.
+		}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

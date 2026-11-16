@@ -18,11 +18,11 @@
     "whatsapp",
     "whatsapp-business-api",
     "nextjs",
-    "supabase",
     "automation",
     "broadcast",
     "self-hosted",
-    "template"
+    "template",
+    "postgresql"
   ],
   "engines": {
     "node": ">=22.12.0"
@@ -39,9 +39,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:db": "node tests/db/run.mjs",
-    "test:db:prepare": "bash tests/db/prepare-classic-supabase.sh",
     "db:migrate": "node db/migrate.mjs up",
-    "db:baseline": "bash db/scripts/build-baseline.sh"
+    "secrets": "node scripts/generate-secrets.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

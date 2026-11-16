@@ -1,74 +1,54 @@
-# Tenant-isolation suite (`tests/db`)
+# Database tests
 
-DB-backed tests that prove one account can never read or change another
-account's data. They run against a real Postgres, are kept out of
-`npm test`, and are the safety net for the Supabase → own-Postgres
-migration ([docs/saas-migration-plan.md](../../docs/saas-migration-plan.md)).
-**They must stay green at every checkpoint.**
+These tests run against a real PostgreSQL built from `db/migrations`,
+logged in the way the app logs in. They are not part of `npm test`; run
+them with `npm run test:db`.
 
 ## Run locally
 
-```bash
-npx supabase@2.113.0 db start   # local Supabase Postgres on :54322 (needs Docker)
-npm run test:db:prepare         # rebuild `public` on classic privileges (destroys local data)
-npm run test:db                 # run the suite
-```
-
-### Against the new self-hosted stack (`db/migrations`)
-
-```bash
-docker run -d --name wacrm-newdb -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=wacrm \
+```sh
+# A throwaway Postgres + pgvector, migrated:
+docker run -d --name wacrm-testdb -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=wacrm \
   -p 54330:5432 pgvector/pgvector:0.8.1-pg17
 DATABASE_ADMIN_URL=postgresql://postgres:admin@127.0.0.1:54330/wacrm \
 DATABASE_URL=postgresql://wacrm_owner:ownerpw@127.0.0.1:54330/wacrm \
-WACRM_OWNER_PASSWORD=ownerpw WACRM_AUTHENTICATOR_PASSWORD=authpw npm run db:migrate
-DB_TENANT_ADAPTER=app \
-TEST_DATABASE_URL=postgresql://postgres:admin@127.0.0.1:54330/wacrm npm run test:db
+WACRM_OWNER_PASSWORD=ownerpw WACRM_AUTHENTICATOR_PASSWORD=authpw \
+npm run db:migrate
+
+# Optional, for the PostgREST and email tests:
+docker run -d --name wacrm-postgrest-test -p 54331:3000 \
+  -e PGRST_DB_URI=postgresql://wacrm_authenticator:authpw@host.docker.internal:54330/wacrm \
+  -e PGRST_DB_SCHEMAS=public -e PGRST_DB_ANON_ROLE=wacrm_anon \
+  -e PGRST_JWT_SECRET=local-postgrest-jwt-secret-0123456789abcdef postgrest/postgrest:v12.2.12
+docker run -d --name wacrm-mailpit-test -p 54325:1025 -p 54326:8025 axllent/mailpit:v1.27.0
+
+TEST_DATABASE_URL=postgresql://postgres:admin@127.0.0.1:54330/wacrm \
+TEST_AUTHENTICATOR_DATABASE_URL=postgresql://wacrm_authenticator:authpw@127.0.0.1:54330/wacrm \
+TEST_POSTGREST_URL=http://localhost:54331 \
+TEST_POSTGREST_JWT_SECRET=local-postgrest-jwt-secret-0123456789abcdef \
+TEST_SMTP_HOST=127.0.0.1 TEST_SMTP_PORT=54325 TEST_MAILPIT_URL=http://127.0.0.1:54326 \
+npm run test:db
 ```
 
-The same assertions run on both stacks. The `app` adapter does what
-`withTenant()` does: `SET LOCAL ROLE wacrm_app` plus `app.user_id`. The
-Supabase-only storage file is skipped there.
+On Windows, run from the canonical path (`D:\…`, not `d:\…`).
+`tests/db/run.mjs` relaunches vitest from there.
 
-`TEST_DATABASE_URL` overrides the connection (default
-`postgresql://postgres:postgres@127.0.0.1:54322/postgres`).
-`SUPABASE_DB_CONTAINER` overrides the container the prepare script uses.
+Suites that need PostgREST or Mailpit skip themselves when the
+`TEST_POSTGREST_*` / `TEST_SMTP_*` variables are unset. CI
+(`.github/workflows/migrations.yml`) sets all of them.
 
-### Why the prepare step?
+## Files
 
-The migrations never `GRANT` table privileges; they rely on Supabase's
-_classic_ default privileges (anon / authenticated / service_role get ALL
-on everything `postgres` creates in `public`). The Postgres image that
-the pinned CLI pulls (`supabase/postgres:17.6.1.158`) no longer installs
-those defaults, so on a fresh local database every table rejects
-`authenticated` with _permission denied_ before RLS is even consulted. A
-"cannot read B's row" test would then pass for the wrong reason.
-`prepare-classic-supabase.sh` recreates the schema with the classic
-defaults and replays every migration, so the suite tests what a hosted
-project actually enforces.
+| File                       | Covers                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `rls-isolation.test.ts`    | Every tenant table × every role tier: blind (WHERE-less) reads, inserts, updates and deletes across accounts. |
+| `privilege-guards.test.ts` | Identity-column guard triggers, member-management and data RPCs, SECURITY DEFINER exposure, `profiles` view.  |
+| `with-tenant.test.ts`      | `withTenant` / `withService` and the PostgREST path: cross-tenant access fails; the app role owns nothing.    |
+| `data-api.test.ts`         | The browser data API (`/api/data`) registry + RLS through PostgREST.                                          |
+| `auth.native.test.ts`      | Better Auth end to end: sign-up, verification, bcrypt import + rehash, rate limit, CSRF, cookie flags, reset. |
+| `email.smtp.test.ts`       | Verification, reset and invite emails over real SMTP.                                                         |
+| `bootstrap.test.ts`        | First-start accounts (`PLATFORM_ADMIN_*`, `SEED_USER_*`).                                                     |
 
-## What it covers
-
-| File                       | Covers                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rls-isolation.test.ts`    | Every table in `public` (37), each role (owner/admin/agent/viewer) plus anon and service role: cross-tenant SELECT / UPDATE / DELETE / INSERT, **WHERE-less "blind" UPDATE/DELETE** (which a strict SELECT policy would otherwise mask), re-parenting a row into another tenant, and own-account role tiers. A coverage test fails if a new table has no spec. Mutation self-tests plant leaky policies and assert the probes catch them. |
-| `privilege-guards.test.ts` | Identity-column guard triggers (role / account / owner changes), column grants (notifications), assignee-membership trigger, member-management RPCs across tenants (and as anon), data RPCs (`filter_contacts_by_tags`, `match_ai_knowledge_*`, `dashboard_overview` differential, broadcast lease, flow graph replace, `touch_presence`), and the service-only allowlist for SECURITY DEFINER functions.                                 |
-| `storage.supabase.test.ts` | Supabase Storage policies for `chat-media`, `flow-media`, `avatars` (baseline only; checkpoint 1f moves these rules to the S3 upload/download routes).                                                                                                                                                                                                                                                                                    |
-
-## How it works
-
-- `harness.ts`: one connection and one transaction per file. The fixture
-  is seeded as `postgres`, each probe runs in a savepoint as the
-  principal under test, and everything is rolled back. **Nothing is ever
-  committed.** Identity is set by a `TenantContextAdapter`:
-  `supabase` (today: `SET LOCAL ROLE authenticated` plus JWT claims, i.e.
-  what PostgREST does). Checkpoint 1c adds an `app` adapter for the new
-  `withTenant()` helper; select it with `DB_TENANT_ADAPTER=app`.
-- `fixture.ts`: tenant A (owner, admin, agent, viewer) and tenant B
-  (owner, agent), created through the real signup trigger, with one row
-  in every table for each tenant.
-- `tables.ts`: the per-table spec (read/insert/update/delete tier, tenant
-  column, row builder). Tiers are read from the live `pg_policies`. If
-  you change a policy on purpose, change its tier here in the same PR.
-- `run.mjs`: launcher that re-runs vitest from the canonical path (works
-  around a Windows `d:` vs `D:` duplicate-module issue).
+Each isolation file seeds a two-tenant fixture (`fixture.ts`) inside one
+transaction and rolls everything back. The suites that drive the real
+auth handler or PostgREST commit their rows and delete them afterwards.

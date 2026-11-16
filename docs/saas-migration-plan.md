@@ -736,6 +736,7 @@ On the owner's instruction, everything is on **`main`** (the `saas/phase-1` bran
 **Consequence:** `main` now runs on the self-hosted stack, not Supabase. A deployment of `main` starts with an empty database. Users and data from the old Supabase project need the 1g migration script, which is not written yet. Live updates (1e) and uploads (1f) are still paused.
 
 **Docker (production-ready, one Compose project):** `app`, `cron` (scheduler), `db` (tuned), `migrate`, `postgrest`, `redis`, `minio` + `minio-init` (buckets), `backup` (+ `restore.sh`).
+
 - Internal `backend` network with no internet route.
 - No published ports.
 - Pinned images, healthchecks, memory limits, log rotation and read-only filesystems where possible.
@@ -746,6 +747,7 @@ On the owner's instruction, everything is on **`main`** (the `saas/phase-1` bran
 See `docs/deploy-dokploy.md` and `docs/docker.md`.
 
 **Compose smoke test, no Supabase variables: 15/15.** Covered:
+
 - health; sign-up → SMTP verification email → link signs in → session; signup trigger creates the account
 - connected number; a bad webhook signature is refused; a Meta-signed webhook is accepted
 - message stored and visible in the inbox via the data API
@@ -754,3 +756,21 @@ See `docs/deploy-dokploy.md` and `docs/docker.md`.
 - backup → restore into a fresh database with identical row counts
 
 Also checked: a bad config makes the app container exit in about a second, listing every problem; the backend network can't reach the internet.
+
+### 12.1 One domain, Caddy entry point, platform admin (2026-11-16)
+
+- **One domain, `chat.axxeler.in`:** the website is `/`, the CRM, API, webhook and `/admin` live on the same domain. `NEXT_PUBLIC_MARKETING_URL`, the website domain and `files.axxeler.in` are gone (MinIO is internal-only). Two-domain routing still exists in code, off unless `NEXT_PUBLIC_MARKETING_URL` is set.
+- **Caddy** (`docker/Caddyfile`, `caddy:2.10.2-alpine`) is the stack's only entry point: HTTP on :8080 → `app:3000`, with zstd/gzip, security headers, a 50 MB body limit and the real client IP from Traefik (trusted private ranges). Dokploy routes `chat.axxeler.in` → `caddy:8080`.
+- **Platform admins:** migration `0007` adds `auth.platform_admins` (service role only). `/admin` is a read-only, server-rendered overview of every account and user; it returns 404 for anyone who isn't a platform admin.
+- **First-start accounts:** `PLATFORM_ADMIN_*` and `SEED_USER_*` (`src/lib/auth/native/bootstrap.ts`, run from `src/instrumentation.ts`). Each is created once, already verified, with its own workspace. An existing account is never modified, and the boot sends no email.
+- **Supabase removed from the repo's infrastructure:**
+  - the `supabase/` folder, and the two Supabase CI jobs ("Apply to a clean database", "Tenant isolation (RLS) suite")
+  - the baseline generator (`db/scripts/build-baseline.sh`, `postprocess-baseline.*`, `npm run db:baseline`); `0002_baseline.sql` is now a fixed file
+  - the Supabase test adapter, `prepare-classic-supabase.sh`, `storage.supabase.test.ts`
+  - Supabase domains from the CSP
+  - the local Supabase Docker containers, volume and images
+- **Two migration-text tests replaced:** they read SQL from `supabase/migrations`; the rules they checked are now asserted against the real database in `privilege-guards.test.ts` (member removal unassigns conversations; redeeming refuses while the caller has data).
+- **Junk removed:** `CHANGELOG.md` (upstream history), `mcp-server/` and `docs/mcp.md` (upstream's MCP package), issue/PR templates, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, unreferenced favicon/icon PNGs.
+- **Still for 1g:** rename the remaining `supabase` variable names in code, vendor `@supabase/postgrest-js`, rewrite the `auth.uid()` shim policies, and write the data-import script.
+
+**Verification:** typecheck, lint (0 errors), unit 1795, DB suite 605 passed (2 skipped by design), build. On the rebuilt compose stack, through Caddy: 13/13 (health, headers, website, both seeded accounts sign in, wrong password 401, `/admin` 200 for the admin / 404 for the user / login redirect when signed out, dashboards, webhook) and the end-to-end smoke 15/15 again.

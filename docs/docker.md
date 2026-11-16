@@ -5,26 +5,29 @@ Production deployment, step by step: [deploy-dokploy.md](./deploy-dokploy.md).
 
 ## Services
 
-| Service      | Image                                      | Role                                                                                                              |
-| ------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `app`        | this repo (`runner` target)                | Next.js standalone, non-root, read-only filesystem. Serves the CRM and the website (routed by host).              |
-| `cron`       | `curlimages/curl:8.11.1`                   | Calls `/api/automations/cron` and `/api/flows/cron` every minute (`x-cron-secret`).                               |
-| `db`         | `pgvector/pgvector:0.8.1-pg17`             | PostgreSQL 17 + pgvector, volume `db-data`, tuned via `PG_*` variables.                                           |
-| `migrate`    | this repo (`migrate` target)               | One-shot: bootstrap roles/schemas/extensions as superuser, then apply `db/migrations` as `wacrm_owner`.           |
-| `postgrest`  | `postgrest/postgrest:v12.2.12`             | Private REST layer between the app and Postgres (short-lived JWT per request). Never public.                      |
-| `redis`      | `redis:7.4.12-alpine`                      | Rate limits shared across instances. Password, AOF persistence, 256 MB cap.                                       |
-| `minio`      | `pgsty/minio:RELEASE.2026-08-04T00-00-00Z` | S3 storage, console disabled. Community MinIO build (AGPLv3).                                                     |
-| `minio-init` | same                                       | One-shot: creates the private buckets `avatars`, `chat-media`, `flow-media`.                                      |
-| `backup`     | `postgres:17.12-alpine`                    | `pg_dump -Fc` every `BACKUP_INTERVAL_HOURS` into volume `backups`, keeps `BACKUP_RETENTION_DAYS`; restore script. |
+| Service      | Image                                      | Role                                                                                                                                  |
+| ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `caddy`      | `caddy:2.10.2-alpine`                      | The only entry point: HTTP on **8080** → `app`. Compression, security headers, real client IP. Dokploy routes `chat.axxeler.in` here. |
+| `app`        | this repo (`runner` target)                | Next.js standalone, non-root, read-only filesystem. CRM, website at `/`, API, webhook, `/admin`.                                      |
+| `cron`       | `curlimages/curl:8.11.1`                   | Calls `/api/automations/cron` and `/api/flows/cron` every minute (`x-cron-secret`).                                                   |
+| `db`         | `pgvector/pgvector:0.8.1-pg17`             | PostgreSQL 17 + pgvector, volume `db-data`, tuned via `PG_*` variables.                                                               |
+| `migrate`    | this repo (`migrate` target)               | One-shot: bootstrap roles/schemas/extensions as superuser, then apply `db/migrations` as `wacrm_owner`.                               |
+| `postgrest`  | `postgrest/postgrest:v12.2.12`             | Private REST layer between the app and Postgres (short-lived JWT per request). Never public.                                          |
+| `redis`      | `redis:7.4.12-alpine`                      | Rate limits shared across instances. Password, AOF persistence, 256 MB cap.                                                           |
+| `minio`      | `pgsty/minio:RELEASE.2026-08-04T00-00-00Z` | S3 storage, console disabled. Community MinIO build (AGPLv3).                                                                         |
+| `minio-init` | same                                       | One-shot: creates the private buckets `avatars`, `chat-media`, `flow-media`.                                                          |
+| `backup`     | `postgres:17.12-alpine`                    | `pg_dump -Fc` every `BACKUP_INTERVAL_HOURS` into volume `backups`, keeps `BACKUP_RETENTION_DAYS`; restore script.                     |
 
 Start order: `db` healthy → `migrate` exits 0 → `postgrest`; `minio`
-healthy → `minio-init` exits 0; then `app` → (healthy) → `cron`.
+healthy → `minio-init` exits 0; then `app` → (healthy) → `caddy` and `cron`.
+The app creates the first-start accounts (`PLATFORM_ADMIN_*`, `SEED_USER_*`)
+on boot.
 
 **Hardening:**
 
 - Every image is pinned and every service has a restart policy, a memory limit and log rotation (10 MB × 5 files).
-- `db`, `postgrest`, `redis` and `minio` live on the `backend` network, which is `internal: true` (no route to the internet). Only `app` also joins the default network, for Meta, SMTP, AI providers and Traefik.
-- No host ports are published.
+- `db`, `postgrest`, `redis` and `minio` live on the `backend` network, which is `internal: true` (no route to the internet). `app` also joins the default network (Meta, SMTP, AI providers), where `caddy` reaches it.
+- No host ports are published; Dokploy reaches `caddy:8080` over Docker's network.
 - The app receives an explicit variable list. It never sees the Postgres superuser or owner passwords.
 - The app container refuses to start when a required variable is missing or still a placeholder (`scripts/check-env.mjs`), and lists them all.
 
@@ -49,14 +52,17 @@ docker compose up -d --build
 docker run -d --name mailpit --network automatepanu_default -p 8025:8025 axllent/mailpit:v1.27.0
 ```
 
-Nothing is published on the host, by design. To open the app in a
-browser locally, put a throwaway forwarder on the network:
+Nothing is published on the host, by design. To reach it locally,
+forward the Caddy port:
 
 ```bash
-docker run -d --name app-port --network automatepanu_default -p 127.0.0.1:3000:3000 \
-  alpine/socat:1.8.0.3 tcp-listen:3000,fork,reuseaddr tcp-connect:app:3000
-# http://localhost:3000   ·   emails: http://localhost:8025
+docker run -d --name app-port --network automatepanu_default -p 127.0.0.1:8080:8080 \
+  alpine/socat:1.8.0.3 tcp-listen:8080,fork,reuseaddr tcp-connect:caddy:8080
+# http://localhost:8080   ·   emails: http://localhost:8025
 ```
+
+Production session cookies are `Secure`, so browser sign-in needs the
+real HTTPS domain; over plain local http, test with the API.
 
 ## Local development
 

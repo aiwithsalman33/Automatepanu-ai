@@ -20,6 +20,8 @@ export const PROTECTED_PATHS = [
   '/agents',
   '/notifications',
   '/settings',
+  // Platform admin panel (the page itself 404s for non-admins).
+  '/admin',
 ];
 
 const AUTH_PAGES = new Set(['/login', '/signup', '/forgot-password']);

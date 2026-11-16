@@ -1,9 +1,11 @@
 name: automatepanu
 
 # =====================================================================
-# Automate Panu AI — the whole stack in one Compose project.
+# Automate Panu AI — the whole stack in ONE Compose project, deployed and
+# started as one unit (one Dokploy service, one `docker compose up`).
 #
-#   app        Next.js (CRM at chat.axxeler.in + website on its own domain)
+#   caddy      the only entry point: http :8080 → app (Dokploy: chat.axxeler.in → caddy:8080)
+#   app        Next.js: the CRM (+ the website at /), one domain
 #   cron       calls the automation / flow schedulers every minute
 #   db         PostgreSQL 17 + pgvector
 #   migrate    one-shot: roles, extensions, then every db/migrations file
@@ -18,8 +20,8 @@ name: automatepanu
 #
 # Networking: db, postgrest, redis and minio sit ONLY on the `backend`
 # network, which has no route to the outside world. Nothing publishes a
-# host port; Dokploy/Traefik reaches `app` (and later `minio` for
-# files.axxeler.in) by domain. PostgREST and the MinIO console are never
+# host port; Dokploy/Traefik reaches `caddy` (port 8080) by domain and
+# Caddy forwards to the app. PostgREST and the MinIO console are never
 # exposed.
 #
 # Every secret is REQUIRED (`${VAR:?…}`): Compose refuses to start and
@@ -155,15 +157,11 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
-      # Public base for presigned URLs (files.axxeler.in → minio:9000).
-      MINIO_SERVER_URL: ${S3_PUBLIC_URL:-}
       MINIO_BROWSER: 'off'
     volumes:
       - minio-data:/data
+    # Internal only: the app is the sole client (media is served through it).
     networks: [backend]
-    # Only the S3 API port; the console is disabled above.
-    expose:
-      - '9000'
     healthcheck:
       test: ['CMD', 'curl', '-fsS', 'http://localhost:9000/minio/health/live']
       interval: 15s
@@ -202,7 +200,6 @@ services:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
         NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
-        NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL:-}
     image: automatepanu-app:local
     restart: unless-stopped
     logging: *logging
@@ -212,7 +209,6 @@ services:
       NODE_ENV: production
       PORT: 3000
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
-      NEXT_PUBLIC_MARKETING_URL: ${NEXT_PUBLIC_MARKETING_URL:-}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
       ALLOWED_INVITE_HOSTS: ${ALLOWED_INVITE_HOSTS:-}
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (32+ random chars)}
@@ -232,6 +228,13 @@ services:
       AI_PROVIDER_ALLOWED_PRIVATE_HOSTS: ${AI_PROVIDER_ALLOWED_PRIVATE_HOSTS:-}
       DB_POOL_MAX: ${DB_POOL_MAX:-10}
       AUTH_DB_POOL_MAX: ${AUTH_DB_POOL_MAX:-5}
+      # First-start accounts (created once, if missing; never overwritten).
+      PLATFORM_ADMIN_EMAIL: ${PLATFORM_ADMIN_EMAIL:-}
+      PLATFORM_ADMIN_PASSWORD: ${PLATFORM_ADMIN_PASSWORD:-}
+      PLATFORM_ADMIN_NAME: ${PLATFORM_ADMIN_NAME:-}
+      SEED_USER_EMAIL: ${SEED_USER_EMAIL:-}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
+      SEED_USER_NAME: ${SEED_USER_NAME:-}
       # Logs in as wacrm_authenticator: no privileges of its own, it
       # SET LOCAL ROLEs per request. Never the owner or superuser.
       DATABASE_URL: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
@@ -239,11 +242,10 @@ services:
       POSTGREST_JWT_SECRET: ${POSTGREST_JWT_SECRET}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       S3_ENDPOINT: http://minio:9000
-      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-}
       S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
       S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
     # backend: database & co. default: outbound internet (Meta, SMTP, AI)
-    # and where Dokploy/Traefik reach it.
+    # and Caddy in front of it.
     networks: [default, backend]
     expose:
       - '3000'
@@ -275,8 +277,34 @@ services:
     deploy:
       resources:
         limits: { memory: '${APP_MEMORY_LIMIT:-1024m}' }
-    # Dokploy → Domains: add chat.axxeler.in AND automatepanuai.axxeler.in
-    # to THIS service, port 3000 (src/proxy.ts routes by Host).
+
+  # The single entry point. Dokploy → Domains: chat.axxeler.in → service
+  # `caddy`, port 8080 (Traefik does HTTPS, Caddy proxies to the app).
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    logging: *logging
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    networks: [default]
+    expose:
+      - '8080'
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /config
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8080/caddy-health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits: { memory: 128m }
 
   # Scheduler: automation waits/timeouts and flow timeouts every minute.
   cron:
@@ -338,6 +366,7 @@ networks:
     internal: true
 
 volumes:
+  caddy-data:
   db-data:
   redis-data:
   minio-data:

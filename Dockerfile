@@ -24,17 +24,15 @@ COPY . .
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_APP_LOCALE=en
 ARG NEXT_PUBLIC_APP_URL
-ARG NEXT_PUBLIC_MARKETING_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     NEXT_PUBLIC_APP_LOCALE=$NEXT_PUBLIC_APP_LOCALE \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
-    NEXT_PUBLIC_MARKETING_URL=$NEXT_PUBLIC_MARKETING_URL \
     NEXT_TELEMETRY_DISABLED=1
 
 # Fail fast (seconds, not minutes into `next build`) on a malformed or
 # placeholder public URL. They're optional (brand defaults apply), but
 # when set they are inlined into every page, so a typo would ship.
-RUN node -e 'const bad=[];for(const k of ["NEXT_PUBLIC_APP_URL","NEXT_PUBLIC_MARKETING_URL","NEXT_PUBLIC_SITE_URL"]){const v=process.env[k]||"";if(v&&(!/^https?:\/\/[^\s<>\/]+(\/[^\s<>]*)?$/.test(v)||/FILL|change-me/i.test(v)))bad.push(k)}if(bad.length){console.error("\n  x Build stopped: "+bad.join(", ")+" is not a valid URL (or still a placeholder).\n    Fix it in Dokploy -> Environment (or .env), then redeploy.\n");process.exit(1)}'
+RUN node -e 'const bad=[];for(const k of ["NEXT_PUBLIC_APP_URL","NEXT_PUBLIC_SITE_URL"]){const v=process.env[k]||"";if(v&&(!/^https?:\/\/[^\s<>\/]+(\/[^\s<>]*)?$/.test(v)||/FILL|change-me/i.test(v)))bad.push(k)}if(bad.length){console.error("\n  x Build stopped: "+bad.join(", ")+" is not a valid URL (or still a placeholder).\n    Fix it in Dokploy -> Environment (or .env), then redeploy.\n");process.exit(1)}'
 
 RUN npm run build
 

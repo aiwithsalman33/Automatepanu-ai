@@ -8,14 +8,10 @@
  * writes, and the outer transaction is rolled back at the end, so the
  * database is left exactly as it was. Nothing is ever committed.
  *
- * Identity is set through a pluggable TenantContextAdapter so the same
- * suite can run against:
- *   - `supabase` (today): SET LOCAL ROLE authenticated + request.jwt.claims,
- *     which is what PostgREST does per request and what auth.uid() reads.
- *   - `app` (Phase 1c): SET LOCAL ROLE wacrm_app + app.user_id, i.e. the
- *     new withTenant() helper. Added when that helper exists.
+ * Identity is set through a TenantContextAdapter: `app` does exactly what
+ * withTenant() does (SET LOCAL ROLE wacrm_app + app.user_id).
  *
- * Select with DB_TENANT_ADAPTER (default: supabase).
+ * DB_TENANT_ADAPTER selects it (default and only adapter: app).
  */
 import { Client, type QueryResultRow } from 'pg';
 
@@ -36,41 +32,6 @@ export interface TenantContextAdapter {
   /** Switch the current (sub)transaction to act as `p`. */
   enter(c: Client, p: Principal): Promise<void>;
 }
-
-export const supabaseAdapter: TenantContextAdapter = {
-  name: 'supabase',
-  roles: { app: 'authenticated', service: 'service_role', anon: 'anon' },
-  anonDefinerAllowlist: [
-    'is_account_member',
-    'peek_invitation',
-    'redeem_invitation',
-    'remove_account_member',
-    'set_member_role',
-    'touch_presence',
-    'transfer_account_ownership',
-  ],
-  async enter(c, p) {
-    if (p.kind === 'service') {
-      await c.query('SET LOCAL ROLE service_role');
-      await c.query("SELECT set_config('request.jwt.claims', $1, true)", [
-        JSON.stringify({ role: 'service_role' }),
-      ]);
-      return;
-    }
-    if (p.kind === 'anon') {
-      await c.query('SET LOCAL ROLE anon');
-      await c.query("SELECT set_config('request.jwt.claims', $1, true)", [
-        JSON.stringify({ role: 'anon' }),
-      ]);
-      return;
-    }
-    await c.query('SET LOCAL ROLE authenticated');
-    await c.query(
-      "SELECT set_config('request.jwt.claims', $1, true), set_config('request.jwt.claim.sub', $2, true)",
-      [JSON.stringify({ sub: p.userId, role: 'authenticated' }), p.userId]
-    );
-  },
-};
 
 /**
  * The new stack (db/migrations): exactly what withTenant() does. The
@@ -96,12 +57,11 @@ export const appAdapter: TenantContextAdapter = {
 };
 
 const ADAPTERS: Record<string, TenantContextAdapter> = {
-  supabase: supabaseAdapter,
   app: appAdapter,
 };
 
 export function selectedAdapter(): TenantContextAdapter {
-  const name = process.env.DB_TENANT_ADAPTER ?? 'supabase';
+  const name = process.env.DB_TENANT_ADAPTER ?? 'app';
   const adapter = ADAPTERS[name];
   if (!adapter) {
     throw new Error(
@@ -113,7 +73,7 @@ export function selectedAdapter(): TenantContextAdapter {
 
 export const DATABASE_URL =
   process.env.TEST_DATABASE_URL ??
-  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
+  'postgresql://postgres:admin@127.0.0.1:54330/wacrm';
 
 export async function openTestTransaction(): Promise<Client> {
   const c = new Client({ connectionString: DATABASE_URL });

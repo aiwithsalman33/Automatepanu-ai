@@ -15,8 +15,12 @@ export const brand = {
     'Shared team inbox, contacts, sales pipelines, broadcasts, no-code automations, chatbot flows and an AI reply assistant on the official WhatsApp Business API.',
 
   urls: {
-    /** Marketing site (this repo's (marketing) route group). */
-    marketing: 'https://automatepanuai.axxeler.in',
+    /**
+     * Marketing site (this repo's (marketing) route group). Served at `/`
+     * on the app's own domain; a separate website domain is optional
+     * (NEXT_PUBLIC_MARKETING_URL turns on the two-domain split).
+     */
+    marketing: 'https://chat.axxeler.in',
     /** The CRM app (sign in / sign up live here). */
     app: 'https://chat.axxeler.in',
   },
