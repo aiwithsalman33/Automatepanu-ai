@@ -29,8 +29,9 @@ Internet ──HTTPS──▶ Dokploy (Traefik, Let's Encrypt)
 | 2 vCPU / 4 GB RAM / 60 GB  | launch, a few dozen tenants | the defaults in `docker-compose.prod.yml` are tuned for this                                                    |
 | 4 vCPU / 8 GB RAM / 120 GB | growth                      | set `PG_SHARED_BUFFERS=2GB`, `PG_EFFECTIVE_CACHE_SIZE=6GB`, `DB_MEMORY_LIMIT=3g`, `APP_MEMORY_LIMIT=2048m` |
 
-Ubuntu 24.04 LTS. The image build needs about 3 GB RAM. On a 4 GB box,
-add swap once:
+Ubuntu 24.04 LTS. The server never builds the app: GitHub Actions builds
+the images and Dokploy only pulls them (§6a). Swap is still a good safety
+net on a 4 GB box:
 
 ```sh
 sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile
@@ -76,6 +77,32 @@ user and password.
 
 Meta for Developers → your app → **App settings → Basic → App secret**.
 
+## 6a. Images are built by GitHub (once per push)
+
+Every push to `main` runs **Actions → Docker images**
+(`.github/workflows/docker-images.yml`, about 5–8 minutes). It pushes:
+
+- `ghcr.io/aiwithsalman33/automatepanu-app:latest` (and `:sha-<commit>`)
+- `ghcr.io/aiwithsalman33/automatepanu-migrate:latest` (and `:sha-<commit>`)
+
+One-time setup after the first run (green tick in the **Actions** tab):
+
+1. GitHub → your profile → **Packages** → `automatepanu-app` →
+   **Package settings → Change visibility → Public**. Same for
+   `automatepanu-migrate`. (Or keep them private and add a registry in
+   Dokploy → Settings → Registry: `ghcr.io`, your GitHub username and a
+   token with `read:packages`.)
+2. Optional, automatic deploys: Dokploy → the compose app → **Deployments**
+   → copy the **webhook URL**; GitHub → repo → Settings → Secrets → Actions
+   → new secret `DOKPLOY_DEPLOY_WEBHOOK` with that URL. Then turn **off**
+   Autodeploy in Dokploy (otherwise it deploys before the new image is
+   ready).
+
+The public URLs (`NEXT_PUBLIC_*`) are baked in by the workflow and default
+to `https://chat.axxeler.in`. To change them, set repository **variables**
+(Settings → Variables → Actions) `NEXT_PUBLIC_APP_URL` and
+`NEXT_PUBLIC_SITE_URL`, then re-run the workflow.
+
 ## 6. Create the app in Dokploy
 
 1. **Projects → Create project**, e.g. `automatepanu`.
@@ -96,7 +123,8 @@ Meta for Developers → your app → **App settings → Basic → App secret**.
 
    That's the only domain.
 
-6. **Deploy.** The first build takes 5–10 minutes. In **Logs**:
+6. **Deploy** (after the Actions run is green). It only pulls images, so
+   it takes about a minute. In **Logs**:
    - `migrate` → `migration(s) applied`, exits 0
    - `minio-init` → 3 × `Bucket created successfully`, exits 0
    - `app` → `[bootstrap] axxeler@gmail.com: created` (and the seed user), then `✓ Ready`
@@ -169,16 +197,18 @@ service → Stop), run `sh /scripts/restore.sh <file>.dump`, start them again.
 
 ## 12. Upgrades
 
-Push to `main`, then click **Deploy** (or turn on **Autodeploy**).
+Push to `main`, wait for **Actions → Docker images** to go green, then
+click **Deploy** (or let the `DOKPLOY_DEPLOY_WEBHOOK` secret do it).
 
-- **Order:** Dokploy builds while the old containers keep serving. `migrate` runs first, and the app restarts only after migrations succeed. A failed migration leaves the old version running.
+- **Order:** Dokploy pulls the new images while the old containers keep serving. `migrate` runs first, and the app restarts only after migrations succeed. A failed migration leaves the old version running.
 - **Downtime:** a few seconds while `app` restarts. Migrations are additive (expand → migrate → contract).
 - **First:** take a backup before any big upgrade: `pg_dump -Fc -f /backups/pre-upgrade.dump` in the `backup` terminal.
 
 ## 13. Rollback
 
-- **Code:** Dokploy → Deployments → previous deployment → **Rollback**
-  (or `git revert` on `main` and deploy).
+- **Code:** set `APP_IMAGE=ghcr.io/aiwithsalman33/automatepanu-app:sha-<good commit>`
+  (and `MIGRATE_IMAGE` likewise) in Environment and redeploy; remove them
+  to return to `latest`. Or `git revert` on `main`.
 - **Data:** only if a migration damaged something. Restore the pre-upgrade
   dump (§11), then deploy the matching code.
 
@@ -196,7 +226,7 @@ Environment, then redeploy.
 
 | Symptom                                     | Fix                                                                             |
 | ------------------------------------------- | ------------------------------------------------------------------------------- |
-| Build stops at `Creating an optimized production build` (“cancelled”, exit 137, `Killed`) | Out of RAM during `next build`: add the swap from §1, redeploy. Build uses 1 worker by default (`NEXT_BUILD_CPUS`); raise only on 8 GB+ |
+| `pull access denied` / `manifest unknown` for `ghcr.io/…` | The Actions run hasn’t finished, or the packages are private: §6a step 1 |
 | `required variable X is missing a value`    | Add `X` in Environment, redeploy                                                |
 | `app` exits: `Not starting: … problem(s)`   | The log lists the bad variables                                                 |
 | 502/404 on the domain                       | Domain must point to service **caddy**, port **8080**; check `caddy` is healthy |

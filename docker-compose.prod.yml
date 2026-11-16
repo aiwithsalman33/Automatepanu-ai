@@ -80,10 +80,9 @@ services:
         limits: { memory: '${DB_MEMORY_LIMIT:-1536m}' }
 
   migrate:
-    build:
-      context: .
-      target: migrate
-    image: automatepanu-migrate:local
+    # Built by GitHub Actions (.github/workflows/docker-images.yml).
+    image: ${MIGRATE_IMAGE:-ghcr.io/aiwithsalman33/automatepanu-migrate:latest}
+    pull_policy: always
     restart: 'no'
     logging: *logging
     environment:
@@ -195,18 +194,12 @@ services:
         condition: service_healthy
 
   app:
-    build:
-      context: .
-      target: runner
-      # NEXT_PUBLIC_* are inlined at build time; the rest only size the build.
-      args:
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
-        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
-        # 1 build worker fits a 4 GB server; raise on 8 GB+ for faster builds.
-        NEXT_BUILD_CPUS: ${NEXT_BUILD_CPUS:-1}
-        BUILD_MAX_OLD_SPACE: ${BUILD_MAX_OLD_SPACE:-2048}
-    image: automatepanu-app:local
+    # Built by GitHub Actions (.github/workflows/docker-images.yml), never on
+    # the server: `next build` needs more RAM than a small VPS has spare.
+    # NEXT_PUBLIC_* are baked in there (repository variables). Pin a commit
+    # for rollback with APP_IMAGE=ghcr.io/aiwithsalman33/automatepanu-app:sha-<commit>.
+    image: ${APP_IMAGE:-ghcr.io/aiwithsalman33/automatepanu-app:latest}
+    pull_policy: always
     restart: unless-stopped
     logging: *logging
     # An explicit list (no env_file): the app gets exactly what it uses and

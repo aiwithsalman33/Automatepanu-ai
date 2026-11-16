@@ -14,10 +14,10 @@ Production deployment, step by step: [deploy-dokploy.md](./deploy-dokploy.md).
 | Service      | Image                                      | Role                                                                                                                                  |
 | ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `caddy`      | `caddy:2.10.2-alpine`                      | The only entry point: HTTP on **8080** → `app`. Compression, security headers, real client IP. Dokploy routes `chat.axxeler.in` here. |
-| `app`        | this repo (`runner` target)                | Next.js standalone, non-root, read-only filesystem. CRM, website at `/`, API, webhook, `/admin`.                                      |
+| `app`        | `ghcr.io/aiwithsalman33/automatepanu-app` (built by GitHub Actions from the `runner` target) | Next.js standalone, non-root, read-only filesystem. CRM, website at `/`, API, webhook, `/admin`.                                      |
 | `cron`       | `curlimages/curl:8.11.1`                   | Calls `/api/automations/cron` and `/api/flows/cron` every minute (`x-cron-secret`).                                                   |
 | `db`         | `pgvector/pgvector:0.8.1-pg17`             | PostgreSQL 17 + pgvector, volume `db-data`, tuned via `PG_*` variables.                                                               |
-| `migrate`    | this repo (`migrate` target)               | One-shot: bootstrap roles/schemas/extensions as superuser, then apply `db/migrations` as `wacrm_owner`.                               |
+| `migrate`    | `ghcr.io/aiwithsalman33/automatepanu-migrate` (`migrate` target) | One-shot: bootstrap roles/schemas/extensions as superuser, then apply `db/migrations` as `wacrm_owner`.                               |
 | `postgrest`  | `postgrest/postgrest:v12.2.12`             | Private REST layer between the app and Postgres (short-lived JWT per request). Never public.                                          |
 | `redis`      | `redis:7.4.12-alpine`                      | Rate limits shared across instances. Password, AOF persistence, 256 MB cap.                                                           |
 | `minio`      | `pgsty/minio:RELEASE.2026-08-04T00-00-00Z` | S3 storage, console disabled. Community MinIO build (AGPLv3).                                                                         |
@@ -82,7 +82,7 @@ docker compose down -v            # stop and DELETE local data
 
 ```bash
 npm run secrets -- --file .env.dokploy        # fill the remaining FILL lines
-docker compose -f docker-compose.prod.yml --env-file .env.dokploy up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.dokploy up -d   # pulls the GHCR images
 ```
 
 Nothing is published on the host by design (Dokploy reaches `caddy:8080`
@@ -92,7 +92,8 @@ sign-in needs the real HTTPS domain.
 ## Build-time vs runtime variables
 
 - `NEXT_PUBLIC_*` are **inlined at build time** (Docker build args).
-  Change one → rebuild (Deploy in Dokploy).
+  They are set in `.github/workflows/docker-images.yml` (repository
+  variables). Change one → re-run that workflow, then Deploy.
 - Everything else is read at **runtime** and never baked into an image.
 
 ## Migrations
