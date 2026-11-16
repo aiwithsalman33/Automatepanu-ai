@@ -1,17 +1,17 @@
 {
-  "name": "wacrm",
+  "name": "automatepanu-ai",
   "version": "0.8.0",
   "private": true,
-  "description": "Self-hostable CRM template for WhatsApp built on Next.js and Supabase — shared inbox, contacts, sales pipelines, broadcasts, and no-code automations.",
+  "description": "Automate Panu AI — multi-tenant WhatsApp CRM: shared inbox, contacts, pipelines, broadcasts, automations, chatbot flows and an AI reply assistant. Built on wacrm (MIT).",
   "license": "MIT",
-  "author": "Arnas Donauskas",
-  "homepage": "https://github.com/ArnasDon/wacrm",
+  "author": "Aiwithsalman",
+  "homepage": "https://automatepanuai.axxeler.in",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ArnasDon/wacrm.git"
+    "url": "git+https://github.com/aiwithsalman33/Automatepanu-ai.git"
   },
   "bugs": {
-    "url": "https://github.com/ArnasDon/wacrm/issues"
+    "url": "https://github.com/aiwithsalman33/Automatepanu-ai/issues"
   },
   "keywords": [
     "crm",

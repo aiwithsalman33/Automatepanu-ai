@@ -119,7 +119,11 @@ services:
     restart: unless-stopped
     # Runtime (server-only) secrets come from .env.local; they are
     # never baked into the image.
+    # `.env` is what Dokploy writes from its Environment tab; `.env.local`
+    # is the local/manual convention. Either (or both) may exist.
     env_file:
+      - path: .env
+        required: false
       - path: .env.local
         required: false
     # `environment` wins over `env_file`.

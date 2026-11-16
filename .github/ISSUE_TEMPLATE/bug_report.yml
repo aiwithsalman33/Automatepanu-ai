@@ -59,6 +59,7 @@ body:
       label: Where is it running?
       options:
         - Local dev (npm run dev)
+        - Dokploy (Docker Compose)
         - Hostinger Managed Node.js
         - Hostinger VPS
         - Vercel

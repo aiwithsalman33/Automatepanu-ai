@@ -2871,7 +2871,7 @@
     "whatsappConfig": {
       "fetchFailed": "Failed to fetch configuration",
       "noConfig": "No WhatsApp configuration saved yet. Fill in the form and click Save Configuration.",
-      "tokenCorrupted": "The stored access token cannot be decrypted with the current ENCRYPTION_KEY. This usually means the key changed, or it differs between environments (local vs Hostinger vs Vercel). Click \"Reset Configuration\" below, then re-save.",
+      "tokenCorrupted": "The stored access token cannot be decrypted with the current ENCRYPTION_KEY. This usually means the key changed, or it differs between environments (local vs Dokploy vs Vercel). Click \"Reset Configuration\" below, then re-save.",
       "credentialsRequired": "access_token and phone_number_id are required",
       "phoneIdDigits": "Phone Number ID must contain only digits — it is the numeric id shown under Meta → WhatsApp → API Setup, not the phone number itself.",
       "wabaIdDigits": "WhatsApp Business Account ID must contain only digits — copy it from Meta → WhatsApp → API Setup.",

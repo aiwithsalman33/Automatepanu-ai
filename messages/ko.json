@@ -2871,7 +2871,7 @@
     "whatsappConfig": {
       "fetchFailed": "설정을 가져오지 못했습니다",
       "noConfig": "아직 저장된 WhatsApp 설정이 없습니다. 양식을 작성하고 설정 저장을 클릭하세요.",
-      "tokenCorrupted": "저장된 액세스 토큰을 현재 ENCRYPTION_KEY로 복호화할 수 없습니다. 보통 키가 변경되었거나 환경마다 다르기 때문입니다(local vs Hostinger vs Vercel). 아래의 \"설정 초기화\"를 클릭한 후 다시 저장하세요.",
+      "tokenCorrupted": "저장된 액세스 토큰을 현재 ENCRYPTION_KEY로 복호화할 수 없습니다. 보통 키가 변경되었거나 환경마다 다르기 때문입니다(local vs Dokploy vs Vercel). 아래의 \"설정 초기화\"를 클릭한 후 다시 저장하세요.",
       "credentialsRequired": "access_token과 phone_number_id는 필수입니다",
       "phoneIdDigits": "Phone Number ID는 숫자만 포함해야 합니다 — 전화번호 자체가 아니라 Meta → WhatsApp → API Setup에 표시되는 숫자 ID입니다.",
       "wabaIdDigits": "WhatsApp Business Account ID는 숫자만 포함해야 합니다 — Meta → WhatsApp → API Setup에서 복사하세요.",

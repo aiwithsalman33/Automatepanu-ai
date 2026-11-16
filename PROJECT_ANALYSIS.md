@@ -77,7 +77,7 @@ wacrm/
 │   │   ├── join/[token]/           team invitation landing page
 │   │   ├── auth/callback/          Supabase email-link handler (PKCE / OTP)
 │   │   ├── api/                    57 route handlers (see §8, §9)
-│   │   ├── layout.tsx, page.tsx (→ /dashboard), icon.tsx, globals.css
+│   │   ├── layout.tsx, page.tsx (→ /dashboard), icon.svg + apple-icon.png, globals.css
 │   ├── components/
 │   │   ├── ui/                     shadcn/base-ui primitives (+ gated-button)
 │   │   ├── layout/                 sidebar, header, mode-toggle, account-access-alert
@@ -109,7 +109,7 @@ wacrm/
 │   │   │   notifications/, storage/, settings/, quick-replies/, supabase/, i18n/
 │   │   ├── broadcast-*.ts, rate-limit.ts, currency.ts, presence.ts, themes.ts, utils.ts
 │   ├── i18n/request.ts             locale resolution (build-time env)
-│   ├── middleware.ts               session refresh + route protection
+│   ├── proxy.ts                    session refresh + route protection (Next 16; was middleware.ts)
 │   └── types/index.ts              domain types
 ├── supabase/
 │   ├── migrations/001…059          schema (050 and 056 intentionally absent)
@@ -136,7 +136,7 @@ wacrm/
           └───────────────┬────────────────────────────────────────┬──────────────┘
                           │                                        │
                 ┌─────────▼─────────────── Next.js server ─────────▼────────────┐
-                │ middleware.ts (session refresh, redirects)                    │
+                │ proxy.ts (session refresh, redirects)                      │
                 │ /api/* route handlers                                         │
                 │   ├─ session routes  → getCurrentAccount / requireRole (RLS)  │
                 │   ├─ /api/v1/*       → requireApiKey (service role + acct id) │
@@ -628,7 +628,7 @@ Rules: admins can't change their own role, can't target the owner, and can't gra
   - `useCan(action)` and `<RequireRole min>` gate the UI.
   - `GatedButton` shows a "Read-only" tooltip on disabled buttons.
 
-### 7.3 Middleware (`src/middleware.ts`)
+### 7.3 Proxy (`src/proxy.ts`, formerly middleware.ts)
 
 - Refreshes the Supabase session and copies rotated cookies onto redirects.
 - Signed-in users visiting the auth pages go to `/dashboard`, or to `/join/<token>` if an invite is present.
