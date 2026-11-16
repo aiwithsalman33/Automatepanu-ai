@@ -1,6 +1,110 @@
 name: wacrm
 
+# Self-hosted stack (docs/saas-migration-plan.md §2.1). Deployable as-is
+# with `docker compose` or Dokploy (see docs/docker.md).
+#
+# Phase 1 status: `db`, `migrate`, `postgrest`, `redis`, `minio` and
+# `backup` are the new self-hosted backend. The `app` still reads
+# Supabase until checkpoints 1b (auth) and 1c (server DB access) switch
+# it over, so it keeps its Supabase variables for now.
+#
+#   docker compose --env-file .env.local up --build -d
+#
+# Every secret below is REQUIRED and has no default: Compose refuses to
+# start with a clear message if one is missing. Use URL-safe values
+# (e.g. `openssl rand -hex 32`): several are embedded in connection URLs.
+
+x-db-env: &db-env
+  POSTGRES_DB: ${POSTGRES_DB:-wacrm}
+
 services:
+  db:
+    image: pgvector/pgvector:0.8.1-pg17
+    restart: unless-stopped
+    environment:
+      <<: *db-env
+      # Superuser: used ONLY by `migrate` (bootstrap) and `backup`.
+      # The app never connects with it.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    shm_size: 256mb
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    # Not published to the host. For a local psql:
+    #   docker compose exec db psql -U postgres -d wacrm
+
+  # One-shot: bootstrap roles/extensions, then apply db/migrations.
+  # app / postgrest / backup wait for it to exit successfully.
+  migrate:
+    build:
+      context: .
+      target: migrate
+    restart: 'no'
+    environment:
+      DATABASE_ADMIN_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
+      DATABASE_URL: postgresql://wacrm_owner:${WACRM_OWNER_PASSWORD:?set WACRM_OWNER_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
+      WACRM_OWNER_PASSWORD: ${WACRM_OWNER_PASSWORD}
+      WACRM_AUTHENTICATOR_PASSWORD: ${WACRM_AUTHENTICATOR_PASSWORD:?set WACRM_AUTHENTICATOR_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Internal REST layer for existing server code (decision D1, transitional).
+  # Never published: only the app reaches it, over the compose network.
+  postgrest:
+    image: postgrest/postgrest:v12.2.12
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: wacrm_anon
+      PGRST_JWT_SECRET: ${POSTGREST_JWT_SECRET:?set POSTGREST_JWT_SECRET (32+ chars)}
+      PGRST_DB_POOL: 10
+      PGRST_SERVER_PORT: 3000
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+      - --appendonly
+      - 'yes'
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # S3-compatible storage (replaces Supabase Storage in checkpoint 1f).
+  # pgsty/minio is the maintained community build of MinIO (AGPLv3);
+  # upstream stopped publishing free images in 2025. The image ships no
+  # shell or curl, hence no healthcheck.
+  minio:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    # Presigned URLs need MinIO on its own public domain (decision D7):
+    # route e.g. media.example.com → minio:9000 in Dokploy/Traefik.
+
   app:
     build:
       context: .
@@ -12,20 +116,32 @@ services:
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
         NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
+    restart: unless-stopped
     # Runtime (server-only) secrets come from .env.local; they are
     # never baked into the image.
     env_file:
-      - .env.local
-    # The server always listens on 3000 inside the container. Pinned
-    # here because `environment` wins over `env_file`, so a stray PORT
-    # in .env.local can't desync the app from the mapping and the
-    # healthcheck below.
+      - path: .env.local
+        required: false
+    # `environment` wins over `env_file`.
     environment:
       PORT: 3000
+      # The app logs in as wacrm_authenticator (no privileges of its own;
+      # it SET LOCAL ROLEs per request). Never the owner or superuser.
+      DATABASE_URL: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}
+      POSTGREST_URL: http://postgrest:3000
+      POSTGREST_JWT_SECRET: ${POSTGREST_JWT_SECRET}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
     # Host side only — HOST_PORT=8080 publishes the app on :8080.
     ports:
       - '${HOST_PORT:-3000}:3000'
-    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -38,3 +154,38 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    # Dokploy / Traefik: Dokploy normally attaches domains from its UI.
+    # To route with labels instead, drop the `ports:` above, join the
+    # `dokploy-network`, and uncomment:
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.wacrm.rule=Host(`crm.example.com`)
+    #   - traefik.http.routers.wacrm.entrypoints=websecure
+    #   - traefik.http.routers.wacrm.tls.certresolver=letsencrypt
+    #   - traefik.http.services.wacrm.loadbalancer.server.port=3000
+
+  # Nightly logical backups to the `backups` volume (pg_dump -Fc),
+  # pruned after BACKUP_RETENTION_DAYS. Restore: docs/docker.md.
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    entrypoint: ['sh', '/scripts/backup.sh']
+    environment:
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-wacrm}
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./db/scripts/backup.sh:/scripts/backup.sh:ro
+      - backups:/backups
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:
+  redis-data:
+  minio-data:
+  backups:

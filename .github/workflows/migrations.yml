@@ -25,6 +25,7 @@ on:
     paths:
       - 'supabase/**'
       - 'tests/db/**'
+      - 'db/**'
       - 'vitest.db.config.mts'
       - '.github/workflows/migrations.yml'
   push:
@@ -32,6 +33,7 @@ on:
     paths:
       - 'supabase/**'
       - 'tests/db/**'
+      - 'db/**'
       - 'vitest.db.config.mts'
       - '.github/workflows/migrations.yml'
 
@@ -107,4 +109,59 @@ jobs:
         run: npm run test:db:prepare
 
       - name: Run the isolation suite
+        run: npm run test:db
+
+  self-hosted:
+    # The new stack (db/migrations on plain Postgres + pgvector, no
+    # Supabase): bootstrap + migrate exactly like the `migrate` container,
+    # check the generated baseline is current, then run the SAME isolation
+    # suite through the withTenant-style adapter (SET LOCAL ROLE wacrm_app
+    # + app.user_id).
+    name: Self-hosted Postgres (db/migrations) + isolation suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg17
+        env:
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: wacrm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d wacrm"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_ADMIN_URL: postgresql://postgres:admin@localhost:5432/wacrm
+      DATABASE_URL: postgresql://wacrm_owner:ownerpw@localhost:5432/wacrm
+      WACRM_OWNER_PASSWORD: ownerpw
+      WACRM_AUTHENTICATOR_PASSWORD: authpw
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Regenerate the squashed baseline from supabase/migrations and fail
+      # if it differs from the committed file (someone edited a Supabase
+      # migration without running `npm run db:baseline`, or vice versa).
+      - name: Baseline is up to date
+        run: |
+          npm run db:baseline
+          git diff --exit-code -- db/migrations/0002_baseline.sql
+
+      - name: Bootstrap + migrate (as the migrate container does)
+        run: npm run db:migrate
+
+      - name: Migrations are re-runnable (no-op on second run)
+        run: npm run db:migrate
+
+      - name: Run the isolation suite on the new stack
+        env:
+          DB_TENANT_ADAPTER: app
+          TEST_DATABASE_URL: postgresql://postgres:admin@localhost:5432/wacrm
         run: npm run test:db

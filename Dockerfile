@@ -35,7 +35,24 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
 RUN npm run build
 
 # ---------------------------------------------------------------
-# Stage 3 — minimal runtime (standalone output)
+# Stage 3 — one-shot database migrator (compose service `migrate`)
+#
+# Runs db/migrate.mjs: a superuser bootstrap (roles, schemas,
+# extensions) when DATABASE_ADMIN_URL is set, then node-pg-migrate as
+# wacrm_owner. Build it with `--target migrate`. It must stay *before*
+# the runner stage: the last stage is the default build target.
+# ---------------------------------------------------------------
+FROM node:22-alpine AS migrate
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+COPY db ./db
+USER node
+CMD ["node", "db/migrate.mjs", "up"]
+
+# ---------------------------------------------------------------
+# Stage 4 — minimal runtime (standalone output)
 # ---------------------------------------------------------------
 FROM node:22-alpine AS runner
 WORKDIR /app

@@ -14,6 +14,22 @@ npm run test:db:prepare         # rebuild `public` on classic privileges (destro
 npm run test:db                 # run the suite
 ```
 
+### Against the new self-hosted stack (`db/migrations`)
+
+```bash
+docker run -d --name wacrm-newdb -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=wacrm \
+  -p 54330:5432 pgvector/pgvector:0.8.1-pg17
+DATABASE_ADMIN_URL=postgresql://postgres:admin@127.0.0.1:54330/wacrm \
+DATABASE_URL=postgresql://wacrm_owner:ownerpw@127.0.0.1:54330/wacrm \
+WACRM_OWNER_PASSWORD=ownerpw WACRM_AUTHENTICATOR_PASSWORD=authpw npm run db:migrate
+DB_TENANT_ADAPTER=app \
+TEST_DATABASE_URL=postgresql://postgres:admin@127.0.0.1:54330/wacrm npm run test:db
+```
+
+The same assertions run on both stacks. The `app` adapter does what
+`withTenant()` does: `SET LOCAL ROLE wacrm_app` plus `app.user_id`. The
+Supabase-only storage file is skipped there.
+
 `TEST_DATABASE_URL` overrides the connection (default
 `postgresql://postgres:postgres@127.0.0.1:54322/postgres`).
 `SUPABASE_DB_CONTAINER` overrides the container the prepare script uses.

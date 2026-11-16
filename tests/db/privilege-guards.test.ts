@@ -15,6 +15,7 @@ import {
   isBlocked,
   openTestTransaction,
   PRIVILEGE_ERROR,
+  selectedAdapter,
   type Principal,
 } from './harness';
 import { seedFixture, type Fixture, type Member } from './fixture';
@@ -175,7 +176,10 @@ describe('member-management RPCs cannot reach another tenant', () => {
     expect(rows[0].owner_user_id).toBe(fx.A.ownerId);
   });
 
-  it('anon can EXECUTE the member RPCs but each one refuses', async () => {
+  // Supabase: anon may EXECUTE these, but each refuses without a user.
+  // New stack: anon lacks EXECUTE entirely (0003_hardening). Either way:
+  // every call errors and nothing changes.
+  it('anon calling the member RPCs is refused', async () => {
     const calls: [string, unknown[]][] = [
       ["SELECT set_member_role($1, 'admin')", [fx.A.members.agent.userId]],
       ['SELECT remove_account_member($1)', [fx.A.members.agent.userId]],
@@ -362,15 +366,17 @@ describe('internal SECURITY DEFINER functions are service-role only', () => {
     'record_webhook_failure',
   ];
 
+  const { roles, anonDefinerAllowlist } = selectedAdapter();
+
   it.each(SERVICE_ONLY)(
-    '%s is not executable by anon or authenticated',
+    '%s is not executable by the anon or app role',
     async (fn) => {
       const { rows } = await c.query(
         `SELECT p.oid::regprocedure::text AS sig,
-              has_function_privilege('anon', p.oid, 'EXECUTE') AS anon,
-              has_function_privilege('authenticated', p.oid, 'EXECUTE') AS auth
+              has_function_privilege($2, p.oid, 'EXECUTE') AS anon,
+              has_function_privilege($3, p.oid, 'EXECUTE') AS auth
        FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace AND p.proname = $1`,
-        [fn]
+        [fn, roles.anon, roles.app]
       );
       expect(rows.length, `${fn} not found`).toBeGreaterThan(0);
       for (const r of rows) {
@@ -384,22 +390,14 @@ describe('internal SECURITY DEFINER functions are service-role only', () => {
   );
 
   it('every anon-executable SECURITY DEFINER function is on the reviewed allowlist', async () => {
-    const ALLOWED = [
-      'is_account_member',
-      'peek_invitation',
-      'redeem_invitation',
-      'remove_account_member',
-      'set_member_role',
-      'touch_presence',
-      'transfer_account_ownership',
-    ];
     const { rows } = await c.query(
       `SELECT DISTINCT p.proname FROM pg_proc p
        WHERE p.pronamespace = 'public'::regnamespace AND p.prosecdef
          AND p.prorettype <> 'trigger'::regtype
-         AND has_function_privilege('anon', p.oid, 'EXECUTE')
-       ORDER BY 1`
+         AND has_function_privilege($1, p.oid, 'EXECUTE')
+       ORDER BY 1`,
+      [roles.anon]
     );
-    expect(rows.map((r) => r.proname)).toEqual(ALLOWED);
+    expect(rows.map((r) => r.proname)).toEqual(anonDefinerAllowlist);
   });
 });

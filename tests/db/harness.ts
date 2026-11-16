@@ -26,12 +26,29 @@ export type Principal =
 
 export interface TenantContextAdapter {
   name: string;
+  /** Postgres role names behind each principal kind. */
+  roles: { app: string; service: string; anon: string };
+  /**
+   * SECURITY DEFINER functions the anon role may EXECUTE. Supabase's
+   * baseline exposes the member RPCs too; 0003_hardening revokes them.
+   */
+  anonDefinerAllowlist: string[];
   /** Switch the current (sub)transaction to act as `p`. */
   enter(c: Client, p: Principal): Promise<void>;
 }
 
 export const supabaseAdapter: TenantContextAdapter = {
   name: 'supabase',
+  roles: { app: 'authenticated', service: 'service_role', anon: 'anon' },
+  anonDefinerAllowlist: [
+    'is_account_member',
+    'peek_invitation',
+    'redeem_invitation',
+    'remove_account_member',
+    'set_member_role',
+    'touch_presence',
+    'transfer_account_ownership',
+  ],
   async enter(c, p) {
     if (p.kind === 'service') {
       await c.query('SET LOCAL ROLE service_role');
@@ -55,8 +72,32 @@ export const supabaseAdapter: TenantContextAdapter = {
   },
 };
 
+/**
+ * The new stack (db/migrations): exactly what withTenant() does. The
+ * login role SETs LOCAL ROLE to a NOLOGIN role and the current user is
+ * carried in `app.user_id`, which the auth.uid() shim reads.
+ */
+export const appAdapter: TenantContextAdapter = {
+  name: 'app',
+  roles: { app: 'wacrm_app', service: 'wacrm_service', anon: 'wacrm_anon' },
+  anonDefinerAllowlist: ['peek_invitation'],
+  async enter(c, p) {
+    if (p.kind === 'service') {
+      await c.query('SET LOCAL ROLE wacrm_service');
+      return;
+    }
+    if (p.kind === 'anon') {
+      await c.query('SET LOCAL ROLE wacrm_anon');
+      return;
+    }
+    await c.query('SET LOCAL ROLE wacrm_app');
+    await c.query("SELECT set_config('app.user_id', $1, true)", [p.userId]);
+  },
+};
+
 const ADAPTERS: Record<string, TenantContextAdapter> = {
   supabase: supabaseAdapter,
+  app: appAdapter,
 };
 
 export function selectedAdapter(): TenantContextAdapter {

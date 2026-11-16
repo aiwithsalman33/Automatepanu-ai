@@ -41,8 +41,9 @@ async function createUser(
 ): Promise<{ userId: string; accountId: string }> {
   const userId = randomUUID();
   await c.query(
-    `INSERT INTO auth.users (id, email, raw_user_meta_data, aud, role)
-     VALUES ($1, $2, $3, 'authenticated', 'authenticated')`,
+    // Columns common to Supabase's auth.users and db/migrations' auth.users.
+    `INSERT INTO auth.users (id, email, raw_user_meta_data)
+     VALUES ($1, $2, $3)`,
     [
       userId,
       `${label}.${userId.slice(0, 8)}@isolation.test`,
