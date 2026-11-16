@@ -1,0 +1,27 @@
+# Keep the build context small and secret-free.
+.git
+.github
+.next
+node_modules
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets: never sent to the Docker daemon.
+.env
+.env.*
+!.env.example
+
+# Not part of the app image.
+docs
+tests
+supabase
+mcp-server
+*.md
+!README.md
+Dockerfile
+docker-compose*.yml
+.dockerignore
+.vscode
+.idea
+.claude

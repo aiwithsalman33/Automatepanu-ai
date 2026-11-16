@@ -1,0 +1,207 @@
+name: Migrations
+
+# Replaces the "Supabase Preview" check, which never worked: it fired
+# only on migration changes and then either 404'd in four seconds
+# ("Postgres config not found") or hung forever waiting on a branch
+# action, because two stale dashboard integrations were pointed at this
+# repo and neither could provision. It never applied a migration, so
+# every `supabase/migrations/*.sql` file in this repo has shipped
+# unexecuted by CI.
+#
+# This job does the thing that check only claimed to: boot a clean
+# Postgres and replay every migration, in order, from nothing. It needs
+# no secrets and no Supabase account — the CLI runs the database in a
+# container on the runner.
+
+on:
+  pull_request:
+    # `supabase/**` rather than `supabase/migrations/**` so a change to
+    # config.toml re-runs the check too, and this workflow is listed so
+    # that edits to the check are validated by the check.
+    #
+    # NOTE: if this is ever made a REQUIRED status check, drop these
+    # filters. GitHub leaves a required check that never ran stuck as
+    # "expected", which blocks every PR that doesn't touch SQL.
+    paths:
+      - 'supabase/**'
+      - 'tests/db/**'
+      - 'db/**'
+      - 'vitest.db.config.mts'
+      - '.github/workflows/migrations.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'tests/db/**'
+      - 'db/**'
+      - 'vitest.db.config.mts'
+      - '.github/workflows/migrations.yml'
+
+concurrency:
+  group: migrations-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    name: Apply to a clean database
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install the Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          # Pinned rather than `latest`: this check is infrastructure,
+          # and a CLI release changing behaviour should be a deliberate
+          # bump in a PR, not a Tuesday where main goes red.
+          version: 2.113.0
+
+      - name: Start Postgres
+        run: supabase db start
+
+      # `db start` already applies the migrations on a cold volume, but
+      # only on a cold volume — it is a no-op against a database that
+      # already exists. `db reset` drops and rebuilds unconditionally,
+      # so this step, not the one above, is the guarantee that every
+      # migration ran in filename order against nothing. It fails on the
+      # first statement Postgres rejects. --no-seed because there is no
+      # seed script and this is about schema, not data.
+      - name: Replay every migration from scratch
+        run: supabase db reset --local --no-seed
+
+      # A migration can apply "successfully" and still do nothing —
+      # every DDL statement here is IF NOT EXISTS-guarded, which turns a
+      # typo'd object name into a silent no-op. Assert the outcome, not
+      # just the absence of an error.
+      - name: Verify the resulting schema
+        run: supabase db query --local --file supabase/ci/verify-schema.sql
+
+  isolation:
+    # Tenant-isolation baseline (tests/db): proves RLS keeps accounts apart
+    # for every table, role tier, RPC and storage bucket. This is the
+    # safety net for the Supabase → own-Postgres migration (docs/saas-
+    # migration-plan.md); it must stay green through every checkpoint.
+    name: Tenant isolation (RLS) suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install the Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 2.113.0
+
+      - name: Start Postgres
+        run: supabase db start
+
+      # Newer Supabase Postgres images no longer install the classic
+      # default privileges these migrations rely on; rebuild `public`
+      # with them so the suite tests what a hosted project enforces.
+      - name: Rebuild schema on classic Supabase privileges
+        run: npm run test:db:prepare
+
+      - name: Run the isolation suite
+        run: npm run test:db
+
+  self-hosted:
+    # The new stack (db/migrations on plain Postgres + pgvector, no
+    # Supabase): bootstrap + migrate exactly like the `migrate` container,
+    # check the generated baseline is current, then run the SAME isolation
+    # suite through the withTenant-style adapter (SET LOCAL ROLE wacrm_app
+    # + app.user_id).
+    name: Self-hosted Postgres (db/migrations) + isolation suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.1-pg17
+        env:
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: wacrm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d wacrm"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_ADMIN_URL: postgresql://postgres:admin@localhost:5432/wacrm
+      DATABASE_URL: postgresql://wacrm_owner:ownerpw@localhost:5432/wacrm
+      WACRM_OWNER_PASSWORD: ownerpw
+      WACRM_AUTHENTICATOR_PASSWORD: authpw
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Regenerate the squashed baseline from supabase/migrations and fail
+      # if it differs from the committed file (someone edited a Supabase
+      # migration without running `npm run db:baseline`, or vice versa).
+      - name: Baseline is up to date
+        run: |
+          npm run db:baseline
+          git diff --exit-code -- db/migrations/0002_baseline.sql
+
+      - name: Bootstrap + migrate (as the migrate container does)
+        run: npm run db:migrate
+
+      - name: Migrations are re-runnable (no-op on second run)
+        run: npm run db:migrate
+
+      # The private PostgREST the server data layer talks to (same image
+      # and settings as docker-compose.yml). Started after the migrations
+      # so its schema cache sees every table.
+      - name: Start private PostgREST
+        run: |
+          docker run -d --name postgrest --network host \
+            -e PGRST_DB_URI=postgresql://wacrm_authenticator:authpw@localhost:5432/wacrm \
+            -e PGRST_DB_SCHEMAS=public \
+            -e PGRST_DB_ANON_ROLE=wacrm_anon \
+            -e PGRST_JWT_SECRET=ci-postgrest-jwt-secret-0123456789abcdef \
+            -e PGRST_SERVER_PORT=3001 \
+            postgrest/postgrest:v12.2.12
+          for i in $(seq 1 30); do
+            # Any HTTP status means it is up and has loaded its schema cache.
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/ || true)
+            [ "$code" != "000" ] && exit 0
+            sleep 1
+          done
+          docker logs postgrest
+          exit 1
+
+      # SMTP sink for the email tests (verification / reset / invite).
+      - name: Start Mailpit
+        run: |
+          docker run -d --name mailpit -p 1025:1025 -p 8025:8025 axllent/mailpit:v1.27.0
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8025/readyz >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          docker logs mailpit
+          exit 1
+
+      - name: Run the isolation suite on the new stack
+        env:
+          DB_TENANT_ADAPTER: app
+          TEST_DATABASE_URL: postgresql://postgres:admin@localhost:5432/wacrm
+          # Native auth + data layer tests log in as the app does
+          # (wacrm_authenticator).
+          TEST_AUTHENTICATOR_DATABASE_URL: postgresql://wacrm_authenticator:authpw@localhost:5432/wacrm
+          TEST_POSTGREST_URL: http://localhost:3001
+          TEST_POSTGREST_JWT_SECRET: ci-postgrest-jwt-secret-0123456789abcdef
+          TEST_SMTP_HOST: 127.0.0.1
+          TEST_SMTP_PORT: '1025'
+          TEST_MAILPIT_URL: http://localhost:8025
+        run: npm run test:db
