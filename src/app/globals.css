@@ -124,7 +124,9 @@ html[data-mode="dark"] {
   --status-critical: #e05252;
 }
 
-html[data-mode="light"] {
+html[data-mode="light"],
+/* the marketing site is always light, whatever the app mode is */
+.mk {
   --background: oklch(0.99 0.002 260);
   --foreground: oklch(0.21 0.01 260);
   --card: oklch(1 0 0);
@@ -160,7 +162,9 @@ html[data-mode="light"] {
 /* ---- ACCENT: primary color ---- */
 
 :root,
-html[data-theme="violet"] {
+html[data-theme="violet"],
+/* the marketing site always uses the brand violet accent */
+.mk {
   --primary: oklch(0.526 0.247 293);
   --primary-foreground: oklch(0.985 0 0);
   --primary-hover: oklch(0.6 0.22 293);
@@ -241,5 +245,142 @@ html[data-theme="rose"] {
   }
   html {
     @apply font-sans;
+  }
+}
+/* =====================================================================
+   Marketing site (src/app/(marketing)) — white + light purple, light only.
+   Scoped to .mk so the CRM app's themes are untouched.
+   ===================================================================== */
+@theme inline {
+  --color-mk-bg: var(--mk-bg);
+  --color-mk-bg-alt: var(--mk-bg-alt);
+  --color-mk-bg-alt2: var(--mk-bg-alt2);
+  --color-mk-primary: var(--mk-primary);
+  --color-mk-primary-hover: var(--mk-primary-hover);
+  --color-mk-soft: var(--mk-soft);
+  --color-mk-soft2: var(--mk-soft2);
+  --color-mk-heading: var(--mk-heading);
+  --color-mk-body: var(--mk-body);
+  --color-mk-muted: var(--mk-muted);
+  --color-mk-border: var(--mk-border);
+  --color-mk-wa: var(--mk-wa);
+  --color-mk-success: var(--mk-success);
+  --color-mk-warn: var(--mk-warn);
+  --color-mk-error: var(--mk-error);
+  --font-mk: var(--font-mk-sans);
+  --shadow-mk: var(--mk-shadow);
+  --shadow-mk-lg: var(--mk-shadow-lg);
+}
+
+.mk {
+  --mk-bg: #ffffff;
+  --mk-bg-alt: #faf8ff;
+  --mk-bg-alt2: #f4f0ff;
+  --mk-primary: #7c3aed;
+  --mk-primary-hover: #6d28d9;
+  --mk-soft: #ede9fe;
+  --mk-soft2: #ddd6fe;
+  --mk-heading: #1e1b2e;
+  --mk-body: #5b5675;
+  /* #6b6585 on white = 5.3:1 (AA for body text) */
+  --mk-muted: #6b6585;
+  --mk-border: #e9e4f5;
+  --mk-wa: #25d366;
+  --mk-success: #15803d;
+  --mk-warn: #b45309;
+  --mk-error: #b91c1c;
+  --mk-shadow: 0 10px 40px -12px rgba(124, 58, 237, 0.25);
+  --mk-shadow-lg: 0 24px 60px -20px rgba(124, 58, 237, 0.35);
+
+  color-scheme: light;
+  background: var(--mk-bg);
+  color: var(--mk-body);
+  font-family: var(--font-mk-sans), ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+/* Page background behind the marketing wrapper (overscroll etc.). */
+html:has(.mk),
+body:has(.mk) {
+  background: #ffffff;
+  color-scheme: light;
+}
+
+.mk :focus-visible {
+  outline: 2px solid var(--mk-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.mk h1,
+.mk h2,
+.mk h3 {
+  color: var(--mk-heading);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+/* Scroll reveal (progressive enhancement, see <Reveal>): visible by
+   default; JS hides only below-the-fold elements, then shows them. */
+.mk-reveal {
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+.mk-reveal[data-state='hidden'] {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.mk-lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.mk-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--mk-shadow-lg);
+}
+
+@keyframes mk-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.mk-marquee-track {
+  animation: mk-marquee 40s linear infinite;
+}
+.mk-marquee:hover .mk-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes mk-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.mk-float {
+  animation: mk-float 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-reveal {
+    transition: none;
+  }
+  .mk-marquee-track,
+  .mk-float {
+    animation: none;
+  }
+  .mk-lift,
+  .mk-lift:hover {
+    transition: none;
+    transform: none;
   }
 }

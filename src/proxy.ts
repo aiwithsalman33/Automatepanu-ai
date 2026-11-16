@@ -1,7 +1,34 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { originOf } from '@/config/brand';
+import { decideHostRouting } from '@/lib/marketing/host-routing';
 
 export async function proxy(request: NextRequest) {
+  // One deployment, two domains (src/lib/marketing/host-routing.ts).
+  // Decided BEFORE any auth work: public marketing pages never pay for a
+  // session lookup, and /api/* is never redirected on either host.
+  // The split only activates when both URLs are configured.
+  const hostDecision = decideHostRouting(
+    {
+      host:
+        request.headers.get('x-forwarded-host') ??
+        request.headers.get('host') ??
+        request.nextUrl.host,
+      pathname: request.nextUrl.pathname,
+      search: request.nextUrl.search,
+    },
+    {
+      marketingOrigin: originOf(process.env.NEXT_PUBLIC_MARKETING_URL),
+      appOrigin: originOf(process.env.NEXT_PUBLIC_APP_URL),
+    }
+  );
+  if (hostDecision.kind === 'redirect') {
+    return NextResponse.redirect(hostDecision.location, hostDecision.status);
+  }
+  if (hostDecision.kind === 'public') {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -45,6 +72,14 @@ export async function proxy(request: NextRequest) {
     });
     return response;
   };
+
+  // App host root (chat.axxeler.in/): straight into the app.
+  if (hostDecision.kind === 'app-root') {
+    const url = request.nextUrl.clone();
+    url.pathname = user ? '/dashboard' : '/login';
+    url.search = '';
+    return withRefreshedCookies(NextResponse.redirect(url));
+  }
 
   // Auth pages - redirect to dashboard if already logged in.
   // Exception: when an invite token is in the query string we

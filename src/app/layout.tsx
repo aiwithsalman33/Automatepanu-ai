@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { brand } from "@/config/brand";
 import { ThemedToaster } from "@/components/themed-toaster";
 import {
   DEFAULT_MODE,
@@ -18,6 +18,12 @@ import {
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+  // The app's font. Not preloaded: the root layout also wraps the public
+  // marketing site (which uses Plus Jakarta Sans), and a high-priority
+  // Inter preload there competed with the critical CSS on mobile. App
+  // pages still load it immediately (display: swap).
+  preload: false,
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,16 +36,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const metadata: Metadata = {
   title: {
-    default: "wacrm",
-    template: "%s — wacrm",
+    default: brand.name,
+    template: `%s — ${brand.name}`,
   },
+  // The app is private: noindex by default. The (marketing) layout
+  // overrides this for the public site.
   robots: {
     index: false,
     follow: false,
   },
-  icons: {
-    icon: [{ url: "/icon" }],
-  },
+  // Icons come from the file conventions: src/app/icon.svg (favicon
+  // variant) and src/app/apple-icon.png.
   formatDetection: {
     email: false,
     address: false,
@@ -90,7 +97,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
-  const messages = await getMessages();
 
   return (
     <html
@@ -115,12 +121,13 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full bg-background text-foreground font-sans">
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <ThemeProvider>
-            {children}
-            <ThemedToaster />
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        {/* next-intl messages are provided per route group
+            (src/components/intl-provider.tsx), so the public site
+            doesn't download every app string. */}
+        <ThemeProvider>
+          {children}
+          <ThemedToaster />
+        </ThemeProvider>
       </body>
     </html>
   );

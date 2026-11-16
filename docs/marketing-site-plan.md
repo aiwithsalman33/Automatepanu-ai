@@ -108,3 +108,55 @@ Gates at every step: typecheck, lint, vitest, build.
 3. **Brand name in copy:** "Automate Panu AI" everywhere? Your brief says "wacrm", but you've since named the product.
 4. **Optional extras:** QR PDF download? The three optional tools?
 5. **Contact details** for the contact page and footer: email, social links (or placeholders).
+
+---
+
+## Status: approved; Phase 1 done
+
+**Your decisions:**
+
+- One deployment, with host redirects that skip all of `/api/*` (Meta webhook, `/api/v1`, `/api/auth`).
+- Host-only session cookies on `chat.axxeler.in`.
+- "Coming soon" placeholder prices in `plans.config.ts`.
+- One brand config (`src/config/brand.ts`).
+- The core 4 tools first.
+
+**Phase 1 (done):**
+
+- Tokens (`.mk` scope in `globals.css`); components in `src/components/marketing/`.
+- Navbar (dropdowns, mobile drawer), footer and quick links.
+- Home page with all 14 sections, JSON-LD (Organization, WebSite, FAQPage) and an `opengraph-image`.
+- Host routing in `src/proxy.ts`, tested by 47 unit tests and 9 proxy tests.
+
+**Corrections to the brief (only shipped features are claimed):**
+
+- _Multi-number WhatsApp_ is not built yet (Phase 2). It's shown with a "Coming soon" badge, and the announcement pill uses a shipped feature (AI auto-reply with handoff).
+- _Hero trust ticks:_ "free trial / no credit card / live in 20 minutes" can't be verified yet, so they became true product facts: official Cloud API, bring-your-own AI key, team roles.
+- _Stats row:_ true product facts (4 roles, 3 AI provider types, 4 languages, official API) instead of placeholder business numbers.
+
+**Measured** (production build, local Lighthouse 12.8.2):
+
+|                         | Performance          | Accessibility | Best practices | SEO     |
+| ----------------------- | -------------------- | ------------- | -------------- | ------- |
+| Desktop                 | **100**              | **100**       | 96             | **100** |
+| Mobile (412 px, 4× CPU) | 86–90 on quiet runs* | **100**       | 96             | **100** |
+| 360 px                  | n/a                  | **100**       | n/a            | **100** |
+
+\* Mobile Performance swings by ±25 points between identical runs on this machine (TBT 230 ms → 1.8 s) while Docker workloads run alongside; re-measure on the server or with PageSpeed Insights after deploy. CLS is 0 everywhere.
+
+**Performance fixes along the way:**
+
+1. next-intl messages were sent from the root layout with the _entire app catalogue_ on every page. Now each route group provides only its own namespaces, and the home HTML went from 359 KB to 230 KB.
+2. Inter (the app font) is no longer preloaded on every page.
+3. Blur-filter glows were replaced by radial gradients.
+4. Scroll reveal is progressive (content is visible without JS and for crawlers).
+
+**Tried and reverted:** `experimental.inlineCss`. It inlines the whole app's CSS (compressed HTML 37 KB → 121 KB) for a ~0.4 s LCP gain.
+
+**Remaining for the Lighthouse ≥95 mobile target (SEO/a11y pass at the end):**
+
+- Split marketing CSS from the app's Tailwind bundle.
+- Defer hydration of below-the-fold islands (pricing toggle, use-case tabs).
+- Measure on real infrastructure.
+
+**Best practices 96** is caused only by prefetch 404s for `/pricing` and `/changelog`, which arrive in the next steps.

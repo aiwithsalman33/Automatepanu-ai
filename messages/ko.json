@@ -1671,7 +1671,7 @@
       "done": "완료",
       "dialogTitle": "팀원 초대",
       "networkError": "서버에 연결할 수 없습니다. 다시 시도할까요?",
-      "fallbackAccountName": "우리 wacrm 계정",
+      "fallbackAccountName": "우리 Automate Panu AI 계정",
       "dialogDesc": "일회용 초대 링크를 생성합니다. WhatsApp, Slack 등 원하는 채널로 공유하세요 — 이메일 서비스가 필요하지 않습니다.",
       "roleLabel": "역할",
       "validForLabel": "링크 유효 기간",
@@ -1688,7 +1688,7 @@
       "labelTooLong": "라벨은 {max}자 이하여야 합니다",
       "copied": "초대 링크가 복사되었습니다",
       "clipboardBlocked": "클립보드 접근이 차단되었습니다 — 링크를 직접 복사하세요",
-      "whatsappMessage": "이 링크(유효 기간 {expiresInDays}일)로 wacrm의 {accountName}에 참여하세요: {url}",
+      "whatsappMessage": "이 링크(유효 기간 {expiresInDays}일)로 Automate Panu AI의 {accountName}에 참여하세요: {url}",
       "createFailed": "초대를 만들지 못했습니다"
     },
     "tagsAndFields": {
@@ -1809,8 +1809,8 @@
       "saveResubmit": "저장 & 재제출",
       "submitApproval": "승인 요청",
       "deleteDialogTitle": "템플릿을 삭제하시겠습니까?",
-      "deleteMetaDesc": "\"{name}\"이(가) Meta와 wacrm에서 삭제됩니다. 이 템플릿을 사용하는 활성 브로드캐스트는 다음 전송부터 실패하기 시작합니다. 되돌릴 수 없습니다.",
-      "deleteLocalDesc": "\"{name}\"이(가) wacrm에서 삭제됩니다. Meta에 제출된 적이 없으므로 별도의 원격 정리가 필요하지 않습니다.",
+      "deleteMetaDesc": "\"{name}\"이(가) Meta와 Automate Panu AI에서 삭제됩니다. 이 템플릿을 사용하는 활성 브로드캐스트는 다음 전송부터 실패하기 시작합니다. 되돌릴 수 없습니다.",
+      "deleteLocalDesc": "\"{name}\"이(가) Automate Panu AI에서 삭제됩니다. Meta에 제출된 적이 없으므로 별도의 원격 정리가 필요하지 않습니다.",
       "deleting": "삭제 중…",
       "delete": "삭제",
       "toastLoadFailed": "템플릿을 불러오지 못했습니다",
@@ -1862,7 +1862,7 @@
       "notConnected": "연결되지 않음",
       "connectedDesc": "액세스 토큰으로 Meta 인증이 완료되었습니다. 웹훅이 실제로 연결되었는지는 아래 등록 상태를 확인하세요.",
       "notConnectedDesc": "아래에서 Meta API 자격 증명을 설정해 WhatsApp 비즈니스 계정을 연결하세요.",
-      "registered": "등록됨 — Meta가 wacrm으로 이벤트를 전달합니다",
+      "registered": "등록됨 — Meta가 Automate Panu AI로 이벤트를 전달합니다",
       "notRegistered": "등록되지 않음 — Meta가 이벤트를 전달하지 않습니다",
       "verifyWithMeta": "Meta로 확인",
       "subscribedSince": "{date}부터 구독 중입니다. 이벤트가 더 이상 도착하지 않으면 Meta로 확인을 클릭하세요.",
@@ -1887,7 +1887,7 @@
       "twoStepPin": "2단계 인증 PIN",
       "optional": "(선택)",
       "pinPlaceholder": "Meta WhatsApp 관리자에서 발급받은 6자리 PIN",
-      "pinHint": "프로덕션 번호의 수신 메시지를 연결하려면 필요합니다. Meta 비즈니스 관리자 → WhatsApp 계정 → 전화번호 → 2단계 인증에서 설정한 뒤 여기에 붙여넣으면 wacrm이 해당 번호를 구독할 수 있습니다 — 그렇지 않으면 Meta는 마지막으로 이 번호를 등록한 앱으로 수신 이벤트를 보냅니다(공유 WABA 하의 두 번째 번호에서 흔히 발생하는 증상입니다). Meta 테스트 번호는 PIN이 없고 이미 등록되어 있으므로 이 필드를 비워두세요. 비워두면 기존 등록도 그대로 유지됩니다.",
+      "pinHint": "프로덕션 번호의 수신 메시지를 연결하려면 필요합니다. Meta 비즈니스 관리자 → WhatsApp 계정 → 전화번호 → 2단계 인증에서 설정한 뒤 여기에 붙여넣으면 Automate Panu AI가 해당 번호를 구독할 수 있습니다 — 그렇지 않으면 Meta는 마지막으로 이 번호를 등록한 앱으로 수신 이벤트를 보냅니다(공유 WABA 하의 두 번째 번호에서 흔히 발생하는 증상입니다). Meta 테스트 번호는 PIN이 없고 이미 등록되어 있으므로 이 필드를 비워두세요. 비워두면 기존 등록도 그대로 유지됩니다.",
       "webhookTitle": "웹훅 설정",
       "webhookDesc": "Meta 앱 대시보드의 웹훅 콜백으로 이 URL을 사용하세요.",
       "webhookUrl": "웹훅 콜백 URL",
@@ -2135,7 +2135,7 @@
     },
     "aiConfig": {
       "title": "에이전트 설정",
-      "description": "OpenAI, Anthropic 또는 OpenAI 호환 API 키를 직접 사용하세요. wacrm은 입력한 키로 제공업체를 직접 호출하므로 좌석당 AI 요금이 없으며 데이터는 그대로 유지됩니다. 받은 키는 받은편지함 AI 초안, 자동 응답 봇, Playground에 사용됩니다.",
+      "description": "OpenAI, Anthropic 또는 OpenAI 호환 API 키를 직접 사용하세요. Automate Panu AI는 입력한 키로 제공업체를 직접 호출하므로 좌석당 AI 요금이 없으며 데이터는 그대로 유지됩니다. 받은 키는 받은편지함 AI 초안, 자동 응답 봇, Playground에 사용됩니다.",
       "adminOnlyConfig": "관리자와 소유자만 AI 설정을 변경할 수 있습니다.",
       "loadFailed": "AI 설정을 불러오지 못했습니다",
       "providerAndKey": "공급자 & 키",
@@ -2877,7 +2877,7 @@
       "wabaIdDigits": "WhatsApp Business Account ID는 숫자만 포함해야 합니다 — Meta → WhatsApp → API Setup에서 복사하세요.",
       "pinDigits": "PIN은 정확히 6자리여야 합니다.",
       "validateFailed": "설정을 검증하지 못했습니다",
-      "numberLinkedElsewhere": "이 WhatsApp 전화번호는 이미 이 인스턴스의 다른 계정에 연결되어 있습니다. 각 전화번호는 하나의 wacrm 사용자에만 연결할 수 있습니다.",
+      "numberLinkedElsewhere": "이 WhatsApp 전화번호는 이미 이 인스턴스의 다른 계정에 연결되어 있습니다. 각 전화번호는 하나의 Automate Panu AI 사용자에만 연결할 수 있습니다.",
       "encryptFailed": "토큰을 암호화하지 못했습니다. 환경 변수의 ENCRYPTION_KEY가 유효한 64자 16진수 문자열인지 확인하세요.",
       "updateFailed": "설정을 업데이트하지 못했습니다",
       "saveFailed": "설정을 저장하지 못했습니다",
@@ -2933,6 +2933,444 @@
       "submitFailed": "템플릿을 제출하지 못했습니다.",
       "metaApiStatus": "Meta API 오류: {status}",
       "syncFailed": "템플릿을 동기화하지 못했습니다"
+    }
+  },
+  "Marketing": {
+    "meta": {
+      "homeTitle": "WhatsApp CRM with shared inbox, automations and AI",
+      "homeDescription": "Automate Panu AI is a WhatsApp CRM on the official WhatsApp Business Cloud API: shared team inbox, contacts, sales pipelines, broadcasts, no-code automations, chatbot flows and an AI reply assistant."
+    },
+    "skipToContent": "Skip to content",
+    "announcement": {
+      "label": "New",
+      "text": "AI auto-reply with human handoff",
+      "cta": "See what's new"
+    },
+    "nav": {
+      "product": "Product",
+      "solutions": "Solutions",
+      "pricing": "Pricing",
+      "resources": "Resources",
+      "freeTools": "Free tools",
+      "signIn": "Sign in",
+      "startFree": "Start free",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "allTools": "All free tools",
+      "home": "Automate Panu AI home",
+      "features": {
+        "inbox": {
+          "title": "Shared inbox",
+          "desc": "One WhatsApp number, your whole team"
+        },
+        "broadcasts": {
+          "title": "Broadcasts",
+          "desc": "Personalised template campaigns"
+        },
+        "automations": {
+          "title": "Automations",
+          "desc": "No-code triggers and actions"
+        },
+        "flows": {
+          "title": "Chatbot flows",
+          "desc": "Visual builder with buttons and lists"
+        },
+        "ai-assistant": {
+          "title": "AI assistant",
+          "desc": "Drafts and auto-replies, your own key"
+        },
+        "api": {
+          "title": "API & webhooks",
+          "desc": "REST API, webhooks and MCP"
+        }
+      },
+      "solutionItems": {
+        "sales": {
+          "title": "Sales teams",
+          "desc": "Turn chats into tracked deals"
+        },
+        "support": {
+          "title": "Customer support",
+          "desc": "Reply faster as a team"
+        },
+        "agencies": {
+          "title": "Agencies",
+          "desc": "Run client WhatsApp with roles"
+        },
+        "ecommerce": {
+          "title": "E-commerce",
+          "desc": "Offers, updates and answers"
+        },
+        "education": {
+          "title": "Education",
+          "desc": "Admissions and reminders"
+        }
+      },
+      "resourceItems": {
+        "blog": "Blog",
+        "changelog": "Changelog",
+        "docs": "Docs",
+        "api": "API"
+      },
+      "companyItems": {
+        "about": "About",
+        "contact": "Contact",
+        "demo": "Book a demo"
+      },
+      "legalItems": {
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "refunds": "Refunds",
+        "cookies": "Cookies"
+      }
+    },
+    "hero": {
+      "eyebrow": "Official WhatsApp Business Cloud API",
+      "title": "Run your WhatsApp business from one shared inbox.",
+      "subtitle": "Reply as a team, follow up on every lead, send personalised broadcasts and let automations and AI handle the repetitive work — all on your own WhatsApp number.",
+      "primaryCta": "Start free",
+      "secondaryCta": "See pricing",
+      "ticks": {
+        "official": "Official Cloud API",
+        "byok": "Bring your own AI key",
+        "roles": "Team roles built in"
+      },
+      "mock": {
+        "inboxLabel": "Inbox",
+        "open": "Open",
+        "contactName": "Priya S.",
+        "contactTag": "Lead",
+        "msgIn1": "Hi! Is the premium plan available in Chennai?",
+        "msgOut1": "Yes, it is! Want me to share the price list?",
+        "msgIn2": "Yes please 🙏",
+        "aiBadge": "AI draft",
+        "aiDraft": "Here's the price list. Shall I book a quick call with our team?",
+        "assignedTo": "Assigned to Arun",
+        "windowLeft": "21h left to reply",
+        "cardDeal": "Deal moved to Proposal",
+        "cardBroadcast": "Broadcast · 92% read",
+        "cardFlow": "Flow started: Welcome menu"
+      }
+    },
+    "logos": {
+      "title": "Trusted by growing teams",
+      "placeholder": "Placeholder logo"
+    },
+    "bento": {
+      "eyebrow": "One platform",
+      "title": "Everything your team needs to sell and support on WhatsApp",
+      "subtitle": "No more passing one phone around. Every chat, contact and campaign lives in one place.",
+      "comingSoon": "Coming soon",
+      "items": {
+        "inbox": {
+          "title": "Shared team inbox",
+          "desc": "Assign chats, set status, leave internal notes and reply with quick replies or templates."
+        },
+        "contacts": {
+          "title": "Contacts & CSV import",
+          "desc": "Tags, custom fields and duplicate detection keep your list clean."
+        },
+        "pipelines": {
+          "title": "Sales pipelines",
+          "desc": "Drag deals across a kanban board, linked to the conversation."
+        },
+        "broadcasts": {
+          "title": "Broadcasts",
+          "desc": "Approved templates personalised with each contact's details, with delivery and read tracking."
+        },
+        "automations": {
+          "title": "No-code automations",
+          "desc": "Keyword, first-message and tag triggers with waits, conditions and webhooks."
+        },
+        "flows": {
+          "title": "Visual chatbot flows",
+          "desc": "Build menus with buttons and lists, collect answers and hand off to a person."
+        },
+        "ai": {
+          "title": "AI reply assistant",
+          "desc": "One-click drafts and an optional auto-reply bot that answers from your knowledge base."
+        },
+        "multiNumber": {
+          "title": "Multiple WhatsApp numbers",
+          "desc": "Run several numbers from one account, each with its own inbox filter."
+        },
+        "api": {
+          "title": "API, webhooks & MCP",
+          "desc": "Scoped API keys, signed webhooks and an MCP server for AI assistants."
+        }
+      }
+    },
+    "deepDive": {
+      "inbox": {
+        "eyebrow": "Shared inbox",
+        "title": "Every customer chat, handled by the right person",
+        "body": "Your whole team works one WhatsApp number without stepping on each other.",
+        "points": {
+          "a": "Assign conversations and see who is online",
+          "b": "Internal notes, quick replies, voice notes and reactions",
+          "c": "A live 24-hour reply-window timer on every chat"
+        }
+      },
+      "automations": {
+        "eyebrow": "Automations & flows",
+        "title": "Let the routine replies run themselves",
+        "body": "Answer common questions, qualify leads and route chats while your team sleeps.",
+        "points": {
+          "a": "Triggers for keywords, first messages, new contacts and tags",
+          "b": "Waits, conditions, tagging, deals and webhooks without code",
+          "c": "A visual flow builder with buttons, lists and data collection"
+        }
+      },
+      "ai": {
+        "eyebrow": "AI assistant",
+        "title": "AI that drafts in your voice — on your own key",
+        "body": "Connect OpenAI, Anthropic or any OpenAI-compatible model. You pay the provider directly; there is no per-seat AI fee.",
+        "points": {
+          "a": "One-click reply drafts your agents can edit",
+          "b": "Optional auto-reply with a per-chat cap and clean human handoff",
+          "c": "A knowledge base of your FAQs, policies and product docs"
+        }
+      },
+      "broadcasts": {
+        "eyebrow": "Broadcasts",
+        "title": "Campaigns that feel one-to-one",
+        "body": "Send Meta-approved templates to the right audience and personalise every message.",
+        "points": {
+          "a": "Audiences from tags, custom fields or a CSV upload",
+          "b": "Variables filled from each contact's details",
+          "c": "Delivered, read, replied and failed — per recipient"
+        }
+      }
+    },
+    "stats": {
+      "title": "Built for teams, on the official API",
+      "items": {
+        "api": {
+          "value": "100%",
+          "label": "Official WhatsApp Cloud API"
+        },
+        "roles": {
+          "value": "4",
+          "label": "Team roles: owner, admin, agent, viewer"
+        },
+        "providers": {
+          "value": "3",
+          "label": "AI provider types, your own key"
+        },
+        "languages": {
+          "value": "4",
+          "label": "App languages"
+        }
+      }
+    },
+    "whatsNew": {
+      "eyebrow": "What's new",
+      "title": "Recent updates",
+      "all": "Full changelog"
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "title": "Simple plans that grow with you",
+      "subtitle": "Start on your own number and add your team when you're ready.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "yearlyHint": "Yearly discount coming soon",
+      "comingSoon": "Coming soon",
+      "comingSoonNote": "Pricing is being finalised. Plans and prices shown here are placeholders.",
+      "mostPopular": "Most popular",
+      "compare": "Compare all features",
+      "perMonth": "/month",
+      "billedMonthly": "Billed monthly",
+      "billedYearly": "Billed yearly",
+      "intervalLabel": "Billing period"
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "For trying it out on your own number.",
+        "cta": "Start free"
+      },
+      "growth": {
+        "name": "Growth",
+        "description": "For small teams starting to sell on WhatsApp.",
+        "cta": "Get started"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "For teams that automate and use AI.",
+        "cta": "Get started"
+      },
+      "business": {
+        "name": "Business",
+        "description": "For larger teams and agencies.",
+        "cta": "Talk to us"
+      },
+      "features": {
+        "inbox": "Shared inbox",
+        "contacts": "Contacts, tags and CSV import",
+        "oneNumber": "One WhatsApp number",
+        "templates": "Message templates",
+        "everythingFree": "Everything in Free",
+        "broadcasts": "Broadcasts",
+        "automations": "No-code automations",
+        "pipelines": "Sales pipelines",
+        "everythingGrowth": "Everything in Growth",
+        "flows": "Visual chatbot flows",
+        "aiAssistant": "AI assistant (your own key)",
+        "apiWebhooks": "API, webhooks and MCP",
+        "everythingPro": "Everything in Pro",
+        "multiNumber": "Multiple numbers (coming soon)",
+        "roles": "Advanced team roles",
+        "prioritySupport": "Priority support"
+      }
+    },
+    "useCases": {
+      "eyebrow": "Use cases",
+      "title": "Made for the way your team works",
+      "tabs": {
+        "sales": {
+          "label": "Sales",
+          "title": "Never lose a lead in a chat again",
+          "body": "Every enquiry becomes a contact, every opportunity a deal you can track.",
+          "points": {
+            "a": "Kanban pipelines linked to conversations",
+            "b": "Follow-up automations with waits",
+            "c": "Tags and custom fields to segment leads"
+          }
+        },
+        "support": {
+          "label": "Support",
+          "title": "Faster answers, shared by the whole team",
+          "body": "Assign, prioritise and reply from one inbox, with AI handling the easy questions.",
+          "points": {
+            "a": "Assignment and online presence",
+            "b": "Reply-time target and waiting-chat alerts",
+            "c": "AI auto-reply with human handoff"
+          }
+        },
+        "agencies": {
+          "label": "Agencies",
+          "title": "Run client WhatsApp with control",
+          "body": "Give every person the right access and connect your own tools.",
+          "points": {
+            "a": "Owner, admin, agent and viewer roles",
+            "b": "REST API and signed webhooks",
+            "c": "Multiple numbers per account (coming soon)"
+          }
+        },
+        "ecommerce": {
+          "label": "E-commerce",
+          "title": "From offer to order in the chat",
+          "body": "Reach customers where they read and answer product questions instantly.",
+          "points": {
+            "a": "Personalised broadcast campaigns",
+            "b": "Chatbot menus for common questions",
+            "c": "Send template updates from your store via the API"
+          }
+        },
+        "education": {
+          "label": "Education",
+          "title": "Admissions and reminders that get read",
+          "body": "Answer enquiries, collect details and keep students and parents informed.",
+          "points": {
+            "a": "Flows that collect enquiry details",
+            "b": "Broadcast reminders to the right group",
+            "c": "Shared inbox for your admissions team"
+          }
+        }
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Questions, answered",
+      "items": {
+        "number": {
+          "q": "What phone number do I need?",
+          "a": "A number you own that can receive a verification SMS or call. It is connected through Meta's WhatsApp Business Platform; if the number is currently used in the WhatsApp or WhatsApp Business app, Meta's migration rules apply."
+        },
+        "official": {
+          "q": "Is this the official WhatsApp API?",
+          "a": "Yes. Automate Panu AI connects to Meta's official WhatsApp Business Cloud API with your own Meta app and number. There is no unofficial automation of the WhatsApp app."
+        },
+        "window": {
+          "q": "Can I message customers at any time?",
+          "a": "WhatsApp allows free-form replies within 24 hours of a customer's last message. Outside that window you send Meta-approved templates. The inbox shows the remaining time on every chat."
+        },
+        "ai": {
+          "q": "How does bring-your-own AI key work?",
+          "a": "Paste an OpenAI, Anthropic or OpenAI-compatible API key in AI Agents settings. The key is stored encrypted and the provider bills you directly, so there is no per-seat AI fee."
+        },
+        "security": {
+          "q": "How is my data protected?",
+          "a": "Each account's data is isolated in the database with row-level security, WhatsApp tokens and AI keys are encrypted with AES-256-GCM, and incoming webhooks are verified with Meta's signature."
+        },
+        "roles": {
+          "q": "Can my whole team use it?",
+          "a": "Yes. Invite teammates by link and give each one a role: owner, admin, agent or viewer. Viewers can read but not send."
+        },
+        "api": {
+          "q": "Do you have an API?",
+          "a": "Yes. A REST API with scoped, revocable keys lets you send messages and manage contacts, signed webhooks notify your systems, and an MCP server lets AI assistants work with your CRM."
+        },
+        "languages": {
+          "q": "Which languages does the app support?",
+          "a": "The app is available in English, Spanish, Korean and Portuguese."
+        },
+        "pricing": {
+          "q": "How much does it cost?",
+          "a": "Plans are being finalised and will be published here soon, including a free plan to get started."
+        },
+        "cancel": {
+          "q": "Can I cancel any time?",
+          "a": "Yes — you will be able to cancel your plan any time once paid plans launch. Your WhatsApp number stays yours."
+        }
+      }
+    },
+    "cta": {
+      "title": "Bring your WhatsApp team together today",
+      "subtitle": "Connect your number, invite your team and send your first reply in one session.",
+      "primary": "Start free",
+      "secondary": "Book a demo"
+    },
+    "tools": {
+      "eyebrow": "Free tools",
+      "title": "Free WhatsApp tools",
+      "subtitle": "Handy tools that run entirely in your browser. Nothing is stored or sent.",
+      "all": "All free tools",
+      "open": "Open tool",
+      "items": {
+        "linkGenerator": {
+          "name": "WhatsApp Link Generator",
+          "desc": "Create a wa.me link with an optional pre-filled message."
+        },
+        "qrGenerator": {
+          "name": "WhatsApp QR Code Generator",
+          "desc": "Make a branded QR code that opens a chat with you."
+        },
+        "textFormatter": {
+          "name": "WhatsApp Text Formatter",
+          "desc": "Bold, italic, strikethrough and lists with a live preview."
+        },
+        "chatWidget": {
+          "name": "WhatsApp Chat Widget",
+          "desc": "Add a click-to-chat button to your website."
+        }
+      }
+    },
+    "quickLinks": {
+      "label": "Free tools"
+    },
+    "footer": {
+      "tagline": "The WhatsApp CRM for teams that sell and support on chat.",
+      "product": "Product",
+      "solutions": "Solutions",
+      "freeTools": "Free tools",
+      "resources": "Resources",
+      "company": "Company",
+      "social": "Follow us",
+      "rights": "All rights reserved.",
+      "status": "Status",
+      "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
     }
   }
 }

@@ -77,6 +77,30 @@ More docs: [public API](./docs/public-api.md) · [MCP server](./docs/mcp.md) ·
 [multiple WABAs](./docs/multi-waba.md) · [auth emails](./docs/auth-emails.md) ·
 [WhatsApp connection troubleshooting](./docs/whatsapp-connection-troubleshooting.md)
 
+## Editing the marketing site
+
+The public site lives in `src/app/(marketing)/` and is served on
+`automatepanuai.axxeler.in`; the app is served on `chat.axxeler.in`.
+Both come from the same deployment, and `src/proxy.ts` routes by host
+([src/lib/marketing/host-routing.ts](./src/lib/marketing/host-routing.ts)).
+`/api/*` (including the Meta webhook and `/api/v1`) is never redirected.
+
+| What                                                          | Where                                   |
+| ------------------------------------------------------------- | --------------------------------------- |
+| Brand name, tagline, domains, contact, social links           | `src/config/brand.ts`                   |
+| All page copy (English; mirrored in es/ko/pt for translation) | `messages/*.json` → `Marketing`         |
+| Plans and prices (placeholders, "coming soon")                | `src/content/marketing/plans.config.ts` |
+| "What's new" entries                                          | `src/content/marketing/changelog.ts`    |
+| Customer logo strip (placeholders)                            | `src/content/marketing/logos.ts`        |
+| Free tools list (nav, footer, quick links)                    | `src/content/marketing/tools.ts`        |
+| Navigation and footer links                                   | `src/content/marketing/nav.ts`          |
+| Design tokens (white + light purple)                          | `src/app/globals.css` → `.mk` block     |
+| Components and product mocks                                  | `src/components/marketing/`             |
+
+Two env vars turn on the domain split (both are set in `.env.dokploy`):
+`NEXT_PUBLIC_MARKETING_URL` and `NEXT_PUBLIC_APP_URL`. Without them,
+everything is served from one host (marketing at `/`, app at `/dashboard`).
+
 ## Brand assets
 
 Logo files live in [`public/brand/`](./public/brand): `logo.svg` (light
