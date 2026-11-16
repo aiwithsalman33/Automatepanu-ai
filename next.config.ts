@@ -78,7 +78,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   experimental: {
     turbopackPluginRuntimeStrategy: "workerThreads",
-    cpus: 4,
+    // Build workers. Each is a full Node process, so on a small server
+    // (the Docker build sets NEXT_BUILD_CPUS=1) fewer workers keeps
+    // `next build` inside the RAM limit instead of being OOM-killed.
+    cpus: Math.max(1, Number(process.env.NEXT_BUILD_CPUS) || 4),
   },
   // Stop `next dev` from overwriting the repo's hand-written AGENTS.md.
   agentRules: false,

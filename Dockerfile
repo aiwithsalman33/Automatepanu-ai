@@ -24,10 +24,16 @@ COPY . .
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_APP_LOCALE=en
 ARG NEXT_PUBLIC_APP_URL
+# Small-server defaults: one build worker and a capped heap keep
+# `next build` under ~2.5 GB. Raise both on a bigger build machine.
+ARG NEXT_BUILD_CPUS=1
+ARG BUILD_MAX_OLD_SPACE=2048
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     NEXT_PUBLIC_APP_LOCALE=$NEXT_PUBLIC_APP_LOCALE \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
-    NEXT_TELEMETRY_DISABLED=1
+    NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_BUILD_CPUS=$NEXT_BUILD_CPUS \
+    NODE_OPTIONS=--max-old-space-size=$BUILD_MAX_OLD_SPACE
 
 # Fail fast (seconds, not minutes into `next build`) on a malformed or
 # placeholder public URL. They're optional (brand defaults apply), but

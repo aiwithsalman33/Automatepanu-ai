@@ -193,6 +193,7 @@ Environment, then redeploy.
 
 | Symptom                                     | Fix                                                                             |
 | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| Build stops at `Creating an optimized production build` (“cancelled”, exit 137, `Killed`) | Out of RAM during `next build`: add the swap from §1, redeploy. Build uses 1 worker by default (`NEXT_BUILD_CPUS`); raise only on 8 GB+ |
 | `required variable X is missing a value`    | Add `X` in Environment, redeploy                                                |
 | `app` exits: `Not starting: … problem(s)`   | The log lists the bad variables                                                 |
 | 502/404 on the domain                       | Domain must point to service **caddy**, port **8080**; check `caddy` is healthy |

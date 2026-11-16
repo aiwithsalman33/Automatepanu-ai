@@ -195,11 +195,14 @@ services:
     build:
       context: .
       target: runner
-      # NEXT_PUBLIC_* are inlined at build time (the only build args).
+      # NEXT_PUBLIC_* are inlined at build time; the rest only size the build.
       args:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
         NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
+        # 1 build worker fits a 4 GB server; raise on 8 GB+ for faster builds.
+        NEXT_BUILD_CPUS: ${NEXT_BUILD_CPUS:-1}
+        BUILD_MAX_OLD_SPACE: ${BUILD_MAX_OLD_SPACE:-2048}
     image: automatepanu-app:local
     restart: unless-stopped
     logging: *logging
