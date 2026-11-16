@@ -138,9 +138,12 @@ services:
       S3_ENDPOINT: http://minio:9000
       S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
       S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
-    # Host side only — HOST_PORT=8080 publishes the app on :8080.
-    ports:
-      - '${HOST_PORT:-3000}:3000'
+    # Not published on the host: Traefik/Dokploy routes to it by domain
+    # over the Docker network, so there is no raw IP:port access. For local
+    # testing on http://localhost:3000 add the overlay:
+    #   docker compose -f docker-compose.yml -f docker-compose.local.yml up
+    expose:
+      - '3000'
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -158,12 +161,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
-    # Dokploy / Traefik: Dokploy normally attaches domains from its UI.
-    # To route with labels instead, drop the `ports:` above, join the
-    # `dokploy-network`, and uncomment:
+    # Dokploy / Traefik: attach BOTH domains to this service (port 3000) in
+    # Dokploy's UI — chat.axxeler.in (app) and automatepanuai.axxeler.in
+    # (marketing); src/proxy.ts routes by Host. To route with labels
+    # instead, join the `dokploy-network` and uncomment:
     # labels:
     #   - traefik.enable=true
-    #   - traefik.http.routers.wacrm.rule=Host(`crm.example.com`)
+    #   - traefik.http.routers.wacrm.rule=Host(`chat.axxeler.in`) || Host(`automatepanuai.axxeler.in`)
     #   - traefik.http.routers.wacrm.entrypoints=websecure
     #   - traefik.http.routers.wacrm.tls.certresolver=letsencrypt
     #   - traefik.http.services.wacrm.loadbalancer.server.port=3000

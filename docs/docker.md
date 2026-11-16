@@ -56,13 +56,19 @@ schema owner.
    A missing secret stops Compose before anything starts, with a
    message naming the variable.
 
-3. The app is served on [http://localhost:3000](http://localhost:3000)
-   (publish it elsewhere with `HOST_PORT=8080` in `.env.local`).
+3. **No host port is published.** In production, Traefik (Dokploy) reaches
+   the `app` service by domain over the Docker network, so there is no
+   raw `IP:3000` access. For local testing, add the overlay that publishes
+   it on [http://localhost:3000](http://localhost:3000):
 
-> Use `HOST_PORT`, not `PORT`, to move the published port. `PORT` is
-> what the server listens on _inside_ the container. Compose pins it to
-> 3000 so a stray `PORT` in `.env.local` can't desync the app from the
-> port mapping and the healthcheck.
+   ```bash
+   docker compose --env-file .env.local -f docker-compose.yml -f docker-compose.local.yml up --build -d
+   ```
+
+> Use `HOST_PORT` (overlay only), not `PORT`, to move the published port.
+> `PORT` is what the server listens on _inside_ the container. Compose
+> pins it to 3000 so a stray `PORT` in `.env.local` can't desync the app
+> from Traefik and the healthcheck.
 
 ## Build-time vs runtime variables
 

@@ -35,6 +35,58 @@ describe('migrated Supabase (GoTrue bcrypt) hashes', () => {
   });
 });
 
+/**
+ * Migrated hashes with OTHER cost factors and prefixes (users imported
+ * from older systems, or re-hashed by pgcrypto). Fixtures generated once:
+ *   cost 4:  Postgres pgcrypto  crypt('Migrated-Pass-1', gen_salt('bf', 4))
+ *   cost 12: bcryptjs           hashSync('Migrated-Pass-1', 12)
+ */
+const MIGRATED_PASSWORD = 'Migrated-Pass-1';
+const PGCRYPTO_COST4 =
+  '$2a$04$x8FND429ow6RDG8ViwABjujVqUucdboA/IXESpAXj6pPcTgwfFbZm';
+const BCRYPTJS_COST12 =
+  '$2b$12$H6RIS1jksZC.e.ocx1s2LObieL/4cQ8bYu6CUo6BD9YCLDorrJ32.';
+
+describe('migrated bcrypt hashes with different cost factors / prefixes', () => {
+  it.each([
+    ['$2a$ cost 4 (pgcrypto)', PGCRYPTO_COST4],
+    ['$2b$ cost 12 (bcryptjs)', BCRYPTJS_COST12],
+    ['$2y$ cost 12 (PHP-style prefix)', '$2y$' + BCRYPTJS_COST12.slice(4)],
+  ])(
+    '%s: right password verifies, wrong ones do not, flagged for rehash',
+    async (_l, hash) => {
+      expect(isBcryptHash(hash)).toBe(true);
+      expect(needsRehash(hash)).toBe(true);
+      expect(await verifyPassword({ hash, password: MIGRATED_PASSWORD })).toBe(
+        true
+      );
+      expect(await verifyPassword({ hash, password: 'migrated-pass-1' })).toBe(
+        false
+      );
+      expect(
+        await verifyPassword({ hash, password: MIGRATED_PASSWORD + ' ' })
+      ).toBe(false);
+      expect(await verifyPassword({ hash, password: GOTRUE_PASSWORD })).toBe(
+        false
+      );
+    }
+  );
+
+  it('the GoTrue password does not verify against an unrelated migrated hash', async () => {
+    expect(
+      await verifyPassword({ hash: BCRYPTJS_COST12, password: GOTRUE_PASSWORD })
+    ).toBe(false);
+  });
+
+  it('the buggy $2x$ variant is not accepted (fails closed, never throws)', async () => {
+    const x = '$2x$' + BCRYPTJS_COST12.slice(4);
+    expect(isBcryptHash(x)).toBe(false);
+    expect(await verifyPassword({ hash: x, password: MIGRATED_PASSWORD })).toBe(
+      false
+    );
+  });
+});
+
 describe('native (scrypt) hashes', () => {
   it('round-trips and is not flagged for rehash', async () => {
     const hash = await hashPassword('n3w-Passw0rd');

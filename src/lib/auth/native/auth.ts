@@ -16,6 +16,7 @@ import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { createAuthMiddleware } from 'better-auth/api';
 import { nextCookies } from 'better-auth/next-js';
 import type { Pool } from 'pg';
+import { appOrigin } from '@/config/brand';
 import { mailer as defaultMailer, type Mailer } from '@/lib/email/mailer';
 import {
   changeEmailMessage,
@@ -78,8 +79,32 @@ export interface NativeAuthDeps {
   mailer: Mailer;
   secret: string;
   baseURL?: string;
+  /**
+   * Origins allowed to make cookie-authenticated state changes (CSRF) and
+   * to be used as callback/redirect targets. ONLY the app's own origin:
+   * the marketing site links to the app but never calls auth.
+   */
+  trustedOrigins: string[];
   secondaryStorage?: BetterAuthOptions['secondaryStorage'];
   production?: boolean;
+}
+
+/**
+ * Trusted origins for this deployment: exactly the app origin
+ * (NEXT_PUBLIC_APP_URL / NEXT_PUBLIC_SITE_URL, else the brand default
+ * https://chat.axxeler.in). Never the marketing domain, never a
+ * wildcard, and never plain http in production.
+ */
+export function authTrustedOrigins(
+  env: NodeJS.ProcessEnv = process.env
+): string[] {
+  const origin = appOrigin(env);
+  if (env.NODE_ENV === 'production' && !origin.startsWith('https://')) {
+    throw new Error(
+      `auth trusted origin must be https in production, got ${origin}`
+    );
+  }
+  return [origin];
 }
 
 export function nativeAuthOptions(deps: NativeAuthDeps) {
@@ -88,6 +113,7 @@ export function nativeAuthOptions(deps: NativeAuthDeps) {
     appName: 'wacrm',
     basePath: '/api/auth',
     baseURL: deps.baseURL,
+    trustedOrigins: deps.trustedOrigins,
     secret: deps.secret,
     database: deps.pool,
     secondaryStorage: deps.secondaryStorage,
@@ -178,6 +204,10 @@ export function nativeAuthOptions(deps: NativeAuthDeps) {
       disableOriginCheck: false,
       database: { generateId: 'uuid' },
       cookiePrefix: 'wacrm',
+      // Host-only session cookies (no Domain attribute): they belong to
+      // chat.axxeler.in alone and are never sent to the marketing site or
+      // any other *.axxeler.in host. Pinned by native-auth tests.
+      crossSubDomainCookies: { enabled: false },
       useSecureCookies: deps.production ?? false,
       ipAddress: { ipAddressHeaders: ['x-real-ip', 'x-forwarded-for'] },
     },
@@ -208,7 +238,8 @@ export function nativeAuth(): NativeAuth {
     pool: authPool(),
     mailer: defaultMailer(),
     secret: process.env.AUTH_SECRET!,
-    baseURL: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+    baseURL: appOrigin(),
+    trustedOrigins: authTrustedOrigins(),
     secondaryStorage: redisSecondaryStorage(),
     production: process.env.NODE_ENV === 'production',
   });

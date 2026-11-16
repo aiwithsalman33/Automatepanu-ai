@@ -11,7 +11,7 @@ that standard.
 If you witness or experience behaviour that violates the Code, please
 report it privately to the project maintainer:
 
-- Email: **[REPLACE WITH YOUR CONTACT EMAIL]** with `[Automate Panu AI conduct]` in
+- Email: **security@axxeler.in** with `[Automate Panu AI conduct]` in
   the subject.
 
 Reports are handled confidentially. Expect an acknowledgement within

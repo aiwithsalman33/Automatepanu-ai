@@ -118,6 +118,7 @@ describe.runIf(isApp)(
         status: res.status,
         json: json as AuthJson | null,
         cookie: sessionCookie,
+        rawSetCookie: setCookie,
       };
     }
 
@@ -154,6 +155,7 @@ describe.runIf(isApp)(
         mailer,
         secret: 'test-secret-test-secret-test-secret-0123',
         baseURL: ORIGIN,
+        trustedOrigins: [ORIGIN],
         secondaryStorage: memoryStorage(),
       });
     });
@@ -237,6 +239,12 @@ describe.runIf(isApp)(
       });
       expect(ok.status, JSON.stringify(ok.json)).toBe(200);
       expect(ok.cookie).toMatch(/^wacrm\.session_token=/);
+      // Host-only cookie: no Domain attribute, so it is never sent to the
+      // marketing site or any other *.axxeler.in host. HttpOnly, SameSite.
+      const raw = ok.rawSetCookie.find((c) => c.includes('session_token'))!;
+      expect(raw).not.toMatch(/;\s*domain=/i);
+      expect(raw).toMatch(/;\s*httponly/i);
+      expect(raw).toMatch(/;\s*samesite=lax/i);
 
       const me = await call('/get-session', { cookie: ok.cookie });
       expect(me.json?.user?.email).toBe(addr);
@@ -250,6 +258,55 @@ describe.runIf(isApp)(
       );
       expect(rows.map((r) => r.email)).toEqual([addr]);
     });
+
+    it.each([
+      [
+        'cost 4 (pgcrypto)',
+        '$2a$04$x8FND429ow6RDG8ViwABjujVqUucdboA/IXESpAXj6pPcTgwfFbZm',
+      ],
+      [
+        'cost 12 (bcryptjs)',
+        '$2b$12$H6RIS1jksZC.e.ocx1s2LObieL/4cQ8bYu6CUo6BD9YCLDorrJ32.',
+      ],
+    ])(
+      'a migrated user with a bcrypt %s hash: wrong password refused, right one signs in and rehashes',
+      async (_label, hash) => {
+        const addr = email('migrated-cost');
+        const { rows } = await admin.query(
+          `INSERT INTO auth.users (email, name, email_verified) VALUES ($1, 'Migrated', true) RETURNING id`,
+          [addr]
+        );
+        const userId = rows[0].id;
+        await admin.query(
+          `INSERT INTO auth.identities (id, user_id, provider_id, account_id, password)
+         VALUES ($1, $2::uuid, 'credential', $2::text, $3)`,
+          [randomUUID(), userId, hash]
+        );
+        const stored = async () =>
+          (
+            await admin.query(
+              'SELECT password FROM auth.identities WHERE user_id = $1',
+              [userId]
+            )
+          ).rows[0].password;
+
+        for (const wrong of ['migrated-pass-1', 'Migrated-Pass-2', '']) {
+          const r = await call('/sign-in/email', {
+            body: { email: addr, password: wrong },
+          });
+          expect(r.status, `wrong password "${wrong}"`).toBeGreaterThanOrEqual(
+            400
+          );
+        }
+        expect(await stored()).toBe(hash); // never rehashed on failure
+
+        const ok = await call('/sign-in/email', {
+          body: { email: addr, password: 'Migrated-Pass-1' },
+        });
+        expect(ok.status, JSON.stringify(ok.json)).toBe(200);
+        expect(isBcryptHash(await stored())).toBe(false);
+      }
+    );
 
     it('an imported Supabase user signs in with their GoTrue bcrypt password, which is then upgraded to scrypt', async () => {
       const addr = email('imported');
@@ -330,7 +387,13 @@ describe.runIf(isApp)(
         body: { email: addr, password: 'S3cure-pass' },
       });
 
-      for (const origin of ['https://evil.example', 'null']) {
+      // The marketing domain is a sibling *.axxeler.in host, but it is NOT
+      // a trusted origin: it must not be able to act with the app session.
+      for (const origin of [
+        'https://evil.example',
+        'null',
+        'https://automatepanuai.axxeler.in',
+      ]) {
         const attack = await call('/revoke-sessions', {
           cookie: victim.cookie,
           origin,

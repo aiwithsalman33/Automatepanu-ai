@@ -1,0 +1,11 @@
+# Local-only overlay: publishes the app on the host for testing.
+# Production (Dokploy/Traefik) never uses this file; there the app is
+# reachable only through its domains.
+#
+#   docker compose --env-file .env.local -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# HOST_PORT moves the published port (default 3000).
+services:
+  app:
+    ports:
+      - '${HOST_PORT:-3000}:3000'

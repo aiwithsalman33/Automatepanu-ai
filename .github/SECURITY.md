@@ -12,7 +12,7 @@ Instead, please report privately via one of:
 
 - [GitHub Security Advisories](https://github.com/aiwithsalman33/Automatepanu-ai/security/advisories/new)
   (preferred — keeps the disclosure, fix, and CVE all in one place).
-- Email: [REPLACE WITH YOUR SECURITY CONTACT EMAIL], with `[Automate Panu AI security]` in the subject.
+- Email: `security@axxeler.in`, with `[Automate Panu AI security]` in the subject.
 
 Include, if you can:
 
