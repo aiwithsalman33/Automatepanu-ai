@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { toast } from 'sonner';
 import type { Contact, Tag, ContactTag } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -58,7 +58,6 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { useTranslations } from 'next-intl';
 import {
-  contactSearchFilter,
   contactSearchPattern,
 } from '@/lib/contacts/search-filter';
 import { pageAfterRangeError, pageAfterShrink } from '@/lib/contacts/page-bounds';
@@ -168,8 +167,8 @@ export default function ContactsPage() {
         .order('created_at', { ascending: false })
         .range(from, to);
 
-      const searchFilter = contactSearchFilter(term, { includeEmail: true });
-      if (searchFilter) query = query.or(searchFilter);
+      // Built server-side from the same contactSearchFilter() rules.
+      if (term.trim()) query = query.search(term, { includeEmail: true });
 
       const { data, count: exactCount, error } = await query;
       if (seq !== fetchSeq.current) return; // superseded by a newer fetch

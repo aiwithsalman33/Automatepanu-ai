@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/data/client";
 import { useAuth } from "@/hooks/use-auth";
 import { HEARTBEAT_MS, IDLE_AFTER_MS, type StoredPresence } from "@/lib/presence";
 

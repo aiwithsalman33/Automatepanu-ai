@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/data/client";
+import { getCurrentUser } from "@/lib/auth/client";
 import type { MessageTemplate } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,7 +104,7 @@ export function TemplatePicker({
       const supabase = createClient();
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await getCurrentUser().catch(() => ({ data: { user: null } }));
 
       if (!user) {
         if (!cancelled) {

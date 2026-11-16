@@ -1,123 +1,110 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { NextRequest } from 'next/server';
 
-// --- Scenario knobs the mock reads -----------------------------------------
-// `mockUser`         — what getUser() resolves to (a refreshed session ⇒ user,
-//                      or null for the logged-out path).
-// `refreshedCookies` — cookies Supabase writes via setAll() during getUser(),
-//                      i.e. the freshly *rotated* auth token. The whole point
-//                      of the test is that these must survive onto whatever
-//                      response the proxy returns — including redirects.
-let mockUser: { id: string } | null = null;
-let getUserCalls = 0;
-let refreshedCookies: Array<{
-  name: string;
-  value: string;
-  options: Record<string, unknown>;
-}> = [];
+// --- Scenario knobs ---------------------------------------------------------
+// `sessionUser` — what the session lookup (validated against the sessions
+//                 table) returns for a request that carries a cookie.
+let sessionUser: { id: string } | null = null;
+let lookups = 0;
 
-vi.mock('@supabase/ssr', () => ({
-  createServerClient: (
-    _url: string,
-    _key: string,
-    opts: {
-      cookies: { setAll: (c: typeof refreshedCookies) => void };
-    }
-  ) => ({
-    auth: {
-      // Mirrors real auth-js: an expired access token is transparently
-      // refreshed inside getUser(), which rotates the refresh token and
-      // pushes the new cookies through setAll() before resolving.
-      getUser: async () => {
-        getUserCalls++;
-        if (refreshedCookies.length) opts.cookies.setAll(refreshedCookies);
-        return { data: { user: mockUser } };
-      },
-    },
-  }),
+vi.mock('@/lib/auth/native/session', () => ({
+  getNativeSessionUser: async () => {
+    lookups++;
+    return sessionUser;
+  },
 }));
 
-// Imported after the mock is registered.
 const { proxy } = await import('./proxy');
 
+const COOKIE = 'wacrm.session_token=tok.sig';
+
+function req(url: string, opts: { cookie?: boolean; method?: string } = {}) {
+  return new NextRequest(url, {
+    method: opts.method ?? 'GET',
+    headers: opts.cookie === false ? {} : { cookie: COOKIE },
+  });
+}
+
 beforeEach(() => {
-  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
-  mockUser = null;
-  refreshedCookies = [];
-  getUserCalls = 0;
+  sessionUser = null;
+  lookups = 0;
   delete process.env.NEXT_PUBLIC_APP_URL;
   delete process.env.NEXT_PUBLIC_MARKETING_URL;
 });
 
-afterEach(() => vi.clearAllMocks());
-
-const ROTATED = {
-  name: 'sb-test-auth-token',
-  value: 'rotated-refresh-token',
-  options: { path: '/', httpOnly: true },
-};
-
-describe('proxy — refreshed auth cookies survive redirects', () => {
-  it('carries the rotated token when redirecting a signed-in user off /login', async () => {
-    mockUser = { id: 'user-1' };
-    refreshedCookies = [ROTATED];
-
-    const res = await proxy(new NextRequest('https://app.test/login'));
-
-    // Redirect to /dashboard…
+describe('proxy — native session', () => {
+  it('redirects a signed-in user off /login to /dashboard', async () => {
+    sessionUser = { id: 'user-1' };
+    const res = await proxy(req('https://app.test/login'));
     expect(res.status).toBe(307);
-    expect(res.headers.get('location')).toContain('/dashboard');
-    // …and the rotated cookie MUST ride along, otherwise the browser keeps
-    // replaying the now-consumed refresh token and the session wedges until
-    // the user manually clears cookies.
-    expect(res.cookies.get(ROTATED.name)?.value).toBe(ROTATED.value);
-  });
-
-  it('carries the rotated token when redirecting an unauth user to /login', async () => {
-    mockUser = null;
-    // Even on the logged-out path getUser() may emit cookie writes (e.g.
-    // clearing a dead session); those must not be dropped on the redirect.
-    refreshedCookies = [{ ...ROTATED, value: 'cleared' }];
-
-    const res = await proxy(new NextRequest('https://app.test/dashboard'));
-
-    expect(res.status).toBe(307);
-    expect(res.headers.get('location')).toContain('/login');
-    expect(res.cookies.get(ROTATED.name)?.value).toBe('cleared');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/dashboard');
   });
 
   it('redirects a signed-in user with an invite token to /join/<token>', async () => {
-    mockUser = { id: 'user-1' };
-    refreshedCookies = [ROTATED];
-
-    const res = await proxy(
-      new NextRequest('https://app.test/login?invite=abc123')
-    );
-
+    sessionUser = { id: 'user-1' };
+    const res = await proxy(req('https://app.test/login?invite=abc123'));
     expect(res.headers.get('location')).toContain('/join/abc123');
-    expect(res.cookies.get(ROTATED.name)?.value).toBe(ROTATED.value);
   });
 
-  it('passes through (no redirect) for a signed-in user on a protected page', async () => {
-    mockUser = { id: 'user-1' };
-    refreshedCookies = [ROTATED];
-
-    const res = await proxy(new NextRequest('https://app.test/dashboard'));
-
-    // No redirect — the normal NextResponse.next() already carries cookies.
+  it('lets a signed-in user through to a protected page', async () => {
+    sessionUser = { id: 'user-1' };
+    const res = await proxy(req('https://app.test/dashboard'));
     expect(res.headers.get('location')).toBeNull();
-    expect(res.cookies.get(ROTATED.name)?.value).toBe(ROTATED.value);
+  });
+
+  it('a revoked/expired cookie counts as signed out (no redirect loop)', async () => {
+    sessionUser = null; // cookie present, but the session row is gone
+    const login = await proxy(req('https://app.test/login'));
+    expect(login.headers.get('location')).toBeNull();
+    const dash = await proxy(req('https://app.test/dashboard'));
+    expect(new URL(dash.headers.get('location')!).pathname).toBe('/login');
+  });
+
+  it('skips the database entirely when there is no session cookie', async () => {
+    const res = await proxy(
+      req('https://app.test/dashboard', { cookie: false })
+    );
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
+    expect(lookups).toBe(0);
+  });
+
+  it('401s cookie-authenticated /api/whatsapp/* without a session', async () => {
+    const res = await proxy(
+      req('https://app.test/api/whatsapp/config', { cookie: false })
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('lets /api/whatsapp/* through with a valid session (smoke-test regression)', async () => {
+    sessionUser = { id: 'user-1' };
+    const res = await proxy(req('https://app.test/api/whatsapp/config'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('location')).toBeNull();
+  });
+
+  it.each([
+    ['GET', '/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=42'],
+    ['POST', '/api/whatsapp/webhook'],
+    ['GET', '/api/v1/me'],
+    ['POST', '/api/v1/messages'],
+    ['POST', '/api/auth/sign-in/email'],
+    ['POST', '/api/data/contacts'],
+  ])('never gates %s %s (each authenticates itself)', async (method, path) => {
+    const res = await proxy(
+      req(`https://app.test${path}`, { method, cookie: false })
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('location')).toBeNull();
+    expect(lookups).toBe(0);
   });
 });
 
 describe('proxy — every dashboard route requires a session', () => {
   // Read the route group rather than hard-coding a list, so a new page added
   // under src/app/(dashboard)/ fails here until it is added to
-  // protectedPaths. /flows, /agents and /notifications were missed that way
-  // and rendered a broken page to signed-out visitors instead of redirecting.
+  // PROTECTED_PATHS.
   const dashboardRoutes = readdirSync(join(__dirname, 'app', '(dashboard)'), {
     withFileTypes: true,
   })
@@ -131,10 +118,7 @@ describe('proxy — every dashboard route requires a session', () => {
   it.each(dashboardRoutes)(
     'redirects a signed-out visitor from %s to /login',
     async (route) => {
-      mockUser = null;
-
-      const res = await proxy(new NextRequest(`https://app.test${route}`));
-
+      const res = await proxy(req(`https://app.test${route}`));
       expect(res.status).toBe(307);
       expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
     }
@@ -144,28 +128,26 @@ describe('proxy — every dashboard route requires a session', () => {
 describe('proxy — one deployment, two domains', () => {
   const MK = 'https://automatepanuai.axxeler.in';
   const APP = 'https://chat.axxeler.in';
-  const req = (url: string, init?: { method?: string }) =>
-    new NextRequest(url, { method: init?.method ?? 'GET' });
 
   beforeEach(() => {
     process.env.NEXT_PUBLIC_MARKETING_URL = MK;
     process.env.NEXT_PUBLIC_APP_URL = APP;
   });
 
-  it('serves marketing pages on the marketing host WITHOUT an auth lookup', async () => {
+  it('serves marketing pages on the marketing host WITHOUT a session lookup', async () => {
     for (const path of ['/', '/pricing', '/tools/whatsapp-link-generator']) {
       const res = await proxy(req(`${MK}${path}`));
       expect(res.headers.get('location'), path).toBeNull();
       expect(res.status).toBe(200);
     }
-    expect(getUserCalls).toBe(0);
+    expect(lookups).toBe(0);
   });
 
   it('sends app pages on the marketing host to the app host (308, path + query kept)', async () => {
     const res = await proxy(req(`${MK}/login?invite=tok`));
     expect(res.status).toBe(308);
     expect(res.headers.get('location')).toBe(`${APP}/login?invite=tok`);
-    expect(getUserCalls).toBe(0);
+    expect(lookups).toBe(0);
   });
 
   it('sends marketing pages on the app host to the marketing host', async () => {
@@ -177,7 +159,7 @@ describe('proxy — one deployment, two domains', () => {
   it('app host root → /login when signed out, /dashboard when signed in', async () => {
     let res = await proxy(req(`${APP}/`));
     expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
-    mockUser = { id: 'u1' };
+    sessionUser = { id: 'u1' };
     res = await proxy(req(`${APP}/`));
     expect(new URL(res.headers.get('location')!).pathname).toBe('/dashboard');
   });

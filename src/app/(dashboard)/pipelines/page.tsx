@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/data/client";
+import { getCurrentUser } from "@/lib/auth/client";
 import type { Pipeline, PipelineStage, Deal } from "@/types";
 import { PipelineBoard } from "@/components/pipelines/pipeline-board";
 import { PipelineSettings } from "@/components/pipelines/pipeline-settings";
@@ -114,9 +115,8 @@ export default function PipelinesPage() {
 
   const seedDefaultPipeline = useCallback(async (): Promise<Pipeline | null> => {
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
+      data: { user },
+    } = await getCurrentUser();
     if (!user) return null;
     // pipelines.account_id is NOT NULL post-017 with no DB default.
     if (!accountId) return null;
@@ -256,9 +256,8 @@ export default function PipelinesPage() {
     setCreating(true);
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
+      data: { user },
+    } = await getCurrentUser();
     if (!user) {
       setCreating(false);
       return;

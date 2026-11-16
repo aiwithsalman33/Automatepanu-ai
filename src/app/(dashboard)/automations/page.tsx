@@ -18,7 +18,7 @@ import {
   Loader2,
 } from "lucide-react"
 
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/data/client";
 import { useCan } from "@/hooks/use-can"
 import { useTranslations } from "next-intl"
 import type { Automation } from "@/types"

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
+import { authClient, authErrorMessage } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,24 +22,27 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const supabase = createClient();
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    // The emailed link returns to /auth/callback, which exchanges it
-    // for a recovery session and forwards to /reset-password (issue
-    // #592). Supabase must allow this origin under Authentication →
-    // URL Configuration → Redirect URLs, or it silently falls back to
-    // its Site URL; see docs/auth-emails.md.
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+    // The emailed link goes to /api/auth/reset-password/<token>, which
+    // checks the token and redirects to /reset-password?token=… (or
+    // ?error=INVALID_TOKEN). Same response whether or not the address
+    // has an account, so this can't be used to probe for users.
+    const { error } = await authClient.requestPasswordReset({
+      email,
+      redirectTo: "/reset-password",
     });
 
     if (error) {
-      setError(error.message);
+      setError(
+        error.status === 429
+          ? t("tooManyAttempts")
+          : authErrorMessage(error, t("resetFailed")),
+      );
       setLoading(false);
       return;
     }

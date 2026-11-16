@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Plus, Tag as TagIcon, X } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { useAuth } from '@/hooks/use-auth';
 import { fetchAccountTags } from '@/lib/settings/account-catalog';
 import { Button } from '@/components/ui/button';
@@ -92,16 +92,16 @@ export function TagManager() {
         return;
       }
 
-      // account_id is mandatory on every account-scoped insert (NOT
-      // NULL + RLS, no DB default).
-      const { error } = await supabase.from('tags').insert({
-        user_id: user.id,
-        account_id: accountId,
-        name: newTagName.trim(),
-        color: selectedColor,
+      // POST /api/tags stamps account_id / user_id from the session.
+      const res = await fetch('/api/tags', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: newTagName.trim(), color: selectedColor }),
       });
-
-      if (error) throw error;
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      }
 
       toast.success(t('tagCreated'));
       setNewTagName('');
@@ -125,12 +125,10 @@ export function TagManager() {
 
     try {
       setDeleting(true);
-      const { error } = await supabase
-        .from('tags')
-        .delete()
-        .eq('id', tagToDelete.id);
-
-      if (error) throw error;
+      const res = await fetch(`/api/tags/${encodeURIComponent(tagToDelete.id)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       toast.success(t('tagDeleted'));
       setTags((prev) => prev.filter((t) => t.id !== tagToDelete.id));

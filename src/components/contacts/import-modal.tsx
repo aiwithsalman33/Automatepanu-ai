@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
+import { getCurrentUser } from '@/lib/auth/client';
 import { useAuth } from '@/hooks/use-auth';
 import {
   dedupeByPhone,
@@ -213,9 +214,8 @@ export function ImportModal({
 
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const user = session?.user;
+        data: { user },
+      } = await getCurrentUser();
       if (!user) throw new Error(t('notAuthenticated'));
       if (!accountId)
         throw new Error(t('notLinkedToAccount'));

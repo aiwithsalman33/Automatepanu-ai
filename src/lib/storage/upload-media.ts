@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentUser } from "@/lib/auth/client";
 import { getT } from "@/lib/i18n/translate";
 
 const t = getT("LibErrors");
@@ -102,9 +103,8 @@ export async function uploadAccountMedia(
 
   const {
     data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-  if (userErr || !user) {
+  } = await getCurrentUser().catch(() => ({ data: { user: null } }));
+  if (!user) {
     throw new Error(t("upload.notSignedIn"));
   }
 

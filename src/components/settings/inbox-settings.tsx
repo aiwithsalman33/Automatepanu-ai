@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Loader2, Timer } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/data/client";
 import { useAuth } from "@/hooks/use-auth";
 import { parseReplyTarget } from "@/lib/settings/reply-target";
 import { Button } from "@/components/ui/button";

@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
+import { authClient, authErrorMessage } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,6 @@ function SignupPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const supabase = createClient();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,34 +61,28 @@ function SignupPageInner() {
 
     setLoading(true);
 
-    // Always name our own origin as the place the confirmation link
-    // returns to. Previously this was left unset unless an invite was
-    // involved, so Supabase fell back to its Site URL — which on a
-    // freshly-created or self-hosted project is `http://localhost:3000`
-    // (issue #595) — and even when the Site URL was right the link
-    // landed on `/` with an unexchanged `?code=`, so the user had to
-    // sign in again after verifying. /auth/callback exchanges the link
-    // for a session and forwards to `next` (issue #592). Supabase still
-    // has to allow this origin under Authentication → URL Configuration
-    // → Redirect URLs; see docs/auth-emails.md.
-    const next = inviteToken
+    // The verification email links to /api/auth/verify-email, which
+    // signs the user in (autoSignInAfterVerification) and redirects to
+    // this relative callback: the dashboard, or the invite's join page
+    // so they land on the accept step. Relative, so it can only ever
+    // point back at this app (Better Auth checks trusted origins too).
+    const callbackURL = inviteToken
       ? `/join/${encodeURIComponent(inviteToken)}`
       : "/dashboard";
-    const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
-    const { error } = await supabase.auth.signUp({
+    const { error } = await authClient.signUp.email({
       email,
       password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-        emailRedirectTo,
-      },
+      name: fullName,
+      callbackURL,
     });
 
     if (error) {
-      setError(error.message);
+      setError(
+        error.status === 429
+          ? t("tooManyAttempts")
+          : authErrorMessage(error, t("signupFailed")),
+      );
       setLoading(false);
       return;
     }

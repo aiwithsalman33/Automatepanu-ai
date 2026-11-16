@@ -3,22 +3,23 @@
 // ============================================================
 // /reset-password — the form the password-reset email leads to.
 //
-// The emailed link lands on /auth/callback, which exchanges it for a
-// session and 303s here. So on arrival the visitor either has a
-// recovery session (show the form) or doesn't (the link was spent,
-// expired, or opened in a browser without the PKCE verifier cookie —
-// say so, with a way to request a new one). Bouncing to /login with
-// no explanation was the locked-out experience issue #592 describes.
+// The emailed link goes to /api/auth/reset-password/<token>, which
+// checks the token and redirects here with ?token=… (valid) or
+// ?error=INVALID_TOKEN (spent / expired). No token → say so, with a way
+// to request a new one, rather than bouncing to /login with no
+// explanation (issue #592). Resetting revokes every session, so the
+// user signs in again afterwards.
 //
-// Not gated by the middleware on purpose: the "expired" state must be
+// Not gated by the proxy on purpose: the "expired" state must be
 // reachable signed-out, and a signed-in visitor must not be redirected
 // away from the very page they need.
 // ============================================================
 
-import { useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
+import { authClient, authErrorMessage } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,31 +30,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, KeyRound, Loader2, MailX } from "lucide-react";
+import { CheckCircle, KeyRound, MailX } from "lucide-react";
 
-type Status = "checking" | "ready" | "expired" | "done";
+type Status = "ready" | "expired" | "done";
 
 export default function ResetPasswordPage() {
-  const t = useTranslations("ResetPasswordPage");
-  const supabase = createClient();
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordInner />
+    </Suspense>
+  );
+}
 
-  const [status, setStatus] = useState<Status>("checking");
+function ResetPasswordInner() {
+  const t = useTranslations("ResetPasswordPage");
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
+  const [status, setStatus] = useState<Status>(
+    token && !searchParams.get("error") ? "ready" : "expired",
+  );
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    // The callback wrote the session cookies server-side; the browser
-    // client reads them here. No user → the link didn't yield a session.
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!cancelled) setStatus(user ? "ready" : "expired");
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,26 +70,22 @@ export default function ResetPasswordPage() {
     }
 
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await authClient.resetPassword({
+      newPassword: password,
+      token: token ?? "",
+    });
     setSaving(false);
 
     if (error) {
-      setError(error.message);
+      if (error.code === "INVALID_TOKEN" || error.status === 400) {
+        setStatus("expired");
+        return;
+      }
+      setError(authErrorMessage(error, t("resetFailed")));
       return;
     }
     setStatus("done");
   };
-
-  if (status === "checking") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {t("checking")}
-        </div>
-      </div>
-    );
-  }
 
   if (status === "expired") {
     return (
@@ -142,19 +138,12 @@ export default function ResetPasswordPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button
-              className="h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => {
-                // Full-page navigation, like /login: the middleware
-                // gating /dashboard must see the session cookies on a
-                // fresh top-level request, which a soft router.push
-                // can race (issue #365).
-                // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- deliberate full reload so the auth cookies reach the middleware
-                window.location.href = "/dashboard";
-              }}
-            >
-              {t("continueToDashboard")}
-            </Button>
+            {/* A reset signs out every session, so continue at /login. */}
+            <Link href="/login">
+              <Button className="h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                {t("backToSignIn")}
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

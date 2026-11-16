@@ -5,12 +5,13 @@ export interface NativeSessionUser {
   email: string;
   name: string;
   emailVerified: boolean;
+  createdAt: string;
 }
 
 /**
- * The signed-in user for a request, from the native session cookie, or
- * null. Checkpoint 1c makes getCurrentAccount() resolve the user through
- * this (instead of supabase.auth.getUser()) when native auth is on.
+ * The signed-in user for a request, from the session cookie, or null.
+ * Validated against the sessions table (revoked or expired sessions
+ * return null).
  */
 export async function getNativeSessionUser(
   headers: Headers
@@ -24,5 +25,6 @@ export async function getNativeSessionUser(
     email: u.email,
     name: u.name,
     emailVerified: u.emailVerified,
+    createdAt: new Date(u.createdAt).toISOString(),
   };
 }

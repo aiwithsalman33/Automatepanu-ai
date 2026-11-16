@@ -62,7 +62,7 @@ function makeClient(opts: {
 }
 
 const createClient = vi.fn();
-vi.mock("@/lib/supabase/server", () => ({
+vi.mock("@/lib/db/server", async () => (await import("@/lib/db/testing")).requestDbMock({
   createClient: () => createClient(),
 }));
 

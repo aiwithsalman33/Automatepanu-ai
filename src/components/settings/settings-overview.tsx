@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { THEMES } from '@/lib/themes';

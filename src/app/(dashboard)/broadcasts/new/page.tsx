@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/data/client';
+import { getCurrentUser } from '@/lib/auth/client';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { MessageTemplate } from '@/types';
@@ -91,9 +92,8 @@ export default function NewBroadcastPage() {
     }
     const supabase = createClient();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
+      data: { user },
+    } = await getCurrentUser();
     if (!user) {
       toast.error(t('toastNotSignedIn'));
       return;

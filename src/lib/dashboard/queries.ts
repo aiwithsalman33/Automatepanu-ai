@@ -1,11 +1,11 @@
-import type { DbClient } from '@/lib/db/types'
+import type { SharedDb } from '@/lib/db/types'
 import { groupInboundMessages } from './activity-grouping'
 import type { ActivityItem } from './types'
 import { getT } from '@/lib/i18n/translate'
 
 const BROADCAST_STATUS_KEYS = new Set(['draft', 'scheduled', 'sending', 'sent', 'failed'])
 
-type DB = DbClient
+type DB = SharedDb
 
 export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> {
   const [msgs, contacts, deals, broadcasts, autoLogs] = await Promise.all([

@@ -49,7 +49,7 @@ vi.mock('next/server', () => ({
 // keep it mocked: without this the pre-patch code under test would fail
 // on `next/headers` instead of on the tenancy assertion, which would
 // make this file useless as a regression test.
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('@/lib/db/server', async () => (await import('@/lib/db/testing')).requestDbMock({
   createClient: async () => ({
     auth: {
       getUser: async () => ({

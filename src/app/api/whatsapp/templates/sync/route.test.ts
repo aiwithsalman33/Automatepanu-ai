@@ -69,7 +69,7 @@ function makeSupabaseMock() {
 
 let supabaseMock = makeSupabaseMock()
 
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('@/lib/db/server', async () => (await import('@/lib/db/testing')).requestDbMock({
   createClient: vi.fn(async () => supabaseMock),
 }))
 

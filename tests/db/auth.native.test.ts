@@ -377,6 +377,58 @@ describe.runIf(isApp)(
       ).toBe(200);
     });
 
+    it('session cookie flags: HttpOnly + SameSite=Lax always, Secure (+ __Secure- prefix) in production, host-only', async () => {
+      const addr = await signUpAndVerify('cookieflags');
+      const attrs = (raw: string[]) => {
+        const c = raw.find((x) => x.includes('session_token'));
+        expect(c, raw.join(' | ')).toBeDefined();
+        return c!.split(';').map((p) => p.trim().toLowerCase());
+      };
+
+      // Development instance (http://localhost): no Secure, but HttpOnly + Lax.
+      const dev = await call('/sign-in/email', {
+        body: { email: addr, password: 'S3cure-pass' },
+      });
+      expect(dev.status).toBe(200);
+      const d = attrs(dev.rawSetCookie);
+      expect(d).toContain('httponly');
+      expect(d).toContain('samesite=lax');
+      expect(d.some((p) => p.startsWith('domain='))).toBe(false);
+
+      // Production instance on the real https origin.
+      const PROD = 'https://chat.axxeler.in';
+      const prod = createNativeAuth({
+        pool,
+        mailer,
+        secret: 'test-secret-test-secret-test-secret-0123',
+        baseURL: PROD,
+        trustedOrigins: [PROD],
+        secondaryStorage: memoryStorage(),
+        production: true,
+      });
+      const res = await prod.handler(
+        new Request(`${PROD}/api/auth/sign-in/email`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            origin: PROD,
+            'x-real-ip': newIp(),
+          },
+          body: JSON.stringify({ email: addr, password: 'S3cure-pass' }),
+        })
+      );
+      expect(res.status).toBe(200);
+      const raw = res.headers.getSetCookie();
+      const p = attrs(raw);
+      expect(raw.find((x) => x.includes('session_token'))).toMatch(
+        /^__Secure-wacrm\.session_token=/
+      );
+      expect(p).toContain('secure');
+      expect(p).toContain('httponly');
+      expect(p).toContain('samesite=lax');
+      expect(p.some((x) => x.startsWith('domain='))).toBe(false);
+    });
+
     // CSRF needs a victim's session cookie to ride on, so that is the case
     // that must be refused. (Cookie-less requests like sign-up carry no
     // ambient authority, and Better Auth deliberately doesn't origin-check

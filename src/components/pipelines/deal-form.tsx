@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/data/client";
+import { getCurrentUser } from "@/lib/auth/client";
 import { useAuth } from "@/hooks/use-auth";
 import { CURRENCIES } from "@/lib/currency";
-import { contactSearchFilter } from "@/lib/contacts/search-filter";
 import {
   CONTACT_PICKER_LIMIT,
   withSelectedContact,
@@ -141,8 +141,7 @@ export function DealForm({
         .eq("account_id", accountId)
         .order("name")
         .limit(CONTACT_PICKER_LIMIT);
-      const filter = contactSearchFilter(contactSearch);
-      if (filter) query = query.or(filter);
+      if (contactSearch.trim()) query = query.search(contactSearch);
       const { data, error } = await query;
       if (seq !== contactSearchSeq.current || error) return;
       setContacts((data ?? []) as Contact[]);
@@ -213,9 +212,8 @@ export function DealForm({
       }
     } else {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const user = session?.user;
+        data: { user },
+      } = await getCurrentUser();
       if (!user) {
         toast.error(t("toastNotSignedIn"));
         setSaving(false);

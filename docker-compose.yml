@@ -112,8 +112,6 @@ services:
       # from .env.local as build args. Changing any of them requires
       # a rebuild (docker compose up --build).
       args:
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
         NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-en}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
@@ -131,8 +129,8 @@ services:
     # `environment` wins over `env_file`.
     environment:
       PORT: 3000
-      # supabase (default, production until the 1g cut-over) | selfhosted
-      DATA_BACKEND: ${DATA_BACKEND:-supabase}
+      # Native auth (Better Auth): signs session cookies. Required.
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (32+ random chars; scripts/generate-secrets)}
       # The app logs in as wacrm_authenticator (no privileges of its own;
       # it SET LOCAL ROLEs per request). Never the owner or superuser.
       DATABASE_URL: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}

@@ -33,8 +33,12 @@ import {
   RATE_LIMITS,
 } from "@/lib/rate-limit";
 import { getT } from "@/lib/i18n/translate";
+import { appOrigin } from "@/config/brand";
+import { mailer } from "@/lib/email/mailer";
+import { inviteMessage } from "@/lib/email/templates";
 
 const t = getT("Api");
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Resolve the base URL we publish invite links under.
 //
@@ -66,7 +70,7 @@ const t = getT("Api");
 //
 //   When `ALLOWED_INVITE_HOSTS` is set (comma-separated hostnames),
 //   we validate the derived host against the list. Anything not
-//   on the list falls through to the wacrm.tech fallback with a
+//   on the list falls through to the app-origin fallback with a
 //   loud console.warn. Operators who care about this attack
 //   surface should set this to their canonical hostnames; everyone
 //   else gets today's permissive behavior.
@@ -131,10 +135,12 @@ function getBaseUrl(request: Request): string {
     );
   } else {
     console.warn(
-      "[POST /api/account/invitations] could not derive base URL from request; falling back to marketing domain",
+      "[POST /api/account/invitations] could not derive base URL from request; falling back to the configured app origin",
     );
   }
-  return "https://wacrm.tech";
+  // This deployment's app origin (NEXT_PUBLIC_APP_URL, else the brand
+  // default) — never a third-party domain.
+  return appOrigin();
 }
 
 const MAX_LABEL_LEN = 80;
@@ -182,8 +188,26 @@ export async function POST(request: Request) {
     if (!limit.success) return rateLimitResponse(limit);
 
     const body = (await request.json().catch(() => null)) as
-      | { role?: unknown; expiresInDays?: unknown; label?: unknown }
+      | {
+          role?: unknown;
+          expiresInDays?: unknown;
+          label?: unknown;
+          /** Optional: also email the link to this address. */
+          email?: unknown;
+        }
       | null;
+
+    let inviteEmail: string | null = null;
+    if (body?.email !== undefined && body.email !== null && body.email !== "") {
+      const e = typeof body.email === "string" ? body.email.trim() : "";
+      if (!EMAIL_RE.test(e) || e.length > 254) {
+        return NextResponse.json(
+          { error: t("account.invitations.emailInvalid") },
+          { status: 400 },
+        );
+      }
+      inviteEmail = e;
+    }
 
     const role = body?.role;
     if (!isAccountRole(role) || role === "owner") {
@@ -240,13 +264,34 @@ export async function POST(request: Request) {
       );
     }
 
+    const url = inviteUrl(token, getBaseUrl(request));
+
+    // Best effort: the invite exists either way and the admin still sees
+    // the link to copy, so a mail failure is reported, not fatal.
+    let emailSent = false;
+    if (inviteEmail) {
+      try {
+        await mailer().send(
+          inviteMessage(inviteEmail, url, {
+            accountName: ctx.account.name,
+            role,
+            expiresInDays: expiryDays,
+          }),
+        );
+        emailSent = true;
+      } catch (err) {
+        console.error("[POST /api/account/invitations] invite email failed:", err);
+      }
+    }
+
     return NextResponse.json(
       {
         invitation: data,
         // Plaintext payload — visible to the admin exactly once.
         token,
-        url: inviteUrl(token, getBaseUrl(request)),
+        url,
         expiresInDays: expiryDays,
+        emailSent,
       },
       { status: 201 },
     );
