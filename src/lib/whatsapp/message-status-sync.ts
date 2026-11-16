@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 import {
   canAdvanceMessageStatus,
   furthestReachableStatus,
@@ -38,7 +38,7 @@ interface PendingStatusRow {
 export const PENDING_STATUS_TTL_MS = 24 * 60 * 60 * 1000
 
 async function findAccountMessages(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   wamid: string,
 ): Promise<AccountMessage[] | null> {
@@ -56,7 +56,7 @@ async function findAccountMessages(
 }
 
 async function advanceMessages(
-  db: SupabaseClient,
+  db: DbClient,
   rows: AccountMessage[],
   status: string,
   failure: MessageStatusFailure | null,
@@ -88,7 +88,7 @@ async function advanceMessages(
 }
 
 async function storePendingStatus(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   incoming: IncomingMessageStatus,
 ): Promise<void> {
@@ -119,7 +119,7 @@ async function storePendingStatus(
 }
 
 export async function applyPendingMessageStatuses(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   wamid: string,
 ): Promise<AdvancedMessage[]> {
@@ -173,7 +173,7 @@ export async function applyPendingMessageStatuses(
 }
 
 export async function applyMessageStatus(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   incoming: IncomingMessageStatus,
 ): Promise<AdvancedMessage[]> {

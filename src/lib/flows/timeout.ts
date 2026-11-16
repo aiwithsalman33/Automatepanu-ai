@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { DbClient } from '@/lib/db/types';
 import { resolveFallbackPolicy } from "./fallback";
 
 const MS_PER_HOUR = 1000 * 60 * 60;
@@ -23,7 +23,7 @@ export function checkRunTimeout(
 }
 
 export async function markRunTimedOut(
-  db: SupabaseClient,
+  db: DbClient,
   runId: string,
   check: RunTimeoutCheck,
   reason: string,

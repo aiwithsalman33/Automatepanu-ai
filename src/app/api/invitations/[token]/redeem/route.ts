@@ -27,7 +27,7 @@ import {
   rateLimitResponse,
   RATE_LIMITS,
 } from "@/lib/rate-limit";
-import { createClient } from "@/lib/supabase/server";
+import { getRequestDb } from "@/lib/db/server";
 import { getT } from "@/lib/i18n/translate";
 
 const t = getT("Api");
@@ -65,14 +65,8 @@ export async function POST(
     );
   }
 
-  const supabase = await createClient();
-
-  // The RPC checks `auth.uid()` itself, but failing fast here
-  // gives a cleaner 401 without a Supabase round trip on the
-  // common "user clicked the link before logging in" path.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    // common "user clicked the link before logging in" path.
+  const { db: supabase, user } = await getRequestDb();
   if (!user) {
     return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 });
   }

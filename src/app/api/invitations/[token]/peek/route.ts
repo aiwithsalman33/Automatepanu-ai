@@ -30,7 +30,7 @@ import {
   rateLimitResponse,
   RATE_LIMITS,
 } from "@/lib/rate-limit";
-import { createClient } from "@/lib/supabase/server";
+import { anonDb } from "@/lib/db/server";
 
 export async function GET(
   request: Request,
@@ -50,7 +50,7 @@ export async function GET(
     );
   }
 
-  const supabase = await createClient();
+  const supabase = await anonDb();
   const { data, error } = await supabase.rpc("peek_invitation", {
     p_token_hash: hashInviteToken(token),
   });

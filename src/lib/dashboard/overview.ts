@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 
 export const OVERVIEW_RANGES = [1, 7, 30, 90] as const
 export type OverviewRange = (typeof OVERVIEW_RANGES)[number]
@@ -174,7 +174,7 @@ export function browserTimeZone(): string {
 }
 
 export async function loadOverview(
-  db: SupabaseClient,
+  db: DbClient,
   days: OverviewRange,
   timeZone: string,
 ): Promise<DashboardOverview> {

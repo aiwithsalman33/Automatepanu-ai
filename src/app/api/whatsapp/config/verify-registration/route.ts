@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestDb } from '@/lib/db/server'
 import { decrypt } from '@/lib/whatsapp/encryption'
 import {
   getSubscribedApps,
@@ -33,12 +33,8 @@ const t = getT('Api')
  * what the UI badges on.
  */
 export async function GET() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const { db: supabase, user } = await getRequestDb()
+  if (!user) {
     return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 })
   }
 

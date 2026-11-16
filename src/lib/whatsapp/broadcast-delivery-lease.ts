@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 
 /**
  * How long a `delivery_locked_at` stamp is honoured before it is read
@@ -21,7 +21,7 @@ type Sleep = (ms: number) => Promise<unknown>;
 const defaultSleep: Sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function callLeaseRpc(
-  db: SupabaseClient,
+  db: DbClient,
   fn: string,
   args: Record<string, unknown>,
   sleep: Sleep
@@ -47,7 +47,7 @@ async function callLeaseRpc(
 }
 
 export function acquireWizardDeliveryLease(
-  db: SupabaseClient,
+  db: DbClient,
   broadcastId: string,
   sleep: Sleep = defaultSleep
 ): Promise<DeliveryLeaseResult> {
@@ -60,7 +60,7 @@ export function acquireWizardDeliveryLease(
 }
 
 export function renewWizardDeliveryLease(
-  db: SupabaseClient,
+  db: DbClient,
   broadcastId: string,
   heldLease: string,
   sleep: Sleep = defaultSleep
@@ -74,7 +74,7 @@ export function renewWizardDeliveryLease(
 }
 
 export async function isBroadcastDeliveryInFlight(
-  db: SupabaseClient,
+  db: DbClient,
   broadcastId: string
 ): Promise<boolean> {
   const { data, error } = await db.rpc('broadcast_delivery_in_flight', {

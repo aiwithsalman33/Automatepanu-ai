@@ -1,7 +1,7 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 
 export async function claimFirstInboundMessage(
-  db: SupabaseClient,
+  db: DbClient,
   conversation: { id: string; first_inbound_at?: string | null },
   receivedAt: string,
 ): Promise<boolean> {

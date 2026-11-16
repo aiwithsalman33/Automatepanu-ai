@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getRequestDb, serviceDb, type DbClient } from '@/lib/db/server'
 import {
   ForbiddenError,
   UnauthorizedError,
@@ -44,7 +43,7 @@ const t = getT('Api')
  * should treat that the same as "not connected".
  */
 async function resolveAccountId(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: DbClient,
   userId: string,
 ): Promise<string | null> {
   const { data, error } = await supabase
@@ -60,17 +59,7 @@ async function resolveAccountId(
 // phone_number_id already claimed by a *different* user — under RLS,
 // the user's own session can't see other users' rows, so the conflict
 // would be invisible without the service role.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _adminClient: any = null
-function supabaseAdmin() {
-  if (!_adminClient) {
-    _adminClient = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-  }
-  return _adminClient
-}
+const supabaseAdmin = serviceDb
 
 /**
  * Shape every failed Meta call into `{ error, meta }` — the actionable
@@ -108,14 +97,9 @@ function metaFailure(err: unknown, step: MetaConnectStep, ctx: MetaErrorContext)
  */
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const { db: supabase, user } = await getRequestDb()
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 })
     }
 

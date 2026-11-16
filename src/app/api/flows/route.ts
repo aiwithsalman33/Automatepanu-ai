@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestDb, type DbClient } from '@/lib/db/server'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { supabaseAdmin } from '@/lib/flows/admin-client'
 import { getFlowTemplate } from '@/lib/flows/templates'
@@ -18,13 +18,10 @@ const t = getT('Api')
  */
 
 async function requireUser(): Promise<
-  | { ok: true; userId: string; supabase: Awaited<ReturnType<typeof createClient>> }
+  | { ok: true; userId: string; supabase: DbClient }
   | { ok: false; status: number; body: { error: string } }
 > {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { db: supabase, user } = await getRequestDb()
   if (!user) {
     return { ok: false, status: 401, body: { error: t('common.unauthorized') } }
   }

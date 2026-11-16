@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { DbClient } from '@/lib/db/types';
 import type { MessageReaction } from "@/types";
 import { isUniqueViolation } from "@/lib/contacts/dedupe";
 
@@ -66,7 +66,7 @@ export function withBusinessReaction(
 }
 
 export async function removeBusinessReaction(
-  db: SupabaseClient,
+  db: DbClient,
   messageId: string,
 ): Promise<{ message: string } | null> {
   const { error } = await db
@@ -78,7 +78,7 @@ export async function removeBusinessReaction(
 }
 
 export async function setBusinessReaction(
-  db: SupabaseClient,
+  db: DbClient,
   target: { messageId: string; conversationId: string },
   userId: string,
   emoji: string,

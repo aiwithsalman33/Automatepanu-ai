@@ -160,10 +160,34 @@ jobs:
       - name: Migrations are re-runnable (no-op on second run)
         run: npm run db:migrate
 
+      # The private PostgREST the server data layer talks to (same image
+      # and settings as docker-compose.yml). Started after the migrations
+      # so its schema cache sees every table.
+      - name: Start private PostgREST
+        run: |
+          docker run -d --name postgrest --network host \
+            -e PGRST_DB_URI=postgresql://wacrm_authenticator:authpw@localhost:5432/wacrm \
+            -e PGRST_DB_SCHEMAS=public \
+            -e PGRST_DB_ANON_ROLE=wacrm_anon \
+            -e PGRST_JWT_SECRET=ci-postgrest-jwt-secret-0123456789abcdef \
+            -e PGRST_SERVER_PORT=3001 \
+            postgrest/postgrest:v12.2.12
+          for i in $(seq 1 30); do
+            # Any HTTP status means it is up and has loaded its schema cache.
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/ || true)
+            [ "$code" != "000" ] && exit 0
+            sleep 1
+          done
+          docker logs postgrest
+          exit 1
+
       - name: Run the isolation suite on the new stack
         env:
           DB_TENANT_ADAPTER: app
           TEST_DATABASE_URL: postgresql://postgres:admin@localhost:5432/wacrm
-          # Native auth tests log in as the app does (wacrm_authenticator).
+          # Native auth + data layer tests log in as the app does
+          # (wacrm_authenticator).
           TEST_AUTHENTICATOR_DATABASE_URL: postgresql://wacrm_authenticator:authpw@localhost:5432/wacrm
+          TEST_POSTGREST_URL: http://localhost:3001
+          TEST_POSTGREST_JWT_SECRET: ci-postgrest-jwt-secret-0123456789abcdef
         run: npm run test:db

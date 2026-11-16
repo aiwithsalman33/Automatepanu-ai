@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 import {
   ForbiddenError,
   UnauthorizedError,
@@ -66,7 +66,7 @@ function isUnsubmittedDraft(existing: ExistingTemplate) {
 }
 
 async function findExistingTemplate(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   accountId: string,
   payload: TemplatePayload,
 ) {
@@ -80,7 +80,7 @@ async function findExistingTemplate(
 }
 
 async function saveTemplateRow(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   existingDraftId: string | null,
   userId: string,
   row: ReturnType<typeof buildTemplateRow>,

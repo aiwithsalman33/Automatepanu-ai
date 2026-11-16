@@ -26,9 +26,9 @@
 // ============================================================
 
 import { NextResponse } from "next/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { DbClient } from '@/lib/db/types';
 
-import { createClient } from "@/lib/supabase/server";
+import { getRequestDb } from "@/lib/db/server";
 import { hasMinRole, isAccountRole, type AccountRole } from "./roles";
 import { getT } from "@/lib/i18n/translate";
 
@@ -82,8 +82,8 @@ export function toErrorResponse(err: unknown): NextResponse {
 // ------------------------------------------------------------
 
 export interface AccountContext {
-  /** Supabase SSR client, RLS scoped to the calling user. */
-  supabase: SupabaseClient;
+  /** Database client, RLS scoped to the calling user (src/lib/db/server.ts). */
+  supabase: DbClient;
   /** `auth.uid()` for the caller. Always defined when this resolves. */
   userId: string;
   /** Caller's account_id from their profile row. */
@@ -107,13 +107,9 @@ export interface AccountContext {
  * minimum-role check — it's a thin wrapper over this.
  */
 export async function getCurrentAccount(): Promise<AccountContext> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-  if (userErr || !user) {
+  // Supabase session or native Better Auth session, per DATA_BACKEND.
+  const { db: supabase, user } = await getRequestDb();
+  if (!user) {
     throw new UnauthorizedError();
   }
 

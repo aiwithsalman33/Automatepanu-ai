@@ -568,3 +568,45 @@ No login role is a superuser.
 - **F9: Better Auth silently disables its origin/CSRF check in test environments** unless `advanced.disableOriginCheck` is set explicitly. It's pinned to `false`, so the check can never be switched off implicitly (for example by a stray `NODE_ENV=test`).
 - **F10:** Better Auth's sign-up is not transactional. If the identity insert fails after the user insert, an orphan user (and its trigger-created account) remains. It's rare (it needs a DB error mid-request); 1g's import and an admin cleanup job will cover orphans.
 - **F11:** Better Auth ships a telemetry package; it's disabled explicitly (`telemetry.enabled: false`).
+
+## 10. Checkpoint 1c: server data access (done)
+
+**Conflict with the brief, and how it's resolved.** The brief asks 1c to _replace_ every server-side Supabase client. But until 1d moves sign-in and the 48 browser files off Supabase, production sessions are Supabase sessions. Swapping the server side alone would split production in two. So 1c adds the self-hosted path **next to** the Supabase one behind `DATA_BACKEND=supabase|selfhosted` (default `supabase`, so production is unchanged and stays the rollback path). Every server route and engine now goes through one data layer that serves either backend with identical queries. 1d flips the browser/auth side; 1g deletes the Supabase branch.
+
+**Delivered**
+
+| Piece                                                                                                                                                                                                                                                                                       | Where                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Backend switch (`DATA_BACKEND`), read per call, rejects unknown values                                                                                                                                                                                                                      | `src/lib/db/backend.ts`                                  |
+| `getRequestDb()`: user requests. Supabase: SSR cookie client + `getUser()`. Self-hosted: Better Auth session → private PostgREST with a 60 s HS256 JWT `{role: wacrm_app, sub: userId}` (PostgREST does `SET LOCAL ROLE` + `request.jwt.claims` per request, read by the `auth.uid()` shim) | `src/lib/db/server.ts`, `postgrest.ts`, `jwt.ts`         |
+| `serviceDb()`: webhook, flows/automations/AI engines, cron, public API v1, broadcasts. Supabase service key, or PostgREST `{role: wacrm_service}` (fresh token per request)                                                                                                                 | `src/lib/db/server.ts`                                   |
+| `withTenant(userId, fn)` / `withService(fn)`: raw `pg` transactions as `wacrm_authenticator` → `SET LOCAL ROLE wacrm_app` + `set_config('app.user_id', …, true)` / `wacrm_service`. Used by tests now; the base for the worker (pg-boss) and for Kysely later                               | `src/lib/db/pool.ts`                                     |
+| JWT signer refuses any role except app/service/anon, a user token without a uuid `sub`, and service/anon tokens that carry one                                                                                                                                                              | `src/lib/db/jwt.ts`                                      |
+| `DbClient` type (`from`/`rpc`/`schema` only, no `.auth`/`.storage`/`.channel`) replaces `SupabaseClient` in 44 server modules                                                                                                                                                               | `src/lib/db/types.ts`                                    |
+| Converted: `getCurrentAccount`/`requireRole` (all `requireRole` routes), 11 routes that called `createClient()+getUser()`, both invitation routes, the three engine `admin-client` modules, the webhook's and WhatsApp config route's private service clients, API-key context              | see `git show --stat`                                    |
+| Webhook inbound-media mirror goes through `serviceStorage()`. It returns `null` on self-hosted until 1f, so the mirror is skipped and the existing proxy-URL fallback is used                                                                                                               | `src/app/api/whatsapp/webhook/route.ts`                  |
+| `DATA_BACKEND` in compose (default `supabase`) and `.env.local.example`; CI starts the private PostgREST (same image and settings as compose) for the DB suite                                                                                                                              | `docker-compose.yml`, `.github/workflows/migrations.yml` |
+| Live Supabase-usage counter, re-run after every checkpoint                                                                                                                                                                                                                                  | `scripts/supabase-counts.sh`                             |
+
+**Tests added**
+
+- `tests/db/with-tenant.test.ts` (17, new stack, real `wacrm_authenticator` login):
+  - `withTenant` runs as `wacrm_app` with `app.user_id` set, and `auth.uid()` returns it.
+  - Role and user id don't leak to the next pooled borrower.
+  - The login role reads nothing.
+  - `wacrm_app`/`wacrm_authenticator` are not superuser, BYPASSRLS, CREATEROLE or CREATEDB, own nothing in `public`/`auth`, and are not members of `wacrm_owner`/`wacrm_service`.
+  - Every `public` table has RLS on.
+  - Cross-tenant SELECT, UPDATE, DELETE and INSERT all fail.
+  - A failed unit rolls back.
+  - A non-uuid id is refused.
+  - `withService` sees both tenants (so filtering by `account_id` is mandatory).
+  - The same isolation through PostgREST, plus wrong-secret tokens → 401, an owner-role token refused, and no token → anon reads nothing.
+- `src/lib/db/jwt.test.ts`, `src/lib/db/server.test.ts` (15): token claims and refusals; backend selection; Supabase mode uses exactly the old clients; self-hosted sends `wacrm_app`+`sub` for users, `wacrm_anon` without a session, `wacrm_service` without `sub`; fails loudly without `POSTGREST_URL`.
+
+**Verification:** typecheck clean; lint 0 errors; unit 1812 passed; DB suite on the new stack 587 passed (with PostgREST), Supabase baseline 562 passed; production build green. A live smoke test ran the built standalone server with `DATA_BACKEND=selfhosted` against Postgres 17 + PostgREST 12.2.12. Two users signed up through Better Auth and each created a flow through `/api/flows` (user client + `profiles` view + service client). Each listed only its own flow. Reading or deleting the other tenant's flow by id returned 404 and the row survived.
+
+**Findings**
+
+- **F12: `src/proxy.ts` still checks sessions with Supabase.** In self-hosted mode it 401s `/api/whatsapp/*` and redirects protected pages to `/login` before the (already converted) route runs; the smoke test hit exactly this on `/api/whatsapp/config`. The proxy is in 1d's scope (with login/signup/AuthProvider), so it moves there. Until then self-hosted mode is not usable end to end, which matches the plan.
+- **F13: PostgREST's client library is `@supabase/postgrest-js`** (MIT; already installed through `supabase-js`). 1g's "no `@supabase/*` package, no `supabase` string in `package.json`" can't be met while the transitional PostgREST layer uses it. **Proposal for 1g:** vendor the client (one MIT-licensed file set under `src/lib/db/postgrest-client/`, licence kept) or move the ~380 query-builder chains to Kysely on `withTenant`/`withService`. Vendoring is mechanical and keeps behavior identical; Kysely is the long-term target but is a far larger, riskier diff. I recommend vendoring in 1g and moving to Kysely module by module afterwards.
+- **F14:** The bare login role has no `USAGE` on `public`, so unqualified names don't even resolve. That's stricter than assumed (good); the test asserts `42501` on a schema-qualified probe.

@@ -1,9 +1,9 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 import { fetchAllPages } from '@/lib/supabase/paged-query';
 import type { MessageTemplate, Tag } from '@/types';
 
 export function fetchAccountTemplates(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
 ): Promise<MessageTemplate[]> {
   return fetchAllPages<MessageTemplate>((from, to) =>
@@ -18,7 +18,7 @@ export function fetchAccountTemplates(
 }
 
 export function fetchAccountTags(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
 ): Promise<Tag[]> {
   return fetchAllPages<Tag>((from, to) =>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestDb, type DbClient } from '@/lib/db/server'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { supabaseAdmin } from '@/lib/flows/admin-client'
 import { validateFlowForActivation } from '@/lib/flows/validate'
@@ -26,14 +26,11 @@ async function requireOwnership(
   | {
       ok: true
       userId: string
-      supabase: Awaited<ReturnType<typeof createClient>>
+      supabase: DbClient
     }
   | { ok: false; status: number; body: { error: string } }
 > {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { db: supabase, user } = await getRequestDb()
   if (!user) {
     return { ok: false, status: 401, body: { error: t('common.unauthorized') } }
   }

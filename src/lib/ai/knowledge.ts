@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 import type { AiConfig } from './types'
 import { chunkText } from './chunk'
 import { embedTexts, toVectorLiteral } from './embeddings'
@@ -27,7 +27,7 @@ interface MatchRow {
  * whatever client the caller passes (service-role for ingest routes).
  */
 export async function ingestDocument(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   config: Pick<AiConfig, 'embeddingsApiKey'>,
   documentId: string,
@@ -88,7 +88,7 @@ export async function ingestDocument(
  * zero results and never throws into the draft / auto-reply path.
  */
 export async function retrieveKnowledge(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   config: Pick<AiConfig, 'embeddingsApiKey'>,
   queryText: string,

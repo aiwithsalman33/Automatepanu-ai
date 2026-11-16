@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 
 import { allowedPredecessors, isRecipientStatus } from '@/lib/broadcast-status';
 
@@ -27,7 +27,7 @@ function failureMessage(failure: RecipientStatusFailure): string {
 }
 
 export async function applyBroadcastRecipientStatus(
-  db: SupabaseClient,
+  db: DbClient,
   event: RecipientStatusEvent
 ): Promise<RecipientStatusOutcome> {
   if (!isRecipientStatus(event.status)) return 'skipped';
@@ -73,7 +73,7 @@ export function isReplyAttributable(
 }
 
 export async function flagBroadcastReply(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   contactId: string,
   now: Date = new Date()

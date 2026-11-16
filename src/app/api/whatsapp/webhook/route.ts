@@ -1,5 +1,5 @@
 import { NextResponse, after } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { serviceDb, serviceStorage } from '@/lib/db/server'
 import { decrypt, encrypt, isLegacyFormat } from '@/lib/whatsapp/encryption'
 import { getMediaUrl, downloadMedia } from '@/lib/whatsapp/meta-api'
 import { mirrorInboundMedia } from '@/lib/whatsapp/mirror-inbound-media'
@@ -39,18 +39,10 @@ import { applyMessageStatus } from '@/lib/whatsapp/message-status-sync'
 // plan's ceiling). Tune as needed.
 export const maxDuration = 60
 
-// Lazy-initialized to avoid build-time crash when env vars are missing
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _adminClient: any = null
-function supabaseAdmin() {
-  if (!_adminClient) {
-    _adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-  }
-  return _adminClient
-}
+// Service-role client (Supabase or self-hosted PostgREST, per
+// DATA_BACKEND). Lazy: nothing connects at build time. No user session
+// exists here, so every query filters by account_id.
+const supabaseAdmin = serviceDb
 
 interface WhatsAppMessage {
   id: string
@@ -975,9 +967,12 @@ async function parseMessageContent(
     try {
       const info = await getMediaUrl({ mediaId, accessToken })
 
-      if (mirror) {
+      // serviceStorage() is null on the self-hosted backend until
+      // checkpoint 1f (MinIO): skip the mirror, keep the proxy URL.
+      const storage = mirror ? serviceStorage() : null
+      if (mirror && storage) {
         const mirrored = await mirrorInboundMedia({
-          storage: supabaseAdmin().storage,
+          storage,
           accountId: mirror.accountId,
           mediaId,
           downloadUrl: info.url,

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 import { getT } from '@/lib/i18n/translate';
 import { isUuid } from '@/lib/api/v1/pagination';
 
@@ -21,7 +21,7 @@ interface ContactTagWriteInput {
 }
 
 async function assertContactAndTagOwnership(
-  db: SupabaseClient,
+  db: DbClient,
   input: ContactTagWriteInput
 ): Promise<void> {
   if (!isUuid(input.contactId)) {
@@ -63,7 +63,7 @@ async function assertContactAndTagOwnership(
  * duplicate insert is a no-op and must not emit a tag_added event.
  */
 export async function addContactTagIfAbsent(
-  db: SupabaseClient,
+  db: DbClient,
   input: ContactTagWriteInput
 ): Promise<boolean> {
   await assertContactAndTagOwnership(db, input);
@@ -84,7 +84,7 @@ export async function addContactTagIfAbsent(
 }
 
 export async function removeContactTag(
-  db: SupabaseClient,
+  db: DbClient,
   input: ContactTagWriteInput
 ): Promise<void> {
   await assertContactAndTagOwnership(db, input);

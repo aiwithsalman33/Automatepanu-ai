@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestDb } from '@/lib/db/server'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { supabaseAdmin } from '@/lib/automations/admin-client'
 import { getTemplate } from '@/lib/automations/templates'
@@ -13,10 +13,7 @@ import { getT } from '@/lib/i18n/translate'
 const t = getT('Api')
 
 export async function GET() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { db: supabase, user } = await getRequestDb()
   if (!user) return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 })
 
   const { data, error } = await supabase
@@ -37,10 +34,7 @@ export async function POST(request: Request) {
     return toErrorResponse(err)
   }
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { db: supabase, user } = await getRequestDb()
   if (!user) return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 })
 
   // Resolve the caller's account_id — `automations.account_id` is NOT

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('LibErrors')
@@ -31,7 +31,7 @@ const t = getT('LibErrors')
  * whether a given UUID exists.
  */
 export async function assertConversationInAccount(
-  db: SupabaseClient,
+  db: DbClient,
   conversationId: string,
   accountId: string,
 ): Promise<void> {

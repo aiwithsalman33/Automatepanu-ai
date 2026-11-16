@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 
 import { fetchAllInChunks, fetchAllPages } from '@/lib/supabase/paged-query';
 import type { Contact } from '@/types';
@@ -36,7 +36,7 @@ async function withContext<T>(label: string, run: () => Promise<T>): Promise<T> 
 }
 
 export function fetchTaggedContactIds(
-  db: SupabaseClient,
+  db: DbClient,
   tagIds: readonly string[],
 ): Promise<Set<string>> {
   return withContext('contact tags', async () => {
@@ -55,7 +55,7 @@ export function fetchTaggedContactIds(
 }
 
 export function fetchCustomFieldContactIds(
-  db: SupabaseClient,
+  db: DbClient,
   filter: CustomFieldFilter,
 ): Promise<Set<string>> {
   return withContext('custom field matches', async () => {
@@ -75,7 +75,7 @@ export function fetchCustomFieldContactIds(
 }
 
 export function fetchContactsByIds(
-  db: SupabaseClient,
+  db: DbClient,
   ids: readonly string[],
 ): Promise<Contact[]> {
   return withContext('contacts', () =>
@@ -85,7 +85,7 @@ export function fetchContactsByIds(
   );
 }
 
-export function fetchAllContacts(db: SupabaseClient): Promise<Contact[]> {
+export function fetchAllContacts(db: DbClient): Promise<Contact[]> {
   return withContext('contacts', () =>
     fetchAllPages<Contact>((from, to) =>
       db.from('contacts').select('*').order('id').range(from, to),
@@ -94,7 +94,7 @@ export function fetchAllContacts(db: SupabaseClient): Promise<Contact[]> {
 }
 
 async function fetchExcludedIds(
-  db: SupabaseClient,
+  db: DbClient,
   audience: AudienceConfig,
 ): Promise<Set<string>> {
   if (!audience.excludeTagIds || audience.excludeTagIds.length === 0) {
@@ -110,7 +110,7 @@ function hasCustomFieldFilter(
 }
 
 async function fetchAudienceContactIds(
-  db: SupabaseClient,
+  db: DbClient,
   audience: AudienceConfig,
 ): Promise<Set<string> | null> {
   if (audience.type === 'tags' && audience.tagIds && audience.tagIds.length > 0) {
@@ -123,7 +123,7 @@ async function fetchAudienceContactIds(
 }
 
 export async function resolveAudienceContacts(
-  db: SupabaseClient,
+  db: DbClient,
   audience: AudienceConfig,
   resolveCsv: (rows: CsvAudienceRow[]) => Promise<Contact[]>,
 ): Promise<Contact[]> {
@@ -146,7 +146,7 @@ export async function resolveAudienceContacts(
 }
 
 export async function countAudience(
-  db: SupabaseClient,
+  db: DbClient,
   audience: AudienceConfig,
 ): Promise<number | null> {
   if (audience.type === 'csv') {

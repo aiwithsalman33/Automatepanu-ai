@@ -131,6 +131,8 @@ services:
     # `environment` wins over `env_file`.
     environment:
       PORT: 3000
+      # supabase (default, production until the 1g cut-over) | selfhosted
+      DATA_BACKEND: ${DATA_BACKEND:-supabase}
       # The app logs in as wacrm_authenticator (no privileges of its own;
       # it SET LOCAL ROLEs per request). Never the owner or superuser.
       DATABASE_URL: postgresql://wacrm_authenticator:${WACRM_AUTHENTICATOR_PASSWORD}@db:5432/${POSTGRES_DB:-wacrm}

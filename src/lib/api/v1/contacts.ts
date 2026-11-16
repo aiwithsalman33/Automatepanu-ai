@@ -7,7 +7,7 @@
 // webhook and send path use), and one tag-sync routine.
 // ============================================================
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 
 import { findExistingContact, isUniqueViolation } from '@/lib/contacts/dedupe';
 import { resolveImportTagIds } from '@/lib/contacts/resolve-import-tags';
@@ -71,7 +71,7 @@ export function serializeContact(row: Record<string, unknown>): ApiContact {
  * account owner when there's no config yet.
  */
 export async function resolveAuditUserId(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string
 ): Promise<string> {
   const { data: config } = await db
@@ -108,7 +108,7 @@ export interface ContactInput {
  * API-created contact is indistinguishable from a webhook-created one.
  */
 export async function findOrCreateContact(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   auditUserId: string,
   input: ContactInput
@@ -162,7 +162,7 @@ export async function findOrCreateContact(
  * consistent.
  */
 export async function setContactTags(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   auditUserId: string,
   contactId: string,
@@ -172,7 +172,7 @@ export async function setContactTags(
 }
 
 export async function addContactTags(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   auditUserId: string,
   contactId: string,
@@ -182,7 +182,7 @@ export async function addContactTags(
 }
 
 async function syncContactTags(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   auditUserId: string,
   contactId: string,
@@ -253,7 +253,7 @@ async function syncContactTags(
 
 /** Fetch + serialize a single contact scoped to the account, or null. */
 export async function getContactById(
-  db: SupabaseClient,
+  db: DbClient,
   accountId: string,
   contactId: string
 ): Promise<ApiContact | null> {

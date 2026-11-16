@@ -40,7 +40,7 @@
  * the stub on (account_id, name, language).
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { DbClient } from '@/lib/db/types'
 import {
   clearsRejectionReason,
   templateStatusFromWebhookEvent,
@@ -103,10 +103,10 @@ const PG_UNIQUE_VIOLATION = '23505'
  */
 export async function handleTemplateWebhookChange(
   change: TemplateWebhookChange,
-  // SupabaseClient typed loosely — the webhook route lazy-initialises
+  // DbClient typed loosely — the webhook route lazy-initialises
   // the admin client and exposes it as `any`. Type as the generic
-  // SupabaseClient here so this module is testable in isolation.
-  supabase: SupabaseClient,
+  // DbClient here so this module is testable in isolation.
+  supabase: DbClient,
 ): Promise<void> {
   switch (change.field) {
     case 'message_template_status_update':
@@ -133,7 +133,7 @@ export async function handleTemplateWebhookChange(
 
 async function handleStatusUpdate(
   value: TemplateStatusUpdateValue,
-  supabase: SupabaseClient,
+  supabase: DbClient,
   wabaId: string | undefined,
 ): Promise<void> {
   const metaTemplateId =
@@ -208,7 +208,7 @@ async function handleStatusUpdate(
 
 async function handleQualityUpdate(
   value: TemplateQualityUpdateValue,
-  supabase: SupabaseClient,
+  supabase: DbClient,
   wabaId: string | undefined,
 ): Promise<void> {
   const metaTemplateId =
@@ -278,7 +278,7 @@ interface StubParams {
     data: { id: string }[] | null
     error: { message: string } | null
   }>
-  supabase: SupabaseClient
+  supabase: DbClient
 }
 
 /**

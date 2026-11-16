@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestDb } from '@/lib/db/server'
 import { requireRole, toErrorResponse } from '@/lib/auth/account'
 import { supabaseAdmin } from '@/lib/flows/admin-client'
 import { validateFlowForActivation } from '@/lib/flows/validate'
@@ -37,10 +37,7 @@ export async function POST(
     return toErrorResponse(err)
   }
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { db: supabase, user } = await getRequestDb()
   if (!user) {
     return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 })
   }

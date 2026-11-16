@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getRequestDb } from '@/lib/db/server'
 import { getT } from '@/lib/i18n/translate'
 
 const t = getT('Api')
@@ -25,10 +25,7 @@ export async function GET(
 ) {
   const { id } = await context.params
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { db: supabase, user } = await getRequestDb()
   if (!user) {
     return NextResponse.json({ error: t('common.unauthorized') }, { status: 401 })
   }

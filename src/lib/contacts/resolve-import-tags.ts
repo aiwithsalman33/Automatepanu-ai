@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DbClient } from '@/lib/db/types';
 
 const DEFAULT_TAG_COLOR = '#3b82f6';
 
@@ -15,7 +15,7 @@ function quotedNamePattern(name: string): string {
 }
 
 async function findTagIdsByName(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   accountId: string,
   names: string[]
 ): Promise<Map<string, string>> {
@@ -60,7 +60,7 @@ interface SupersededTag {
 }
 
 async function moveContactTagLinks(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   { loserId, winnerId }: SupersededTag
 ): Promise<void> {
   for (let offset = 0; ; offset += LOOKUP_PAGE_SIZE) {
@@ -89,7 +89,7 @@ async function moveContactTagLinks(
 }
 
 async function retireSupersededTag(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   accountId: string,
   superseded: SupersededTag
 ): Promise<void> {
@@ -126,7 +126,7 @@ export interface ResolveImportTagsResult {
  * auto-create missing tag definitions for admin+ callers.
  */
 export async function resolveImportTagIds(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   params: {
     accountId: string;
     userId: string;
@@ -216,7 +216,7 @@ export interface ContactTagAssignment {
  * exist without changing the returned count.
  */
 export async function assignImportedContactTags(
-  supabase: SupabaseClient,
+  supabase: DbClient,
   assignments: ContactTagAssignment[],
   tagIdByKey: Map<string, string>
 ): Promise<number> {
