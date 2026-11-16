@@ -25,11 +25,14 @@ export const brand = {
     app: 'https://chat.axxeler.in',
   },
 
-  /** PLACEHOLDERS — replace with real contact details before launch. */
   contact: {
-    email: '[REPLACE: hello@your-domain]',
-    salesEmail: '[REPLACE: sales@your-domain]',
-    securityEmail: 'security@axxeler.in',
+    email: 'helpaxxeler@gmail.com',
+    salesEmail: 'helpaxxeler@gmail.com',
+    securityEmail: 'helpaxxeler@gmail.com',
+    /** WhatsApp number (digits, with country code) for wa.me links. */
+    whatsapp: '918148035472',
+    /** The same number, formatted for display. */
+    whatsappDisplay: '+91 81480 35472',
   },
 
   /** PLACEHOLDERS — set the real profile URLs or remove entries. */

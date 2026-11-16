@@ -96,6 +96,26 @@ export async function Footer() {
             <p className="text-mk-body mt-4 max-w-xs text-sm">
               {t('footer.tagline')}
             </p>
+            <ul className="text-mk-body mt-4 space-y-1.5 text-sm">
+              <li>
+                <a
+                  href={`mailto:${brand.contact.email}`}
+                  className="hover:text-mk-primary-hover"
+                >
+                  {brand.contact.email}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`https://wa.me/${brand.contact.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-mk-primary-hover"
+                >
+                  WhatsApp {brand.contact.whatsappDisplay}
+                </a>
+              </li>
+            </ul>
             <ul className="mt-5 flex gap-2" aria-label={t('footer.social')}>
               {brand.social.map((s) => (
                 <li key={s.id}>

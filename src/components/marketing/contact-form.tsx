@@ -1,45 +1,75 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, MessageCircle } from 'lucide-react';
+import { brand } from '@/config/brand';
+import { contactWhatsAppText, validateContact } from '@/lib/marketing/contact';
+import { waLink } from '@/lib/marketing/whatsapp-tools';
 import { cn } from '@/lib/utils';
 import { Field, inputClass } from './tools/ui';
 
 type Topic = 'general' | 'demo';
 
+/**
+ * Contact / demo form. On submit the message opens in WhatsApp,
+ * addressed to the business number with everything filled in (the
+ * visitor just presses Send), and a copy is emailed in the background
+ * so nothing is lost if they don't.
+ */
 export function ContactForm({ initialTopic }: { initialTopic: Topic }) {
   const [topic, setTopic] = useState<Topic>(initialTopic);
-  const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [sentLink, setSentLink] = useState('');
   const [error, setError] = useState('');
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
-    setState('sending');
-    const data = Object.fromEntries(new FormData(e.currentTarget));
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...data, topic }),
-      });
-      const json = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-      setState('sent');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
-      setState('idle');
+    const data = { ...Object.fromEntries(new FormData(e.currentTarget)), topic };
+    const result = validateContact(data);
+    if (!result.ok) {
+      setError(result.error);
+      return;
     }
+    if (result.spam) {
+      setSentLink(waLink(brand.contact.whatsapp));
+      return;
+    }
+    const link = waLink(brand.contact.whatsapp, contactWhatsAppText(result.value));
+    // Open synchronously inside the submit gesture so it isn't blocked.
+    window.open(link, '_blank', 'noopener');
+    // Email copy; keepalive lets it finish even if the page is left.
+    void fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(data),
+      keepalive: true,
+    }).catch(() => {});
+    setSentLink(link);
   }
 
-  if (state === 'sent') {
+  if (sentLink) {
     return (
       <div className="border-mk-border shadow-mk rounded-3xl border bg-white p-8 text-center">
         <CheckCircle2 aria-hidden className="text-mk-primary mx-auto h-12 w-12" />
-        <h2 className="mt-4 text-2xl font-bold">Thanks, message sent!</h2>
+        <h2 className="mt-4 text-2xl font-bold">Almost done!</h2>
         <p className="text-mk-body mt-2">
-          We’ll reply to your email as soon as we can, usually within one
-          business day.
+          Your message is ready in WhatsApp. Just press <strong>Send</strong>{' '}
+          there and we’ll reply on WhatsApp, usually within one business day.
+        </p>
+        <a
+          href={sentLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 font-semibold text-white hover:bg-[#1ebe5a]"
+        >
+          <MessageCircle aria-hidden className="h-5 w-5" /> Open WhatsApp
+        </a>
+        <p className="text-mk-muted mt-4 text-xs">
+          WhatsApp didn’t open? Use the button above, or email{' '}
+          <a href={`mailto:${brand.contact.email}`} className="underline">
+            {brand.contact.email}
+          </a>
+          .
         </p>
       </div>
     );
@@ -114,7 +144,7 @@ export function ContactForm({ initialTopic }: { initialTopic: Topic }) {
         />
       </Field>
       {/* Honeypot: hidden from people, filled by bots. */}
-      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+      <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="c-website">Website</label>
         <input id="c-website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
@@ -126,11 +156,10 @@ export function ContactForm({ initialTopic }: { initialTopic: Topic }) {
       )}
       <button
         type="submit"
-        disabled={state === 'sending'}
-        className="bg-mk-primary hover:bg-mk-primary-hover inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-base font-semibold text-white disabled:opacity-60"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] text-base font-semibold text-white hover:bg-[#1ebe5a]"
       >
-        {state === 'sending' && <Loader2 aria-hidden className="h-4 w-4 animate-spin" />}
-        {topic === 'demo' ? 'Request a demo' : 'Send message'}
+        <MessageCircle aria-hidden className="h-5 w-5" />
+        {topic === 'demo' ? 'Request a demo on WhatsApp' : 'Send on WhatsApp'}
       </button>
       <p className="text-mk-muted text-center text-xs">
         We only use your details to reply to you. See our{' '}

@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { BookOpen, Clock, MessageCircle } from 'lucide-react';
+import {
+  BookOpen,
+  Clock,
+  Mail,
+  MessageCircle,
+  Presentation,
+} from 'lucide-react';
+import { brand } from '@/config/brand';
 import { ContactForm } from '@/components/marketing/contact-form';
 import { PageHero } from '@/components/marketing/page-blocks';
 import { Container } from '@/components/marketing/primitives';
@@ -37,12 +44,38 @@ export default async function ContactPage({
           <ul className="space-y-6">
             {[
               {
+                icon: MessageCircle,
+                title: 'WhatsApp',
+                desc: (
+                  <a
+                    href={`https://wa.me/${brand.contact.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-mk-primary-hover font-semibold underline"
+                  >
+                    {brand.contact.whatsappDisplay}
+                  </a>
+                ),
+              },
+              {
+                icon: Mail,
+                title: 'Email',
+                desc: (
+                  <a
+                    href={`mailto:${brand.contact.email}`}
+                    className="text-mk-primary-hover font-semibold underline"
+                  >
+                    {brand.contact.email}
+                  </a>
+                ),
+              },
+              {
                 icon: Clock,
                 title: 'Quick replies',
                 desc: 'We usually answer within one business day.',
               },
               {
-                icon: MessageCircle,
+                icon: Presentation,
                 title: 'Personal demo',
                 desc: 'A short call tailored to your use case: sales, support or campaigns.',
               },

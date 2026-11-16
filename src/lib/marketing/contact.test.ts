@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { validateContact } from './contact';
+import { contactWhatsAppText, validateContact } from './contact';
+
+describe('contactWhatsAppText', () => {
+  it('formats the form for WhatsApp, skipping empty optional fields', () => {
+    expect(
+      contactWhatsAppText({
+        topic: 'demo',
+        name: 'Priya',
+        email: 'priya@example.com',
+        company: '',
+        phone: '+91 98765 43210',
+        message: 'Show me flows.',
+      })
+    ).toBe(
+      '*Demo request* (website)\n\n*Name:* Priya\n*Email:* priya@example.com\n*Phone:* +91 98765 43210\n\nShow me flows.'
+    );
+  });
+});
 
 const good = {
   name: 'Priya',

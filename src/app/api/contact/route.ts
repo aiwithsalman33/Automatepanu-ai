@@ -2,10 +2,12 @@
 // POST /api/contact — website contact / demo-request form.
 //
 // Public (no session). Emails the message to CONTACT_EMAIL (falls back
-// to PLATFORM_ADMIN_EMAIL) through the app's SMTP. Protected by a
+// to brand.contact.email) through the app's SMTP. The form also opens
+// the same message in WhatsApp to brand.contact.whatsapp. Protected by a
 // same-origin check, a honeypot field and a per-IP rate limit.
 // ============================================================
 import { NextResponse } from 'next/server';
+import { brand } from '@/config/brand';
 import { mailer } from '@/lib/email/mailer';
 import { escapeHtml } from '@/lib/email/templates';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
@@ -16,6 +18,7 @@ export const runtime = 'nodejs';
 function recipient(): string | null {
   const to =
     process.env.CONTACT_EMAIL?.trim() ||
+    brand.contact.email ||
     process.env.PLATFORM_ADMIN_EMAIL?.trim() ||
     '';
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to) ? to : null;

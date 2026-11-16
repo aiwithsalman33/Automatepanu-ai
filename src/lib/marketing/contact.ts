@@ -20,6 +20,20 @@ const str = (v: unknown, max: number) =>
 const line = (v: unknown, max: number) =>
   str(v, max).replace(/[\u0000-\u001f\u007f]+/g, ' ');
 
+/** The form as a WhatsApp message (sent to the business number). */
+export function contactWhatsAppText(m: ContactMessage): string {
+  const lines = [
+    m.topic === 'demo' ? '*Demo request* (website)' : '*Website enquiry*',
+    '',
+    `*Name:* ${m.name}`,
+    `*Email:* ${m.email}`,
+  ];
+  if (m.company) lines.push(`*Company:* ${m.company}`);
+  if (m.phone) lines.push(`*Phone:* ${m.phone}`);
+  lines.push('', m.message);
+  return lines.join('\n');
+}
+
 export function validateContact(input: unknown): ContactResult {
   if (!input || typeof input !== 'object') {
     return { ok: false, error: 'Invalid request' };
