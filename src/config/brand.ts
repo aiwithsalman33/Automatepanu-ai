@@ -41,9 +41,9 @@ export const brand = {
   ],
 
   logo: {
-    mark: '/brand/logo-mark.svg',
-    full: '/brand/logo.svg',
-    fullOnDark: '/brand/logo-white.svg',
+    mark: '/brand/logo-mark-512.png',
+    full: '/brand/logo.png',
+    fullOnDark: '/brand/logo-white.png',
   },
 } as const;
 

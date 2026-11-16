@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/brand/logo.svg" alt="Automate Panu AI" width="420">
+  <img src="./public/brand/logo.png" alt="Automate Panu AI" width="420">
 </p>
 
 <p align="center">
@@ -96,10 +96,13 @@ A separate website domain is optional: setting `NEXT_PUBLIC_MARKETING_URL`
 
 ## Brand assets
 
-Logo files live in [`public/brand/`](./public/brand): `logo.svg` (light
-backgrounds), `logo-white.svg` (dark backgrounds), `logo-mark.svg` (icon),
-plus PNGs (`logo-mark-512.png` fits a WhatsApp profile photo). The lettering is outlined, so the files don't depend on
-an installed font.
+Logo files live in [`public/brand/`](./public/brand): `logo.png` (light
+backgrounds), `logo-white.png` (dark backgrounds) and `logo-mark-512.png`
+(the icon alone; also fits a WhatsApp profile photo). The favicon and
+apple icon are `src/app/icon.png` and `src/app/apple-icon.png`. In code, use
+`<BrandLogo />` from `src/components/brand-logo.tsx`; it switches to the
+white version in dark mode. The UI font is Poppins (self-hosted by
+`next/font`).
 
 ## License
 

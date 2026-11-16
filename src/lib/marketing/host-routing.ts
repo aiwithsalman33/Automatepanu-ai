@@ -44,7 +44,7 @@ const ALWAYS_PASS_EXACT = new Set([
   '/robots.txt',
   '/sitemap.xml',
   '/favicon.ico',
-  '/icon.svg',
+  '/icon.png',
   '/apple-icon.png',
   '/manifest.webmanifest',
 ]);

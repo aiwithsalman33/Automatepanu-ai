@@ -16,6 +16,7 @@ import { isPlatformAdmin } from '@/lib/auth/native/bootstrap';
 import { authPool } from '@/lib/auth/native/db';
 import { getNativeSessionUser } from '@/lib/auth/native/session';
 import { brand } from '@/config/brand';
+import { BrandLogo } from '@/components/brand-logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,7 @@ export default async function AdminPage() {
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
+          <BrandLogo className="mb-3 h-10" />
           <h1 className="text-foreground text-2xl font-semibold">
             {brand.name} · Admin
           </h1>

@@ -267,7 +267,7 @@ html[data-theme="rose"] {
   --color-mk-success: var(--mk-success);
   --color-mk-warn: var(--mk-warn);
   --color-mk-error: var(--mk-error);
-  --font-mk: var(--font-mk-sans);
+  --font-mk: var(--font-sans);
   --shadow-mk: var(--mk-shadow);
   --shadow-mk-lg: var(--mk-shadow-lg);
 }
@@ -295,7 +295,7 @@ html[data-theme="rose"] {
   color-scheme: light;
   background: var(--mk-bg);
   color: var(--mk-body);
-  font-family: var(--font-mk-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   line-height: 1.6;
 }
 
@@ -384,3 +384,9 @@ body:has(.mk) {
     transform: none;
   }
 }
+
+/* BrandLogo tone="auto": dark-ink logo in light mode, white-ink in dark
+   mode. Mode lives in data-mode on <html> (set before hydration). */
+.brand-logo-dark { display: none; }
+html[data-mode="dark"] .brand-logo-light { display: none; }
+html[data-mode="dark"] .brand-logo-dark { display: block; }

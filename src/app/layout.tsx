@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getLocale, getTranslations } from 'next-intl/server';
-import { Inter } from "next/font/google";
+import { Poppins } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
@@ -15,14 +15,14 @@ import {
   THEME_IDS,
 } from "@/lib/themes";
 
-const inter = Inter({
+// Poppins is the one font for the whole product (app, auth, admin and
+// the marketing site). Self-hosted by next/font at build time: no request
+// to Google at runtime. Poppins has no variable axis, so the weights used
+// by the UI are listed explicitly.
+const poppins = Poppins({
   variable: "--font-sans",
   subsets: ["latin"],
-  // The app's font. Not preloaded: the root layout also wraps the public
-  // marketing site (which uses Plus Jakarta Sans), and a high-priority
-  // Inter preload there competed with the critical CSS on mobile. App
-  // pages still load it immediately (display: swap).
-  preload: false,
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -45,8 +45,8 @@ const metadata: Metadata = {
     index: false,
     follow: false,
   },
-  // Icons come from the file conventions: src/app/icon.svg (favicon
-  // variant) and src/app/apple-icon.png.
+  // Icons come from the file conventions: src/app/icon.png (the logo
+  // mark) and src/app/apple-icon.png.
   formatDetection: {
     email: false,
     address: false,
@@ -103,7 +103,7 @@ export default async function RootLayout({
       lang={locale}
       data-theme={DEFAULT_THEME}
       data-mode={DEFAULT_MODE}
-      className={`${inter.variable} h-full antialiased`}
+      className={`${poppins.variable} h-full antialiased`}
       // The `theme-boot` script below rewrites `data-theme` and
       // `data-mode` on <html> from localStorage before React hydrates,
       // so for any non-default choice the client DOM intentionally
