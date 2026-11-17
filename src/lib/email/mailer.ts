@@ -5,7 +5,8 @@
  * Config (env; Phase 4 adds an admin-editable override in platform
  * settings):
  *   SMTP_HOST, SMTP_PORT (default 587), SMTP_SECURE ("true" for 465),
- *   SMTP_USER, SMTP_PASSWORD, SMTP_FROM ("Name <no-reply@example.com>")
+ *   SMTP_USER, SMTP_PASSWORD, SMTP_FROM ("Name <address>"; defaults to
+ *   the brand name + brand.contact.email)
  *
  * Without SMTP_HOST:
  *   - development/test: the message is logged (with its links) instead of
@@ -14,12 +15,15 @@
  *     the problem instead of silently dropping verification emails.
  */
 import nodemailer, { type Transporter } from 'nodemailer';
+import { brand } from '@/config/brand';
 
 export interface EmailMessage {
   to: string;
   subject: string;
   text: string;
   html: string;
+  /** Where replies go, when not the From address (e.g. a website visitor). */
+  replyTo?: string;
 }
 
 export interface Mailer {
@@ -45,7 +49,7 @@ function smtpConfig(env: NodeJS.ProcessEnv) {
     auth: env.SMTP_USER
       ? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD ?? '' }
       : undefined,
-    from: env.SMTP_FROM?.trim() || `no-reply@${host}`,
+    from: env.SMTP_FROM?.trim() || `${brand.name} <${brand.contact.email}>`,
   };
 }
 

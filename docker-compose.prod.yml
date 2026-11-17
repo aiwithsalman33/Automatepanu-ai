@@ -221,7 +221,7 @@ services:
       SMTP_SECURE: ${SMTP_SECURE:-false}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:?set SMTP_FROM, e.g. "Automate Panu AI <no-reply@your-domain>"}
+      SMTP_FROM: ${SMTP_FROM:?set SMTP_FROM, e.g. "Automate Panu AI <helpaxxeler@gmail.com>"}
       AI_REQUEST_TIMEOUT_MS: ${AI_REQUEST_TIMEOUT_MS:-}
       AI_CONTEXT_MESSAGE_LIMIT: ${AI_CONTEXT_MESSAGE_LIMIT:-}
       AI_PROVIDER_ALLOWED_PRIVATE_HOSTS: ${AI_PROVIDER_ALLOWED_PRIVATE_HOSTS:-}
