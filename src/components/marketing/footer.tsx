@@ -121,7 +121,10 @@ export async function Footer() {
                 <li key={s.id}>
                   <a
                     href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={s.label}
+                    title={s.label}
                     className="border-mk-border text-mk-body hover:border-mk-primary hover:text-mk-primary-hover inline-flex h-9 w-9 items-center justify-center rounded-full border"
                   >
                     <svg

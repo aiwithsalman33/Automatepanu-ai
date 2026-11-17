@@ -30,17 +30,16 @@ export const brand = {
     salesEmail: 'helpaxxeler@gmail.com',
     securityEmail: 'helpaxxeler@gmail.com',
     /** WhatsApp number (digits, with country code) for wa.me links. */
-    whatsapp: '918148035472',
+    whatsapp: '918610418890',
     /** The same number, formatted for display. */
-    whatsappDisplay: '+91 81480 35472',
+    whatsappDisplay: '+91 86104 18890',
   },
 
-  /** PLACEHOLDERS — set the real profile URLs or remove entries. */
+  /** Footer social icons, in display order. */
   social: [
-    { id: 'linkedin', label: 'LinkedIn', href: '#replace-linkedin' },
-    { id: 'x', label: 'X (Twitter)', href: '#replace-x' },
-    { id: 'youtube', label: 'YouTube', href: '#replace-youtube' },
-    { id: 'instagram', label: 'Instagram', href: '#replace-instagram' },
+    { id: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/axxeler.in/' },
+    { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/company/axxeler/' },
+    { id: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@baranikumargd' },
   ],
 
   logo: {
