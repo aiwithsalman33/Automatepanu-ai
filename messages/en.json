@@ -2414,7 +2414,12 @@
     "loading": "Loading..."
   },
   "UiPrimitives": {
-    "close": "Close"
+    "close": "Close",
+    "removeItem": "Remove {item}",
+    "errorTitle": "Couldn't load this",
+    "errorDescription": "Something went wrong on our side. Check your connection and try again.",
+    "retry": "Try again",
+    "loading": "Loading…"
   },
   "GatedButton": {
     "readOnly": "Read-only — your role can't {action}",

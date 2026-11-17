@@ -2414,7 +2414,12 @@
     "loading": "Carregando..."
   },
   "UiPrimitives": {
-    "close": "Fechar"
+    "close": "Fechar",
+    "removeItem": "Remover {item}",
+    "errorTitle": "Não foi possível carregar",
+    "errorDescription": "Algo deu errado. Verifique sua conexão e tente novamente.",
+    "retry": "Tentar novamente",
+    "loading": "Carregando…"
   },
   "GatedButton": {
     "readOnly": "Somente leitura — sua função não pode {action}",

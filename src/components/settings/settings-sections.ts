@@ -4,7 +4,6 @@ import {
   Inbox,
   KeyRound,
   LayoutGrid,
-  Palette,
   PlugZap,
   Shield,
   Tags,
@@ -26,7 +25,6 @@ export const SETTINGS_SECTIONS = [
   'overview',
   'profile',
   'security',
-  'appearance',
   'whatsapp',
   'templates',
   'quick-replies',
@@ -53,7 +51,6 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   overview: { id: 'overview', label: 'Overview', icon: LayoutGrid, group: 'top' },
   profile: { id: 'profile', label: 'Your profile', icon: User, group: 'account' },
   security: { id: 'security', label: 'Login & security', icon: Shield, group: 'account' },
-  appearance: { id: 'appearance', label: 'Appearance', icon: Palette, group: 'account' },
   whatsapp: { id: 'whatsapp', label: 'WhatsApp', icon: PlugZap, group: 'workspace' },
   templates: { id: 'templates', label: 'Templates', icon: FileText, group: 'workspace' },
   'quick-replies': { id: 'quick-replies', label: 'Quick replies', icon: Zap, group: 'workspace' },
@@ -82,6 +79,9 @@ function isSection(value: string | null): value is SettingsSection {
  */
 export function resolveSection(raw: string | null): SettingsSection {
   if (raw === 'tags' || raw === 'custom-fields') return 'fields';
+  // The Appearance section (theme + mode) was removed in the user-panel
+  // redesign; old links land on the Overview.
+  if (raw === 'appearance') return DEFAULT_SECTION;
   if (isSection(raw)) return raw;
   return DEFAULT_SECTION;
 }

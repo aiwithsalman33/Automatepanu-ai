@@ -2414,7 +2414,12 @@
     "loading": "불러오는 중..."
   },
   "UiPrimitives": {
-    "close": "닫기"
+    "close": "닫기",
+    "removeItem": "{item} 제거",
+    "errorTitle": "불러오지 못했습니다",
+    "errorDescription": "문제가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.",
+    "retry": "다시 시도",
+    "loading": "불러오는 중…"
   },
   "GatedButton": {
     "readOnly": "읽기 전용 — 현재 역할로는 {action} 수 없습니다",
