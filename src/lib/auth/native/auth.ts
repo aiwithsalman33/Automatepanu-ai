@@ -13,7 +13,7 @@
  * cut-over; this module is inert unless isNativeAuthConfigured().
  */
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
-import { createAuthMiddleware } from 'better-auth/api';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { nextCookies } from 'better-auth/next-js';
 import type { Pool } from 'pg';
 import { appOrigin } from '@/config/brand';
@@ -73,6 +73,33 @@ export const rehashAfterSignIn = createAuthMiddleware(async (ctx) => {
     console.error('[auth] password rehash failed (sign-in unaffected):', err);
   }
 });
+
+/** Error code a disabled user gets from sign-in (the login page maps it). */
+export const ACCOUNT_DISABLED_CODE = 'ACCOUNT_DISABLED';
+
+/**
+ * Session-create gate: a user whose auth.users.disabled_at is set (by a
+ * platform admin, /admin/users) can't get a new session by any path
+ * (password sign-in, auto sign-in after email verification). Runs only
+ * after Better Auth accepted the credentials, so it reveals nothing to
+ * someone guessing passwords. Existing sessions are revoked when the
+ * account is disabled (src/lib/admin/actions.ts).
+ */
+export function blockDisabledUsers(pool: Pick<Pool, 'query'>) {
+  return async (session: { userId: string }) => {
+    const { rows } = await pool.query<{ disabled_at: Date | null }>(
+      'SELECT disabled_at FROM auth.users WHERE id = $1',
+      [session.userId]
+    );
+    if (rows[0]?.disabled_at) {
+      throw new APIError('FORBIDDEN', {
+        message:
+          'This account has been disabled. Contact the administrator for help.',
+        code: ACCOUNT_DISABLED_CODE,
+      });
+    }
+  };
+}
 
 export interface NativeAuthDeps {
   pool: Pool;
@@ -213,6 +240,9 @@ export function nativeAuthOptions(deps: NativeAuthDeps) {
     },
 
     hooks: { after: rehashAfterSignIn },
+    databaseHooks: {
+      session: { create: { before: blockDisabledUsers(deps.pool) } },
+    },
 
     // Must stay last: lets server actions set the session cookie.
     plugins: [nextCookies()],

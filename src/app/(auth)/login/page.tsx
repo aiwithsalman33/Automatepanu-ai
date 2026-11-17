@@ -62,7 +62,11 @@ function LoginPageInner() {
 
     if (error) {
       setError(
-        error.status === 403
+        // Checked before the generic 403: a disabled account (set in the
+        // admin panel) is also a 403, but not a verification problem.
+        error.code === "ACCOUNT_DISABLED"
+          ? t("accountDisabled")
+          : error.status === 403
           ? t("emailNotVerified")
           : error.status === 429
             ? t("tooManyAttempts")

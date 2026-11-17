@@ -28,6 +28,8 @@ export interface User {
   name: string;
   email_verified: boolean;
   created_at: string;
+  /** Operator of this deployment: the sidebar shows the Admin panel link. */
+  platform_admin?: boolean;
 }
 
 interface Profile {
