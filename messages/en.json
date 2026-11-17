@@ -16,6 +16,7 @@
     "linkExpired": "That link has expired. For a password reset, use “Forgot password?” to request a new one; if you were confirming your email, sign up again.",
     "linkInvalid": "That link couldn’t be used to sign you in. If you were confirming your email, it may already be verified — just sign in below. For a password reset, request a new link and open it in the same browser you requested it from.",
     "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "accountDisabled": "This account has been disabled. Contact the administrator for help.",
     "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
     "signInFailed": "Invalid email or password."
   },
@@ -32,6 +33,7 @@
     "flows": "Flows",
     "aiAgents": "AI Agents",
     "settings": "Settings",
+    "adminPanel": "Admin panel",
     "beta": "Beta",
     "unreadConversations": "{count} unread {count, plural, =1 {conversation} other {conversations}}",
     "unreadNotifications": "{count} unread {count, plural, =1 {notification} other {notifications}}",
@@ -54,6 +56,8 @@
     "pipelines": "Pipelines",
     "broadcasts": "Broadcasts",
     "automations": "Automations",
+    "flows": "Flows",
+    "aiAgents": "AI Agents",
     "settings": "Settings",
     "openMenu": "Open menu",
     "openAccountMenu": "Open account menu",
@@ -61,7 +65,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Profile",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "adminPanel": "Admin panel"
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"

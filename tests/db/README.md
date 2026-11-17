@@ -48,6 +48,7 @@ Suites that need PostgREST or Mailpit skip themselves when the
 | `auth.native.test.ts`      | Better Auth end to end: sign-up, verification, bcrypt import + rehash, rate limit, CSRF, cookie flags, reset. |
 | `email.smtp.test.ts`       | Verification, reset and invite emails over real SMTP.                                                         |
 | `bootstrap.test.ts`        | First-start accounts (`PLATFORM_ADMIN_*`, `SEED_USER_*`).                                                     |
+| `admin.test.ts`            | Admin panel: every read query, disabled users blocked at sign-in, delete plan + delete order, audit log.      |
 
 Each isolation file seeds a two-tenant fixture (`fixture.ts`) inside one
 transaction and rolls everything back. The suites that drive the real
