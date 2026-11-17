@@ -80,9 +80,11 @@ function LoginPageInner() {
     // back to /login — which looks like the page "just refreshing"
     // instead of signing in (issue #365). Mirrors the deliberate full
     // reload the invite-accept flow already uses in join/[token].
+    // /auth/continue sends platform admins to /admin, everyone else to
+    // /dashboard.
     const destination = inviteToken
       ? `/join/${encodeURIComponent(inviteToken)}`
-      : "/dashboard";
+      : "/auth/continue";
     window.location.href = destination;
   };
 
