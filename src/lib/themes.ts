@@ -1,6 +1,11 @@
 /**
  * Single source of truth for the color-theme catalog.
  *
+ * The user panel no longer offers a theme or mode choice: it renders
+ * the one purple light palette of the APP SURFACE (see SURFACE below
+ * and globals.css). The accent/mode machinery stays for the admin
+ * panel (its dark/light toggle) and so a dark app theme can return.
+ *
  * The CSS variables themselves live in `src/app/globals.css` under
  * `html[data-theme="..."]` blocks — that file is the one we paste
  * theme tokens into. This module only carries the metadata the UI
@@ -13,13 +18,7 @@
  *   2. Add an entry below. The order here drives the picker grid.
  */
 
-export const THEME_IDS = [
-  "violet",
-  "emerald",
-  "cobalt",
-  "amber",
-  "rose",
-] as const;
+export const THEME_IDS = ["violet"] as const;
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
@@ -73,35 +72,40 @@ export const THEMES: ReadonlyArray<ThemeMeta> = [
     tagline: "The default — confident, slightly playful.",
     swatch: "oklch(0.526 0.247 293)",
   },
-  {
-    id: "emerald",
-    name: "Emerald",
-    tagline: "Growth-coded, nods at messaging without copying WhatsApp green.",
-    swatch: "oklch(0.62 0.16 162)",
-  },
-  {
-    id: "cobalt",
-    name: "Cobalt",
-    tagline: "Clean B2B-SaaS blue — calm and product-y.",
-    swatch: "oklch(0.585 0.2 254)",
-  },
-  {
-    id: "amber",
-    name: "Amber",
-    tagline: "Warm and friendly — feels good for SMB teams.",
-    swatch: "oklch(0.745 0.16 65)",
-  },
-  {
-    id: "rose",
-    name: "Rose",
-    tagline: "Bold and modern — D2C, creator-economy, lifestyle.",
-    swatch: "oklch(0.645 0.22 16)",
-  },
 ];
 
 export function isThemeId(value: unknown): value is ThemeId {
   return (
     typeof value === "string" &&
     (THEME_IDS as ReadonlyArray<string>).includes(value)
+  );
+}
+
+/**
+ * SURFACE — which token set a route renders with.
+ *
+ * "app" (the signed-in user panel) gets the purple light palette in
+ * globals.css (:root[data-surface="app"]). Everything else (admin,
+ * marketing, auth until its redesign) keeps the MODE/ACCENT tokens.
+ * The boot script applies it from the path before first paint; the
+ * <SurfaceSync> component keeps it right across client navigation.
+ */
+export const APP_SURFACE_PREFIXES = [
+  "/dashboard",
+  "/inbox",
+  "/contacts",
+  "/pipelines",
+  "/broadcasts",
+  "/automations",
+  "/flows",
+  "/agents",
+  "/notifications",
+  "/settings",
+  "/dev",
+] as const;
+
+export function isAppSurfacePath(pathname: string): boolean {
+  return APP_SURFACE_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
   );
 }

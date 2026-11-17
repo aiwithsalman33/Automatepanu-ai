@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { getPathMatch } from "next/dist/shared/lib/router/utils/path-match";
-import nextConfig from "../next.config";
+import { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } from "next/constants";
+import config from "../next.config";
+
+const nextConfig = config(PHASE_PRODUCTION_BUILD);
 
 async function cacheControlFor(pathname: string) {
   const rules = (await nextConfig.headers?.()) ?? [];
@@ -32,4 +35,11 @@ describe("next.config Cache-Control", () => {
       expect(await cacheControlFor(pathname)).toBeUndefined();
     },
   );
+});
+
+describe("next.config dev-only pages", () => {
+  it("registers page.dev.tsx routes under next dev only", () => {
+    expect(config(PHASE_DEVELOPMENT_SERVER).pageExtensions).toContain("dev.tsx");
+    expect(config(PHASE_PRODUCTION_BUILD).pageExtensions).not.toContain("dev.tsx");
+  });
 });

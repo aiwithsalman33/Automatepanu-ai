@@ -52,6 +52,17 @@
   --color-status-warning: var(--status-warning);
   --color-status-serious: var(--status-serious);
   --color-status-critical: var(--status-critical);
+  /* Added for the user-panel redesign. Each has a default in the MODE
+   * blocks that reproduces the previous look (admin panel, marketing),
+   * and a value in the APP SURFACE block below. */
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-status-good-text: var(--status-good-text);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-surface-ring: var(--surface-ring);
+  --color-overlay: var(--overlay);
+  --shadow-soft: var(--elev-soft);
+  --shadow-card: var(--elev-card);
+  --shadow-pop: var(--elev-pop);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -66,7 +77,7 @@
  *
  *   1. MODE   (light / dark)  → neutral surfaces. Selected with
  *      `document.documentElement.dataset.mode`. Defaults to dark.
- *   2. ACCENT (violet / …)    → the primary color only. Selected
+ *   2. ACCENT (violet)        → the primary color only. Selected
  *      with `document.documentElement.dataset.theme`.
  *
  * The two compose: any accent works in either mode. Neutral
@@ -122,6 +133,17 @@ html[data-mode="dark"] {
   --status-warning: #fab219;
   --status-serious: #ec835a;
   --status-critical: #e05252;
+  --status-good-text: var(--status-good);
+  --status-warning-bg: color-mix(in oklab, var(--status-warning) 15%, transparent);
+  --surface-ring: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --elev-soft: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --elev-card: 0 0 #0000;
+  --elev-pop: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --control-h: 2rem;
+  --control-h-sm: 1.75rem;
+  --control-h-lg: 2.25rem;
+  --control-px: 0.625rem;
+  --overlay: color-mix(in oklab, var(--background) 10%, transparent);
 }
 
 html[data-mode="light"],
@@ -157,6 +179,17 @@ html[data-mode="light"],
   --status-warning: #946100;
   --status-serious: #c2532a;
   --status-critical: #c43232;
+  --status-good-text: var(--status-good);
+  --status-warning-bg: color-mix(in oklab, var(--status-warning) 15%, transparent);
+  --surface-ring: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --elev-soft: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --elev-card: 0 0 #0000;
+  --elev-pop: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --control-h: 2rem;
+  --control-h-sm: 1.75rem;
+  --control-h-lg: 2.25rem;
+  --control-px: 0.625rem;
+  --overlay: color-mix(in oklab, var(--background) 10%, transparent);
 }
 
 /* ---- ACCENT: primary color ---- */
@@ -170,6 +203,7 @@ html[data-theme="violet"],
   --primary-hover: oklch(0.6 0.22 293);
   --primary-soft: oklch(0.526 0.247 293 / 0.12);
   --primary-soft-2: oklch(0.526 0.247 293 / 0.2);
+  --primary-soft-foreground: var(--primary);
   --ring: oklch(0.526 0.247 293);
   --chart-1: oklch(0.526 0.247 293);
   --sidebar-primary: oklch(0.526 0.247 293);
@@ -177,60 +211,126 @@ html[data-theme="violet"],
   --sidebar-ring: oklch(0.526 0.247 293);
 }
 
-html[data-theme="emerald"] {
-  --primary: oklch(0.62 0.16 162);
-  --primary-foreground: oklch(0.16 0.02 162);
-  --primary-hover: oklch(0.68 0.15 162);
-  --primary-soft: oklch(0.62 0.16 162 / 0.12);
-  --primary-soft-2: oklch(0.62 0.16 162 / 0.22);
-  --ring: oklch(0.62 0.16 162);
-  --chart-1: oklch(0.62 0.16 162);
-  --chart-2: oklch(0.7 0.14 195);
-  --sidebar-primary: oklch(0.62 0.16 162);
-  --sidebar-primary-foreground: oklch(0.16 0.02 162);
-  --sidebar-ring: oklch(0.62 0.16 162);
+/* ============================================================
+ * APP SURFACE — the signed-in user panel (light, one purple palette)
+ *
+ * Set as data-surface="app" on <html> by the boot script in
+ * layout.tsx (path-based, before first paint) and kept in sync on
+ * client navigation by <SurfaceSync> in the user-panel layouts. The
+ * admin panel and the marketing site never get it, so they keep the
+ * MODE/ACCENT tokens above. ":root[...]" (0,2,0) outranks every
+ * MODE/ACCENT block, so a saved dark mode or accent has no effect here.
+ *
+ * Light only for now. A dark app theme returns as a second block,
+ * e.g. :root[data-surface="app"][data-mode="dark"], with the same
+ * variable names.
+ *
+ * Contrast (WCAG 2.2): text #1E1B2E 16.8:1, muted #5B5675 6.9:1 on
+ * white / 6.2:1 on #F4F0FF, primary #7C3AED 5.7:1 (white on it 5.7:1),
+ * #5B21B6 on #EDE9FE 7.6:1, success text #15803D 5.0:1 (#16A34A is
+ * 3.3:1 → icons/dots only), warning #B45309 on #FEF3C7 4.5:1, danger
+ * #B91C1C 6.5:1. Control borders #8F88A8 3.4:1 (non-text 3:1); the
+ * #E9E4F5 border is decorative only (cards, dividers).
+ * ============================================================ */
+:root[data-surface="app"] {
+  color-scheme: light;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --background: #ffffff;
+  --foreground: #1e1b2e;
+  --card: #ffffff;
+  --card-2: #faf8ff;
+  --card-foreground: #1e1b2e;
+  --popover: #ffffff;
+  --popover-foreground: #1e1b2e;
+  --secondary: #f4f0ff;
+  --secondary-foreground: #1e1b2e;
+  --muted: #f4f0ff;
+  --muted-foreground: #5b5675;
+  --accent: #f4f0ff;
+  --accent-foreground: #1e1b2e;
+  --destructive: #b91c1c;
+  --border: #e9e4f5;
+  --input: #8f88a8;
+  --surface-ring: #e9e4f5;
+
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --primary-hover: #6d28d9;
+  --primary-soft: #ede9fe;
+  --primary-soft-2: #ddd6fe;
+  --primary-soft-foreground: #5b21b6;
+  --ring: #7c3aed;
+
+  --chart-1: #7c3aed;
+  --chart-2: #a78bfa;
+  --chart-3: #c4b5fd;
+  --chart-4: #ddd6fe;
+  --chart-5: #ede9fe;
+
+  --sidebar: #faf8ff;
+  --sidebar-foreground: #1e1b2e;
+  --sidebar-primary: #7c3aed;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ede9fe;
+  --sidebar-accent-foreground: #5b21b6;
+  --sidebar-border: #e9e4f5;
+  --sidebar-ring: #7c3aed;
+
+  --status-good: #16a34a;
+  --status-good-text: #15803d;
+  --status-warning: #b45309;
+  --status-warning-bg: #fef3c7;
+  --status-serious: #c2410c;
+  --status-critical: #b91c1c;
+
+  --radius: 0.75rem;
+  --elev-soft: 0 10px 30px -14px rgba(124, 58, 237, 0.22);
+  --elev-card: 0 1px 2px rgba(30, 27, 46, 0.04), 0 10px 30px -14px rgba(124, 58, 237, 0.22);
+  --elev-pop: 0 2px 6px rgba(30, 27, 46, 0.06), 0 16px 40px -12px rgba(124, 58, 237, 0.28);
+
+  /* Control heights: 40px on a mouse, 44px touch targets on touch. */
+  --control-h: 2.5rem;
+  --control-h-sm: 2.25rem;
+  --control-h-lg: 2.75rem;
+  --control-px: 1rem;
+  --overlay: rgba(30, 27, 46, 0.32);
+
+  /* Shell metrics. */
+  --rail-w: 88px;
+  --topbar-h: 64px;
+  --tabbar-h: 64px;
 }
 
-html[data-theme="cobalt"] {
-  --primary: oklch(0.585 0.2 254);
-  --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.66 0.18 254);
-  --primary-soft: oklch(0.585 0.2 254 / 0.12);
-  --primary-soft-2: oklch(0.585 0.2 254 / 0.22);
-  --ring: oklch(0.585 0.2 254);
-  --chart-1: oklch(0.585 0.2 254);
-  --chart-2: oklch(0.7 0.15 220);
-  --sidebar-primary: oklch(0.585 0.2 254);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-ring: oklch(0.585 0.2 254);
+@media (pointer: coarse) {
+  :root[data-surface="app"] {
+    --control-h: 2.75rem;
+    --control-h-sm: 2.5rem;
+    --control-h-lg: 3rem;
+  }
 }
 
-html[data-theme="amber"] {
-  --primary: oklch(0.745 0.16 65);
-  --primary-foreground: oklch(0.18 0.03 65);
-  --primary-hover: oklch(0.8 0.15 65);
-  --primary-soft: oklch(0.745 0.16 65 / 0.12);
-  --primary-soft-2: oklch(0.745 0.16 65 / 0.22);
-  --ring: oklch(0.745 0.16 65);
-  --chart-1: oklch(0.745 0.16 65);
-  --chart-2: oklch(0.7 0.15 35);
-  --sidebar-primary: oklch(0.745 0.16 65);
-  --sidebar-primary-foreground: oklch(0.18 0.03 65);
-  --sidebar-ring: oklch(0.745 0.16 65);
+/* Visible focus everywhere in the app: a solid 2px primary outline
+ * (5.7:1 on white). Outranks the primitives' outline-none, so no
+ * component can lose its focus indicator. [data-focus-inset] draws it
+ * inside the element for rows in overflow-clipped lists. */
+:root[data-surface="app"] :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+:root[data-surface="app"] [data-focus-inset]:focus-visible {
+  outline-offset: -2px;
 }
 
-html[data-theme="rose"] {
-  --primary: oklch(0.645 0.22 16);
-  --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.71 0.2 16);
-  --primary-soft: oklch(0.645 0.22 16 / 0.12);
-  --primary-soft-2: oklch(0.645 0.22 16 / 0.22);
-  --ring: oklch(0.645 0.22 16);
-  --chart-1: oklch(0.645 0.22 16);
-  --chart-2: oklch(0.7 0.18 340);
-  --sidebar-primary: oklch(0.645 0.22 16);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-ring: oklch(0.645 0.22 16);
+@media (prefers-reduced-motion: reduce) {
+  :root[data-surface="app"] *,
+  :root[data-surface="app"] *::before,
+  :root[data-surface="app"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer base {
@@ -390,3 +490,5 @@ body:has(.mk) {
 .brand-logo-dark { display: none; }
 html[data-mode="dark"] .brand-logo-light { display: none; }
 html[data-mode="dark"] .brand-logo-dark { display: block; }
+:root[data-surface="app"] .brand-logo-light { display: block; }
+:root[data-surface="app"] .brand-logo-dark { display: none; }

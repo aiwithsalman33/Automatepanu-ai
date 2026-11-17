@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IntlProvider } from "@/components/intl-provider";
+import { SurfaceSync } from "@/components/layout/surface-sync";
 import { DashboardShell } from "./dashboard-shell";
 
 // Server layout whose only job is to declare "do not index" metadata
@@ -27,6 +28,7 @@ export default function DashboardLayout({
 }) {
   return (
     <IntlProvider>
+      <SurfaceSync value="app" />
       <DashboardShell>{children}</DashboardShell>
     </IntlProvider>
   );

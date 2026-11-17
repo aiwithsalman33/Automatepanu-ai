@@ -2414,7 +2414,12 @@
     "loading": "Cargando..."
   },
   "UiPrimitives": {
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "removeItem": "Quitar {item}",
+    "errorTitle": "No se pudo cargar",
+    "errorDescription": "Algo salió mal. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "loading": "Cargando…"
   },
   "GatedButton": {
     "readOnly": "Solo lectura: tu rol no puede {action}",

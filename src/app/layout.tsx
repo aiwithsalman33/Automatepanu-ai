@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getLocale, getTranslations } from 'next-intl/server';
-import { Poppins } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
@@ -13,6 +13,7 @@ import {
   MODES,
   STORAGE_KEY,
   THEME_IDS,
+  APP_SURFACE_PREFIXES,
 } from "@/lib/themes";
 
 // Poppins is the one font for the whole product (app, auth, admin and
@@ -24,6 +25,17 @@ const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
+});
+
+// Inter is the user panel's font (the "app" surface in globals.css maps
+// --font-sans to it). preload: false so the marketing site and admin
+// panel, which stay on Poppins, never download it: the browser fetches
+// Inter only on pages whose CSS actually uses it.
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -88,6 +100,12 @@ const THEME_BOOT_SCRIPT = `
     d.dataset.theme = ${JSON.stringify(DEFAULT_THEME)};
     d.dataset.mode = ${JSON.stringify(DEFAULT_MODE)};
   }
+  // User panel routes render the "app" token set (light purple).
+  var p = location.pathname;
+  var APP = ${JSON.stringify(APP_SURFACE_PREFIXES)};
+  for (var i = 0; i < APP.length; i++) {
+    if (p === APP[i] || p.indexOf(APP[i] + "/") === 0) { d.dataset.surface = "app"; break; }
+  }
 })();
 `;
 
@@ -103,7 +121,7 @@ export default async function RootLayout({
       lang={locale}
       data-theme={DEFAULT_THEME}
       data-mode={DEFAULT_MODE}
-      className={`${poppins.variable} h-full antialiased`}
+      className={`${poppins.variable} ${inter.variable} h-full antialiased`}
       // The `theme-boot` script below rewrites `data-theme` and
       // `data-mode` on <html> from localStorage before React hydrates,
       // so for any non-default choice the client DOM intentionally
