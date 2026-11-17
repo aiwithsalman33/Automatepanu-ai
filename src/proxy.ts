@@ -82,14 +82,16 @@ export async function proxy(request: NextRequest) {
     (await getNativeSessionUser(request.headers).catch(() => null)) !== null;
 
   // App host root (chat.axxeler.in/): straight into the app.
+  // /auth/continue picks /admin for platform admins, else /dashboard.
   if (isAppRoot) {
     const url = request.nextUrl.clone();
-    url.pathname = signedIn ? '/dashboard' : '/login';
+    url.pathname = signedIn ? '/auth/continue' : '/login';
     url.search = '';
     return NextResponse.redirect(url);
   }
 
-  // Auth pages: signed-in users go to the dashboard, or straight to
+  // Auth pages: signed-in users go to /auth/continue (admin panel for
+  // platform admins, dashboard for everyone else), or straight to
   // /join/<token> when an invite token is in the query string, so a
   // forwarded invite link works in one click.
   if (signedIn && isAuthPage) {
@@ -98,7 +100,7 @@ export async function proxy(request: NextRequest) {
     if (inviteToken && pathname !== '/forgot-password') {
       url.pathname = `/join/${encodeURIComponent(inviteToken)}`;
     } else {
-      url.pathname = '/dashboard';
+      url.pathname = '/auth/continue';
     }
     url.search = '';
     return NextResponse.redirect(url);

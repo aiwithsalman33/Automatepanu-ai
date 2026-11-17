@@ -35,11 +35,11 @@ beforeEach(() => {
 });
 
 describe('proxy — native session', () => {
-  it('redirects a signed-in user off /login to /dashboard', async () => {
+  it('redirects a signed-in user off /login to /auth/continue', async () => {
     sessionUser = { id: 'user-1' };
     const res = await proxy(req('https://app.test/login'));
     expect(res.status).toBe(307);
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/auth/continue');
   });
 
   it('redirects a signed-in user with an invite token to /join/<token>', async () => {
@@ -156,12 +156,12 @@ describe('proxy — one deployment, two domains', () => {
     expect(res.headers.get('location')).toBe(`${MK}/features/inbox`);
   });
 
-  it('app host root → /login when signed out, /dashboard when signed in', async () => {
+  it('app host root → /login when signed out, /auth/continue when signed in', async () => {
     let res = await proxy(req(`${APP}/`));
     expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
     sessionUser = { id: 'u1' };
     res = await proxy(req(`${APP}/`));
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/auth/continue');
   });
 
   it.each([
