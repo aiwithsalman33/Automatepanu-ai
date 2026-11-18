@@ -969,7 +969,10 @@
       },
       "errorLoad": "Failed to load broadcasts",
       "broadcastInProgress": "Broadcast in progress",
-      "retry": "Retry"
+      "retry": "Retry",
+      "viewsLabel": "Broadcast status",
+      "viewAll": "All",
+      "noneInView": "No broadcasts with this status"
     },
     "status": {
       "draft": "Draft",
@@ -1049,7 +1052,8 @@
       "toastDraftSaved": "Draft saved",
       "broadcastFailed": "Broadcast failed",
       "toastSendTakenOver": "Another delivery took over this broadcast, so this tab stopped sending. Open the broadcast to follow its progress.",
-      "toastSendInterrupted": "Sending stopped because the connection to the server dropped. Open the broadcast and select Resume sending to reach the remaining recipients. The button appears within 5 minutes."
+      "toastSendInterrupted": "Sending stopped because the connection to the server dropped. Open the broadcast and select Resume sending to reach the remaining recipients. The button appears within 5 minutes.",
+      "backToBroadcasts": "Back to broadcasts"
     },
     "wizard": {
       "next": "Next",

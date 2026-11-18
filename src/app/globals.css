@@ -322,6 +322,14 @@ html[data-theme="violet"],
   outline-offset: -2px;
 }
 
+/* Form controls keep a 3:1 boundary (#8F88A8) even where a page passes
+ * the decorative border-border colour; focus and invalid states keep
+ * their own colours. */
+:root[data-surface="app"]
+  :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"], select.border):not(:focus-visible):not([aria-invalid="true"]) {
+  border-color: var(--input);
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[data-surface="app"] *,
   :root[data-surface="app"] *::before,

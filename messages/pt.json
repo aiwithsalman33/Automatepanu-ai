@@ -969,7 +969,10 @@
       },
       "errorLoad": "Falha ao carregar os disparos",
       "broadcastInProgress": "Disparo em andamento",
-      "retry": "Tentar novamente"
+      "retry": "Tentar novamente",
+      "viewsLabel": "Status do disparo",
+      "viewAll": "Todos",
+      "noneInView": "Nenhum disparo com este status"
     },
     "status": {
       "draft": "Rascunho",
@@ -1049,7 +1052,8 @@
       "toastDraftSaved": "Rascunho salvo",
       "broadcastFailed": "Falha no disparo",
       "toastSendTakenOver": "Outro envio assumiu esta transmissão, então esta aba parou de enviar. Abra a transmissão para acompanhar o progresso.",
-      "toastSendInterrupted": "O envio parou porque a conexão com o servidor caiu. Abra a transmissão e use Retomar envio para enviar aos destinatários restantes. O botão aparece em até 5 minutos."
+      "toastSendInterrupted": "O envio parou porque a conexão com o servidor caiu. Abra a transmissão e use Retomar envio para enviar aos destinatários restantes. O botão aparece em até 5 minutos.",
+      "backToBroadcasts": "Voltar para disparos"
     },
     "wizard": {
       "next": "Avançar",
