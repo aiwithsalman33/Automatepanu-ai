@@ -93,11 +93,11 @@ function LoginPageInner() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md border-border bg-card">
+    <div className="flex min-h-dvh items-center justify-center bg-card-2 px-4 py-10">
+      <Card className="w-full max-w-md rounded-2xl border-border bg-card px-2 py-7 shadow-soft sm:px-4">
         <CardHeader className="items-center text-center">
           <BrandLogo className="mx-auto mb-3 h-12" priority />
-          <CardTitle className="text-xl text-foreground">
+          <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
             {inviteToken ? t('titleAccept') : t('titleWelcome')}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -109,12 +109,12 @@ function LoginPageInner() {
         <CardContent>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             {linkErrorMessage && !error && (
-              <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+              <div className="rounded-lg border border-status-warning/20 bg-status-warning-bg px-4 py-3 text-sm text-status-warning">
                 {linkErrorMessage}
               </div>
             )}
             {error && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              <div className="rounded-lg border border-status-critical/20 bg-status-critical/10 px-4 py-3 text-sm text-status-critical">
                 {error}
               </div>
             )}
@@ -130,7 +130,7 @@ function LoginPageInner() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
+                className="bg-card text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
@@ -145,7 +145,7 @@ function LoginPageInner() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
+                className="bg-card text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
               />
               {/* Below the input so Tab goes email -> password -> link. */}
               <Link
