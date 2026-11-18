@@ -55,7 +55,7 @@ function RailLink({ entry, pathname, badge }: { entry: NavEntry; pathname: strin
  * Desktop navigation (lg+): a slim 88px rail. Logo mark, the eight
  * sections with their labels under the icons, then Settings and the
  * profile menu at the bottom. The active section is a soft purple
- * tile around icon and label (design/Inbox.png). Hidden below lg, where the bottom tab bar takes over.
+ * tile around icon and label (docs/design/inbox.png). Hidden below lg, where the bottom tab bar takes over.
  * `unread` (chats) comes from the shell, which subscribes once.
  */
 export function Rail({ unread }: { unread: number }) {

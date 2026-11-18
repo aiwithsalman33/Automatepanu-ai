@@ -649,7 +649,7 @@ export function MessageComposer({
         </div>
       ) : (
         <div className="space-y-2.5">
-          {/* Tool pills above one input (design/Inbox.png). Gated like
+          {/* Tool pills above one input (docs/design/inbox.png). Gated like
               before: free-form tools need the 24h window, Template and
               AI draft only need a role that can send. */}
           <div

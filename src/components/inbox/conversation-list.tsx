@@ -39,7 +39,7 @@ interface ConversationListProps {
   initialFilter?: InboxFilter;
 }
 
-/** The four views shown as tabs (design/Inbox.png); the rest live under Filters. */
+/** The four views shown as tabs (docs/design/inbox.png); the rest live under Filters. */
 const TAB_FILTERS = ["all", "unread", "waiting", "unassigned"] as const satisfies readonly InboxFilter[];
 /** Single-select status views offered in the Filters popover. */
 const STATUS_FILTERS = ["expiring", "open", "pending", "closed"] as const satisfies readonly InboxFilter[];
