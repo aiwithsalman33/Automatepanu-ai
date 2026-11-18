@@ -1,46 +1,36 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { ArrowDown, ArrowUp, Info, Minus } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { Card } from '@/components/ui/card'
+import { StatTile, type StatDelta } from '@/components/ui/stat-tile'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { Change } from '@/lib/dashboard/overview'
 import { cn } from '@/lib/utils'
-import { Skeleton } from './skeleton'
 
-const TONE_CLASS = {
-  good: 'bg-status-good/12 text-status-good',
-  bad: 'bg-status-critical/12 text-status-critical',
-  neutral: 'bg-muted text-muted-foreground',
-} as const
-
-export function DeltaBadge({ change }: { change: Change }) {
+/** The overview's Change (percent, trend, tone) as a kit StatDelta. */
+function useDelta(change: Change): StatDelta {
   const t = useTranslations('Dashboard.overview.kpi')
-  const Icon = change.trend === 'up' ? ArrowUp : change.trend === 'down' ? ArrowDown : Minus
   const label =
     change.percent == null
       ? change.trend === 'flat'
         ? t('noComparison')
         : t('new')
       : `${Math.abs(change.percent)}%`
-  const srLabel =
-    change.tone === 'good' ? t('better') : change.tone === 'bad' ? t('worse') : t('unchanged')
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-medium tabular-nums',
-        TONE_CLASS[change.tone],
-      )}
-    >
-      <Icon className="size-3" aria-hidden />
-      {label}
-      <span className="sr-only">{srLabel}</span>
-    </span>
-  )
+  return {
+    label,
+    direction: change.trend,
+    tone: change.tone,
+    srLabel: change.tone === 'good' ? t('better') : change.tone === 'bad' ? t('worse') : t('unchanged'),
+  }
 }
 
+/**
+ * One Home KPI on the kit StatTile: label with an info tooltip, value,
+ * change vs the previous period, and a footer (sparkline, target bar
+ * or a note).
+ */
 export function KpiTile({
   title,
   info,
@@ -58,44 +48,35 @@ export function KpiTile({
   comparisonLabel: string
   footer: ReactNode
 }) {
+  const delta = useDelta(change)
   return (
-    <Card size="sm" className="gap-2 px-4">
-      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        <span className="truncate">{title}</span>
+    <StatTile
+      label={title}
+      info={
         <Tooltip>
           <TooltipTrigger
-            className="inline-flex shrink-0 rounded-full text-muted-foreground/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
             aria-label={info}
           >
             <Info className="size-3.5" />
           </TooltipTrigger>
           <TooltipContent>{info}</TooltipContent>
         </Tooltip>
-      </div>
-      <p className="text-2xl leading-none font-semibold tracking-tight text-foreground tabular-nums">
-        {value}
-        {unit ? <span className="ml-1 text-sm font-medium text-muted-foreground">{unit}</span> : null}
-      </p>
-      <div className="flex items-center justify-between gap-2">
-        <DeltaBadge change={change} />
-        <span className="truncate text-xs text-muted-foreground">{comparisonLabel}</span>
-      </div>
-      {footer}
-    </Card>
+      }
+      value={value}
+      unit={unit}
+      delta={delta}
+      comparison={comparisonLabel}
+      footer={footer}
+    />
   )
 }
 
 export function KpiTileSkeleton() {
-  return (
-    <Card size="sm" className="gap-3 px-4">
-      <Skeleton className="h-3 w-24" />
-      <Skeleton className="h-7 w-16" />
-      <Skeleton className="h-4 w-28" />
-      <Skeleton className="h-9 w-full" />
-    </Card>
-  )
+  return <StatTile label="" value="" loading spark={[]} />
 }
 
+/** Median first reply against the account's target (left half = on target). */
 export function TargetBar({ value, target }: { value: number | null; target: number }) {
   const t = useTranslations('Dashboard.overview.kpi')
   const max = target * 2

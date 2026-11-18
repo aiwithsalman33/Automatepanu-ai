@@ -324,7 +324,9 @@
         },
         "previewTitle": "Your numbers will show up here",
         "previewHint": "Once customers start messaging you, this page shows who is waiting, how fast your team replies, and how your deals and campaigns are doing.",
-        "previewAction": "Open inbox"
+        "previewAction": "Open inbox",
+        "barTitle": "Finish setup · {done} of {total}",
+        "continue": "Continue"
       },
       "duration": {
         "seconds": "{value} s",

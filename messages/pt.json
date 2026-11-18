@@ -324,7 +324,9 @@
         },
         "previewTitle": "Seus números vão aparecer aqui",
         "previewHint": "Quando os clientes começarem a escrever, esta página mostra quem está esperando, a rapidez das respostas da equipe e como estão seus negócios e campanhas.",
-        "previewAction": "Abrir caixa de entrada"
+        "previewAction": "Abrir caixa de entrada",
+        "barTitle": "Conclua a configuração · {done} de {total}",
+        "continue": "Continuar"
       },
       "duration": {
         "seconds": "{value} s",

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/data/client';
 import { useAuth } from '@/hooks/use-auth'
 import { useRealtime } from '@/hooks/use-realtime'
-import { Button } from '@/components/ui/button'
+import { ErrorState } from '@/components/ui/error-state'
 import { loadActivity } from '@/lib/dashboard/queries'
 import type { ActivityItem } from '@/lib/dashboard/types'
 import {
@@ -28,7 +28,7 @@ import { MessageVolumeCard } from '@/components/dashboard/message-volume-card'
 import { OverviewHeader } from '@/components/dashboard/overview-header'
 import { PipelineCard } from '@/components/dashboard/pipeline-card'
 import { ReplyQueueCard } from '@/components/dashboard/reply-queue-card'
-import { SetupChecklist } from '@/components/dashboard/setup-checklist'
+import { SetupBar, SetupChecklist } from '@/components/dashboard/setup-checklist'
 import { TeamCard } from '@/components/dashboard/team-card'
 
 const POLL_MS = 60_000
@@ -132,17 +132,15 @@ function DashboardPageInner() {
 
   if (failed && !data) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-        <p className="text-sm text-muted-foreground">{t('loadFailed')}</p>
-        <Button variant="outline" size="sm" onClick={() => refresh(range)}>
-          {t('retry')}
-        </Button>
-      </div>
+      <ErrorState title={t('loadFailed')} onRetry={() => refresh(range)} />
     )
   }
 
+  // Layout follows docs/design/home.png: header, setup bar, attention
+  // cards, KPI tiles, then volume + reply queue (left) beside pipeline,
+  // campaigns and team (right), and the activity feed at the bottom.
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <OverviewHeader
         data={data}
         now={now}
@@ -152,22 +150,30 @@ function DashboardPageInner() {
       />
 
       {data && needsSetup(data.setup) ? (
+        // First run (no conversations yet): the full checklist instead
+        // of an empty dashboard.
         <SetupChecklist setup={data.setup} />
       ) : (
         <>
+          {data ? <SetupBar setup={data.setup} /> : null}
           <AttentionRow data={data} now={now} onlineCount={onlineCount} />
           <KpiRow data={data} currency={defaultCurrency} />
 
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
-            <MessageVolumeCard data={data} />
-            <ReplyQueueCard data={data} now={now} />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-            <PipelineCard data={data} currency={defaultCurrency} />
-            <TeamCard data={data} now={now} />
-            <div className="lg:col-span-2 2xl:col-span-1">
-              <CampaignsCard data={data} />
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.75fr)_minmax(0,1fr)]">
+            {/* The cards are h-full by default; in these stacks they size to
+                their content and the last one fills what's left. */}
+            <div className="flex min-w-0 flex-col gap-5 *:data-[slot=card]:h-auto">
+              <MessageVolumeCard data={data} />
+              <div className="flex flex-1 flex-col *:data-[slot=card]:h-auto *:data-[slot=card]:flex-1">
+                <ReplyQueueCard data={data} now={now} />
+              </div>
+            </div>
+            <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2 xl:flex xl:flex-col *:data-[slot=card]:h-auto">
+              <PipelineCard data={data} currency={defaultCurrency} />
+              <CampaignsCard data={data} compact />
+              <div className="flex flex-1 flex-col md:col-span-2 xl:col-span-1 *:data-[slot=card]:h-auto *:data-[slot=card]:flex-1">
+                <TeamCard data={data} now={now} />
+              </div>
             </div>
           </div>
 

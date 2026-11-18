@@ -10,7 +10,7 @@ import {
   type DashboardOverview,
 } from '@/lib/dashboard/overview'
 import { KpiTile, KpiTileSkeleton, TargetBar } from './kpi-tile'
-import { Sparkline } from './sparkline'
+import { Sparkline } from '@/components/ui/sparkline'
 import { useFormatDuration } from './use-format-duration'
 
 export function KpiRow({
