@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Bot, Sparkles, Settings2, BarChart3 } from 'lucide-react';
+import { Sparkles, Settings2, BarChart3 } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AiPlayground } from '@/components/agents/ai-playground';
 import { AiUsageCard } from '@/components/agents/ai-usage';
@@ -39,22 +41,19 @@ export default function AgentsPage() {
   }, []);
 
   return (
-    <div>
-      <div className="flex items-center gap-2">
-        <Bot className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('title')}
-        </h1>
-      </div>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {t('description')}
-      </p>
+    <div className="space-y-5">
+      <PageHeader description={t('description')} />
 
-      {decided && (
+      {!decided ? (
+        <div className="space-y-4" aria-busy="true">
+          <span className="sr-only">{t('title')}</span>
+          <Skeleton className="h-10 w-80 max-w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-2xl" />
+        </div>
+      ) : (
         <Tabs
           value={tab}
           onValueChange={(v) => setTab(v as Tab)}
-          className="mt-6"
         >
           <TabsList>
             <TabsTrigger value="playground">

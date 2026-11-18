@@ -19,7 +19,7 @@ import type { DashboardOverview } from '@/lib/dashboard/overview'
 import { derivePresence, type PresenceStatus } from '@/lib/presence'
 import { cn } from '@/lib/utils'
 import { initialsOf } from './initials'
-import { Skeleton } from './skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useFormatDuration } from './use-format-duration'
 
 const PRESENCE_CLASS: Record<PresenceStatus, string> = {
@@ -37,9 +37,9 @@ export function TeamCard({ data, now }: { data: DashboardOverview | null; now: n
   const target = data?.replyTargetMinutes ?? 5
 
   return (
-    <Card className="h-full">
+    <Card className="h-full rounded-2xl">
       <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
+        <CardTitle className="font-semibold">{t('title')}</CardTitle>
         <CardDescription>{t('description')}</CardDescription>
         <CardAction>
           <Link href="/settings?tab=members" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
@@ -164,4 +165,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+/**
+ * Dev-only routes. Files named `page.dev.tsx` (e.g. /dev/ui-kit, the
+ * component gallery) are pages only under `next dev`: production
+ * builds don't register the "dev.tsx" extension, so the route and
+ * everything it imports are left out of the build entirely.
+ */
+export default function config(phase: string): NextConfig {
+  const dev = phase === PHASE_DEVELOPMENT_SERVER;
+  return withNextIntl({
+    ...nextConfig,
+    pageExtensions: dev ? ["dev.tsx", "tsx", "ts", "jsx", "js"] : ["tsx", "ts", "jsx", "js"],
+  });
+}

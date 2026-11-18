@@ -13,8 +13,8 @@ import {
 import type { ComponentType } from 'react'
 import type { ActivityItem, ActivityKind } from '@/lib/dashboard/types'
 import { cn } from '@/lib/utils'
-import { EmptyState } from './empty-state'
-import { Skeleton } from './skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface ActivityFeedProps {
   items: ActivityItem[] | null
@@ -70,10 +70,10 @@ export function ActivityFeed({ items, loading }: ActivityFeedProps) {
         </div>
       ) : items.length === 0 ? (
         <div className="p-5">
-          <EmptyState
+          <EmptyState compact
             icon={Inbox}
             title={t('noActivity')}
-            hint={t('noActivityHint')}
+            description={t('noActivityHint')}
           />
         </div>
       ) : (

@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { isToday } from "date-fns";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SkeletonRow } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -28,6 +34,7 @@ export default function NotificationsPage() {
   );
   const [error, setError] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
+  const [view, setView] = useState<"all" | "unread">("all");
 
   const load = useCallback(async () => {
     if (!accountId) return;
@@ -152,125 +159,124 @@ export default function NotificationsPage() {
     }
   }, [unreadIds.length, accountId, load, t]);
 
+  // Visible rows (All / Unread), grouped Today / Earlier.
+  const groups = useMemo(() => {
+    const rows = (notifications ?? []).filter((n) => view === "all" || !n.read_at);
+    const today = rows.filter((n) => isToday(new Date(n.created_at)));
+    const earlier = rows.filter((n) => !isToday(new Date(n.created_at)));
+    return [
+      { id: "today", label: t("groupToday"), rows: today },
+      { id: "earlier", label: t("groupEarlier"), rows: earlier },
+    ].filter((g) => g.rows.length > 0);
+  }, [notifications, view, t]);
+
   if (error) {
-    return (
-      <div className="flex h-64 flex-col items-center justify-center gap-2">
-        <p className="text-sm text-destructive">{error}</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          {t("retry")}
-        </Button>
-      </div>
-    );
+    return <ErrorState title={t("loadFailed")} description={error} onRetry={() => { setError(null); load(); }} />;
   }
 
   if (notifications === null) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card" aria-busy="true">
+        <span className="sr-only">{t("title")}</span>
+        {Array.from({ length: 5 }, (_, i) => (
+          <SkeletonRow key={i} className="border-b border-border last:border-0" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("description")}
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={unreadIds.length === 0 || markingAll}
-          onClick={markAllRead}
-        >
-          {markingAll ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <CheckCheck className="h-4 w-4" />
-          )}
-          {t("markAllRead")}
-        </Button>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        description={t("description")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={unreadIds.length === 0 || markingAll}
+            onClick={markAllRead}
+          >
+            {markingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}
+            {t("markAllRead")}
+          </Button>
+        }
+      />
+
+      {notifications.length > 0 ? (
+        <SegmentedControl
+          aria-label={t("filterLabel")}
+          value={view}
+          onValueChange={setView}
+          options={[
+            { value: "all", label: t("filterAll") },
+            { value: "unread", label: `${t("unread")} · ${unreadIds.length}` },
+          ]}
+        />
+      ) : null}
 
       {notifications.length === 0 ? (
-        <div className="flex h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/40">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Bell className="h-6 w-6 text-primary" />
-          </div>
-          <p className="mt-3 text-sm font-medium text-foreground">
-            {t("emptyTitle")}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("emptyDesc")}
-          </p>
-        </div>
+        <EmptyState icon={Bell} title={t("emptyTitle")} description={t("emptyDesc")} />
+      ) : groups.length === 0 ? (
+        <EmptyState icon={CheckCheck} title={t("allCaughtUp")} />
       ) : (
-        <ul className="space-y-2">
-          {notifications.map((n) => {
-            const Icon = TYPE_ICON[n.type] ?? Bell;
-            const isUnread = !n.read_at;
-            return (
-              <li key={n.id}>
-                <button
-                  type="button"
-                  onClick={() => handleClick(n)}
-                  className={cn(
-                    "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors",
-                    isUnread
-                      ? "border-primary/30 bg-primary/5 hover:border-primary/50"
-                      : "border-border bg-card hover:border-border/70",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
-                      isUnread ? "bg-primary/15" : "bg-muted",
-                    )}
-                    aria-hidden
-                  >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5",
-                        isUnread ? "text-primary" : "text-muted-foreground",
-                      )}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span
+        <div className="space-y-5">
+          {groups.map((group) => (
+            <section key={group.id} aria-labelledby={`notif-${group.id}`}>
+              <h2
+                id={`notif-${group.id}`}
+                className="mb-2 px-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+              >
+                {group.label}
+              </h2>
+              <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+                {group.rows.map((n) => {
+                  const Icon = TYPE_ICON[n.type] ?? Bell;
+                  const isUnread = !n.read_at;
+                  return (
+                    <li key={n.id}>
+                      <button
+                        type="button"
+                        data-focus-inset
+                        onClick={() => handleClick(n)}
                         className={cn(
-                          "truncate text-sm font-semibold",
-                          isUnread ? "text-foreground" : "text-muted-foreground",
+                          "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/60",
+                          isUnread && "bg-primary-soft/40",
                         )}
                       >
-                        {n.title}
-                      </span>
-                      {isUnread && (
                         <span
-                          aria-label={t("unread")}
-                          className="h-2 w-2 flex-shrink-0 rounded-full bg-primary"
-                        />
-                      )}
-                    </div>
-                    {n.body && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {n.body}
-                      </p>
-                    )}
-                    <p className="mt-1 text-[11px] text-muted-foreground/70">
-                      {formatDistanceToNow(new Date(n.created_at), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                          className={cn(
+                            "flex size-10 shrink-0 items-center justify-center rounded-full",
+                            isUnread ? "bg-primary-soft text-primary-soft-foreground" : "bg-muted text-muted-foreground",
+                          )}
+                          aria-hidden
+                        >
+                          <Icon className="size-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className={cn("truncate text-sm", isUnread ? "font-semibold text-foreground" : "font-medium text-foreground")}>
+                              {n.title}
+                            </span>
+                            {isUnread ? (
+                              <>
+                                <span aria-hidden className="size-2 shrink-0 rounded-full bg-primary" />
+                                <span className="sr-only">{t("unread")}</span>
+                              </>
+                            ) : null}
+                          </span>
+                          {n.body ? <span className="mt-0.5 block truncate text-sm text-muted-foreground">{n.body}</span> : null}
+                          <span className="mt-1 block text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
     </div>
   );

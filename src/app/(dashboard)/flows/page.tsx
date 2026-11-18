@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { UrlIntent } from "@/components/layout/url-intent";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -21,6 +22,9 @@ import {
 import { useTranslations } from "next-intl";
 import { useCan } from "@/hooks/use-can";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState as KitEmptyState } from "@/components/ui/empty-state";
+import { SkeletonCard } from "@/components/ui/skeleton";
 import { GatedButton } from "@/components/ui/gated-button";
 import {
   Dialog,
@@ -63,7 +67,7 @@ const STATUS_LABELS = (t: ReturnType<typeof useTranslations>): Record<FlowRow["s
 
 const STATUS_COLORS: Record<FlowRow["status"], string> = {
   draft: "border-border bg-muted text-muted-foreground",
-  active: "border-emerald-600/40 bg-emerald-500/10 text-emerald-300",
+  active: "border-status-good/40 bg-status-good/12 text-status-good-text",
   archived: "border-border bg-muted/50 text-muted-foreground",
 };
 
@@ -194,35 +198,41 @@ export default function FlowsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+        <span className="sr-only">{t("title")}</span>
+        {Array.from({ length: 3 }, (_, i) => (
+          <SkeletonCard key={i} />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
-            <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+    <div className="space-y-6">
+      {/* "+ New → Flow" (?new=1) opens the create dialog. */}
+      <Suspense fallback={null}>
+        <UrlIntent param="new" ready={canCreate} onIntent={() => setCreateOpen(true)} />
+      </Suspense>
+      <PageHeader
+        description={
+          <>
+            <span className="mr-2 inline-flex items-center rounded-md bg-status-warning-bg px-1.5 py-0.5 align-middle text-[10px] font-semibold tracking-wide text-status-warning uppercase">
               {t("beta")}
             </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
             {t("description")}
-          </p>
-        </div>
-        <GatedButton
-          canAct={canCreate}
-          gateReason={tGate("reasons.createFlows")}
-          onClick={() => setCreateOpen(true)}
-        >
-          <Plus className="h-4 w-4" />
-          {t("newFlow")}
-        </GatedButton>
-      </header>
+          </>
+        }
+        actions={
+          <GatedButton
+            canAct={canCreate}
+            gateReason={tGate("reasons.createFlows")}
+            onClick={() => setCreateOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            {t("newFlow")}
+          </GatedButton>
+        }
+      />
 
       {flows.length === 0 ? (
         <EmptyState
@@ -335,26 +345,17 @@ function EmptyState({
 }) {
   const tGate = useTranslations("GatedButton");
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/50 px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-        <Workflow className="h-6 w-6 text-muted-foreground" />
-      </div>
-      <h2 className="mt-4 text-base font-medium text-foreground">
-        {t("emptyTitle")}
-      </h2>
-      <p className="mt-1 max-w-md text-sm text-muted-foreground">
-        {t("emptyDesc")}
-      </p>
-      <GatedButton
-        canAct={canCreate}
-        gateReason={tGate("reasons.createFlows")}
-        onClick={onCreate}
-        className="mt-5"
-      >
-        <Plus className="h-4 w-4" />
-        {t("createFirst")}
-      </GatedButton>
-    </div>
+    <KitEmptyState
+      icon={Workflow}
+      title={t("emptyTitle")}
+      description={t("emptyDesc")}
+      action={
+        <GatedButton canAct={canCreate} gateReason={tGate("reasons.createFlows")} onClick={onCreate}>
+          <Plus className="h-4 w-4" />
+          {t("createFirst")}
+        </GatedButton>
+      }
+    />
   );
 }
 
@@ -377,7 +378,7 @@ function FlowCard({
         ? Archive
         : PauseCircle;
   return (
-    <div className="flex flex-col rounded-lg border border-border bg-card p-4 transition-colors hover:border-border">
+    <div className="flex flex-col rounded-2xl border border-border bg-card p-4 shadow-card transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <Workflow className="h-4 w-4 shrink-0 text-primary" />
@@ -417,7 +418,7 @@ function FlowCard({
           variant="ghost"
           size="sm"
           onClick={onDelete}
-          className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          className="text-status-critical hover:bg-status-critical/10 hover:text-status-critical"
         >
           <Trash2 className="h-3.5 w-3.5" />
           {t("delete")}

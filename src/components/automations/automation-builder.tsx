@@ -740,7 +740,7 @@ export function AutomationBuilder({ initial }: { initial: BuilderInitial }) {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {/* Top bar. At sub-sm widths the "Active" label is hidden and the
           switch moves to the right of the save button, so the name input
           gets maximum width. */}
@@ -835,11 +835,11 @@ function TriggerCard({
           onClick={() => setOpen((v) => !v)}
           className="flex w-full items-center gap-3 px-4 py-3 text-left"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-500/10 text-blue-400">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-500/10 text-blue-700">
             <Zap className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] uppercase tracking-wide text-blue-300">{t("trigger")}</div>
+            <div className="text-[11px] uppercase tracking-wide text-blue-700">{t("trigger")}</div>
             <div className="truncate text-sm font-medium text-foreground">
               {t(`triggers.${type}.label`)}
             </div>
@@ -1245,7 +1245,7 @@ function ConditionBranches({
             scope={{ kind: "branch", parentCid: step.cid, branch: "yes" }}
           />
         </BranchColumn>
-        <BranchColumn label={t("branches.no")} color="text-rose-400">
+        <BranchColumn label={t("branches.no")} color="text-rose-700">
           <StepList
             {...props}
             steps={no}

@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { Toaster } from "sonner";
 
 import { useTheme } from "@/hooks/use-theme";
+import { useSurface } from "@/hooks/use-surface";
 import { DEFAULT_MODE } from "@/lib/themes";
 
 // Returns false during SSR and the first hydration render, true after —
@@ -34,16 +35,22 @@ function useIsClient() {
  */
 export function ThemedToaster() {
   const { mode } = useTheme();
+  const surface = useSurface();
   const isClient = useIsClient();
+  // The user panel ("app" surface) is light-only, whatever mode the
+  // admin panel last saved.
+  const theme = surface === "app" ? "light" : isClient ? mode : DEFAULT_MODE;
   return (
     <Toaster
-      theme={isClient ? mode : DEFAULT_MODE}
+      theme={theme}
       position="top-right"
       toastOptions={{
         style: {
           background: "var(--popover)",
           border: "1px solid var(--border)",
           color: "var(--popover-foreground)",
+          borderRadius: "calc(var(--radius) * 1.2)",
+          boxShadow: "var(--elev-pop)",
         },
       }}
     />

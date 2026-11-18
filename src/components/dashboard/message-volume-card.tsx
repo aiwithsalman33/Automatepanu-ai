@@ -20,8 +20,8 @@ import {
   busiestHours,
   type DashboardOverview,
 } from '@/lib/dashboard/overview'
-import { EmptyState } from './empty-state'
-import { Skeleton } from './skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type View = 'time' | 'hours'
 
@@ -68,9 +68,9 @@ export function MessageVolumeCard({ data }: { data: DashboardOverview | null }) 
     : t('none')
 
   return (
-    <Card className="h-full">
+    <Card className="h-full rounded-2xl">
       <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
+        <CardTitle className="font-semibold">{t('title')}</CardTitle>
         <CardDescription>{view === 'time' ? t('description') : t('hoursDescription')}</CardDescription>
         <CardAction>
           <Tabs value={view} onValueChange={(v) => setView(v as View)}>
@@ -89,7 +89,7 @@ export function MessageVolumeCard({ data }: { data: DashboardOverview | null }) 
         {!data ? (
           <Skeleton className="h-[260px] w-full" />
         ) : totalIn + totalOut === 0 ? (
-          <EmptyState icon={MessageSquare} title={t('empty')} hint={t('emptyHint')} className="flex-1" />
+          <EmptyState compact icon={MessageSquare} title={t('empty')} description={t('emptyHint')} className="flex-1" />
         ) : (
           <>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:flex sm:flex-wrap">

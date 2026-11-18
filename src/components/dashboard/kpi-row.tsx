@@ -10,7 +10,7 @@ import {
   type DashboardOverview,
 } from '@/lib/dashboard/overview'
 import { KpiTile, KpiTileSkeleton, TargetBar } from './kpi-tile'
-import { Sparkline } from './sparkline'
+import { Sparkline } from '@/components/ui/sparkline'
 import { useFormatDuration } from './use-format-duration'
 
 export function KpiRow({
@@ -26,7 +26,7 @@ export function KpiRow({
 
   if (!data) {
     return (
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {Array.from({ length: 5 }).map((_, i) => (
           <KpiTileSkeleton key={i} />
         ))}
@@ -41,7 +41,7 @@ export function KpiRow({
   const percent = (v: number) => format.number(v, { style: 'percent', maximumFractionDigits: 0 })
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <KpiTile
         title={t('newConversations')}
         info={t('newConversationsInfo')}

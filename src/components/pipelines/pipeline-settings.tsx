@@ -229,10 +229,10 @@ export function PipelineSettings({
 
         {showDeleteConfirm ? (
           <div className="py-4">
-            <div className="flex items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
+            <div className="flex items-center gap-3 rounded-lg border border-status-critical/30 bg-status-critical/10 p-4">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-status-critical" />
               <div>
-                <p className="text-sm font-medium text-red-400">
+                <p className="text-sm font-medium text-status-critical">
                   {t("deletePipeline")}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -251,7 +251,7 @@ export function PipelineSettings({
               <Button
                 onClick={handleDeletePipeline}
                 disabled={deleting}
-                className="bg-red-600 text-white hover:bg-red-700"
+                className="bg-status-critical text-white hover:bg-status-critical/90"
               >
                 {deleting ? t("deleting") : t("deletePipelineBtn")}
               </Button>
@@ -359,7 +359,7 @@ export function PipelineSettings({
             <DialogFooter className="border-border bg-popover/50">
               <Button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="mr-auto bg-red-600 text-white hover:bg-red-700"
+                className="mr-auto bg-status-critical text-white hover:bg-status-critical/90"
               >
                 {t("deletePipeline")}
               </Button>
@@ -435,7 +435,7 @@ function SortableStageRow({
         variant="ghost"
         size="icon-xs"
         onClick={onRemove}
-        className="text-muted-foreground hover:text-red-400"
+        className="text-muted-foreground hover:text-status-critical"
       >
         <Trash2 className="h-3 w-3" />
       </Button>

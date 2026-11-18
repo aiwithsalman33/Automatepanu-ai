@@ -248,7 +248,7 @@ export function ApiKeysSettings() {
                           size="sm"
                           onClick={() => handleRevoke(k)}
                           disabled={revoking === k.id}
-                          className="self-start border-red-500/40 bg-red-500/10 text-red-300 hover:border-red-500/60 hover:bg-red-500/20 hover:text-red-200 sm:self-auto"
+                          className="self-start border-status-critical/40 bg-status-critical/10 text-status-critical hover:border-status-critical/40 hover:bg-status-critical/10 hover:text-status-critical sm:self-auto"
                         >
                           {revoking === k.id ? (
                             <Loader2 className="size-4 animate-spin" />

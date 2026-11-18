@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/data/client';
 import { Broadcast } from '@/types';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -13,7 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Radio, Plus, Loader2 } from 'lucide-react';
+import { Radio, Plus } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
+import { SegmentedControl } from '@/components/ui/segmented-control';
+import { SkeletonRow } from '@/components/ui/skeleton';
 import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { getBroadcastStatus } from '@/lib/broadcast-status';
@@ -25,6 +29,13 @@ import { useTranslations } from 'next-intl';
  * counts consistent; we just need to surface the freshest snapshot.
  */
 const POLL_INTERVAL_MS = 5_000;
+
+/**
+ * Status views. No "Scheduled": broadcasts can't be scheduled yet (they
+ * send from the wizard straight away); add it when scheduling exists.
+ */
+const VIEWS = ['all', 'draft', 'sent', 'failed'] as const;
+type View = (typeof VIEWS)[number];
 
 function percent(numerator: number, denominator: number): number {
   if (!denominator) return 0;
@@ -66,6 +77,7 @@ export default function BroadcastsPage() {
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<View>('all');
 
   // Used to kick off polling only while something is actively sending.
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -132,22 +144,37 @@ export default function BroadcastsPage() {
     };
   }, [anySending]);
 
+  const counts = useMemo(() => {
+    const c: Record<View, number> = { all: broadcasts.length, draft: 0, sent: 0, failed: 0 };
+    for (const b of broadcasts) if (b.status in c) c[b.status as View] += 1;
+    return c;
+  }, [broadcasts]);
+  const visible = view === 'all' ? broadcasts : broadcasts.filter((b) => b.status === view);
+
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="space-y-5" aria-busy="true">
+        <span className="sr-only">{t('title')}</span>
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+          {Array.from({ length: 5 }, (_, i) => (
+            <SkeletonRow key={i} className="border-b border-border last:border-0" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-2">
-        <p className="text-sm text-red-400">{error}</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          {t('retry')}
-        </Button>
-      </div>
+      <ErrorState
+        title={t('errorLoad')}
+        description={error}
+        onRetry={() => {
+          setError(null);
+          setLoading(true);
+          fetchBroadcasts();
+        }}
+      />
     );
   }
 
@@ -181,43 +208,48 @@ export default function BroadcastsPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('subtitle')}
-          </p>
-        </div>
-        <GatedButton
-          canAct={canCreate}
-          gateReason={tGate('reasons.createBroadcasts')}
-          onClick={() => router.push('/broadcasts/new')}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" />
-          {t('newBroadcast')}
-        </GatedButton>
-      </div>
-
-      {broadcasts.length === 0 ? (
-        <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-border bg-card">
-          <Radio className="mb-3 h-10 w-10 text-muted-foreground" />
-          <p className="text-sm font-medium text-foreground">{t('noBroadcastsYet')}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t('createFirst')}
-          </p>
+      <PageHeader
+        description={t('subtitle')}
+        actions={
           <GatedButton
             canAct={canCreate}
             gateReason={tGate('reasons.createBroadcasts')}
             onClick={() => router.push('/broadcasts/new')}
-            className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
             {t('newBroadcast')}
           </GatedButton>
-        </div>
+        }
+      />
+
+      {broadcasts.length === 0 ? (
+        <EmptyState
+          icon={Radio}
+          title={t('noBroadcastsYet')}
+          description={t('createFirst')}
+          action={
+            <GatedButton
+              canAct={canCreate}
+              gateReason={tGate('reasons.createBroadcasts')}
+              onClick={() => router.push('/broadcasts/new')}
+            >
+              <Plus className="h-4 w-4" />
+              {t('newBroadcast')}
+            </GatedButton>
+          }
+        />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <div className="space-y-3">
+        <SegmentedControl
+          aria-label={t('viewsLabel')}
+          value={view}
+          onValueChange={setView}
+          options={VIEWS.map((v) => ({
+            value: v,
+            label: `${v === 'all' ? t('viewAll') : tStatus(v)} · ${counts[v]}`,
+          }))}
+        />
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-card">
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
@@ -233,7 +265,14 @@ export default function BroadcastsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {broadcasts.map((broadcast) => {
+              {visible.length === 0 ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="p-0">
+                    <EmptyState compact icon={Radio} title={t('noneInView')} />
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {visible.map((broadcast) => {
                 const status = getBroadcastStatus(broadcast.status);
                 return (
                   <TableRow
@@ -270,8 +309,8 @@ export default function BroadcastsPage() {
                       >
                         {status.pulse && (
                           <span className="relative flex h-1.5 w-1.5">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75" />
-                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-yellow-400" />
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-warning opacity-75" />
+                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-warning" />
                           </span>
                         )}
                         {tStatus(status.label)}
@@ -285,6 +324,7 @@ export default function BroadcastsPage() {
               })}
             </TableBody>
           </Table>
+        </div>
         </div>
       )}
     </div>

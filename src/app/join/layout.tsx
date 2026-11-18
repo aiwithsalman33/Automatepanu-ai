@@ -10,9 +10,9 @@
 // visitors through its login redirect. A dedicated layout
 // avoids both.
 //
-// Styling matches the login / signup pages — centered card on a
-// slate-950 background — so the join experience feels like a
-// natural step in the auth funnel rather than a foreign page.
+// Styling matches the login / signup pages — a centred card on the
+// lilac app surface — so the join experience feels like a natural
+// step in the auth funnel rather than a foreign page.
 //
 // Referrer-Policy: no-referrer
 //   The plaintext invite token lives in the URL path. Without
@@ -28,6 +28,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { IntlProvider } from '@/components/intl-provider';
+import { SurfaceSync } from '@/components/layout/surface-sync';
 
 export const metadata: Metadata = {
   referrer: 'no-referrer',
@@ -38,8 +39,11 @@ export const metadata: Metadata = {
 
 export default function JoinLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <IntlProvider>{children}</IntlProvider>
+    <div className="flex min-h-dvh items-center justify-center bg-card-2 px-4 py-10">
+      <IntlProvider>
+        <SurfaceSync value="app" />
+        {children}
+      </IntlProvider>
     </div>
   );
 }

@@ -23,6 +23,9 @@ import { useCan } from "@/hooks/use-can"
 import { useTranslations } from "next-intl"
 import type { Automation } from "@/types"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/layout/page-header"
+import { EmptyState } from "@/components/ui/empty-state"
+import { SkeletonCard } from "@/components/ui/skeleton"
 import { GatedButton } from "@/components/ui/gated-button"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -141,7 +144,7 @@ export default function AutomationsPage() {
   if (error) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-2">
-        <p className="text-sm text-red-400">{error}</p>
+        <p className="text-sm text-status-critical">{error}</p>
         <Button variant="outline" onClick={() => window.location.reload()}>
           {t("retry")}
         </Button>
@@ -151,8 +154,11 @@ export default function AutomationsPage() {
 
   if (automations === null) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="grid gap-4 lg:grid-cols-2" aria-busy="true">
+        <span className="sr-only">{t("title")}</span>
+        {Array.from({ length: 4 }, (_, i) => (
+          <SkeletonCard key={i} />
+        ))}
       </div>
     )
   }
@@ -161,23 +167,19 @@ export default function AutomationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("subtitle")}
-          </p>
-        </div>
-        <GatedButton
-          canAct={canCreate}
-          gateReason={tGate("reasons.createAutomations")}
-          onClick={() => router.push("/automations/new")}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" />
-          {t("create")}
-        </GatedButton>
-      </div>
+      <PageHeader
+        description={t("subtitle")}
+        actions={
+          <GatedButton
+            canAct={canCreate}
+            gateReason={tGate("reasons.createAutomations")}
+            onClick={() => router.push("/automations/new")}
+          >
+            <Plus className="h-4 w-4" />
+            {t("create")}
+          </GatedButton>
+        }
+      />
 
       {showTemplates && (
         <section>
@@ -190,7 +192,7 @@ export default function AutomationsPage() {
                 <button
                   key={slug}
                   onClick={() => startFromTemplate(slug)}
-                  className="group flex flex-col items-start rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-card/80"
+                  className="group flex flex-col items-start rounded-2xl border border-border bg-card p-4 text-left shadow-card transition-colors hover:border-primary/40 hover:bg-primary-soft/30"
                 >
                   <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15">
                     <Icon className="h-5 w-5" />
@@ -205,17 +207,9 @@ export default function AutomationsPage() {
       )}
 
       {automations.length === 0 ? (
-        <div className="flex h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/40">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Zap className="h-6 w-6 text-primary" />
-          </div>
-          <p className="mt-3 text-sm font-medium text-foreground">{t("emptyTitle")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("emptyDesc")}
-          </p>
-        </div>
+        <EmptyState icon={Zap} title={t("emptyTitle")} description={t("emptyDesc")} />
       ) : (
-        <ul className="space-y-3">
+        <ul className="grid gap-4 lg:grid-cols-2">
           {automations.map((a) => (
             <AutomationCard
               key={a.id}
@@ -286,7 +280,7 @@ function AutomationCard({
     ? tTriggers(`${automation.trigger_type}.label`)
     : automation.trigger_type
   return (
-    <li className="rounded-xl border border-border bg-card transition-colors hover:border-border">
+    <li className="rounded-2xl border border-border bg-card shadow-card transition-colors hover:border-primary/40">
       <div className="flex items-center gap-4 p-4">
         <div
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10"
