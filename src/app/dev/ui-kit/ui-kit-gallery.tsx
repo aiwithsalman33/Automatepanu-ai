@@ -408,6 +408,19 @@ export function UiKitGallery() {
                 ]}
               />
             </Row>
+            <Row label="Chips variant">
+              <SegmentedControl
+                variant="chips"
+                aria-label="Range (chips)"
+                value={range}
+                onValueChange={setRange}
+                options={[
+                  { value: "7", label: "7 days" },
+                  { value: "30", label: "30 days" },
+                  { value: "90", label: "90 days" },
+                ]}
+              />
+            </Row>
           </Section>
 
           <Section title="Popover & drawer">

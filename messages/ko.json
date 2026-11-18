@@ -324,7 +324,9 @@
         },
         "previewTitle": "여기에 지표가 표시됩니다",
         "previewHint": "고객이 메시지를 보내기 시작하면 이 페이지에 대기 중인 고객, 팀의 답장 속도, 딜과 캠페인 현황이 표시됩니다.",
-        "previewAction": "인박스 열기"
+        "previewAction": "인박스 열기",
+        "barTitle": "설정 마무리 · {total}개 중 {done}개",
+        "continue": "계속"
       },
       "duration": {
         "seconds": "{value}초",

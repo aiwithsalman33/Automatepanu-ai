@@ -55,7 +55,7 @@ function money(value: number, currency: string | null | undefined, locale: strin
 }
 
 /**
- * The contact panel (design/Inbox.png): avatar, name and handle, then
+ * The contact panel (docs/design/inbox.png): avatar, name and handle, then
  * Details / Deals / Notes / Activity. Reads the same three things it
  * always did (deals, notes, tags) and adds notes the same way. The
  * Activity tab is a timeline of what's already loaded: no extra queries.

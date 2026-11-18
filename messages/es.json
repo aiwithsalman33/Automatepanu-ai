@@ -324,7 +324,9 @@
         },
         "previewTitle": "Aquí aparecerán tus cifras",
         "previewHint": "Cuando los clientes empiecen a escribirte, esta página mostrará quién espera, lo rápido que responde tu equipo y cómo van tus negocios y campañas.",
-        "previewAction": "Abrir bandeja de entrada"
+        "previewAction": "Abrir bandeja de entrada",
+        "barTitle": "Termina la configuración · {done} de {total}",
+        "continue": "Continuar"
       },
       "duration": {
         "seconds": "{value} s",

@@ -21,9 +21,9 @@ import {
   type DashboardOverview,
 } from '@/lib/dashboard/overview'
 import { cn } from '@/lib/utils'
-import { EmptyState } from './empty-state'
+import { EmptyState } from '@/components/ui/empty-state'
 import { initialsOf } from './initials'
-import { Skeleton } from './skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useFormatDuration } from './use-format-duration'
 
 const WAIT_CLASS = {
@@ -40,9 +40,9 @@ export function ReplyQueueCard({ data, now }: { data: DashboardOverview | null; 
   const names = new Map((data?.replies.team ?? []).map((m) => [m.userId, m.name]))
 
   return (
-    <Card className="h-full">
+    <Card className="h-full rounded-2xl">
       <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
+        <CardTitle className="font-semibold">{t('title')}</CardTitle>
         <CardDescription>{t('description')}</CardDescription>
         <CardAction>
           <Link href="/inbox?filter=waiting" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
@@ -58,7 +58,7 @@ export function ReplyQueueCard({ data, now }: { data: DashboardOverview | null; 
             ))}
           </div>
         ) : data.attention.queue.length === 0 ? (
-          <EmptyState icon={CheckCircle2} title={t('empty')} hint={t('emptyHint')} className="mx-2 flex-1" />
+          <EmptyState compact icon={CheckCircle2} title={t('empty')} description={t('emptyHint')} className="mx-2 flex-1" />
         ) : (
           <ul className="space-y-0.5">
             {data.attention.queue.map((q) => {

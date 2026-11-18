@@ -24,6 +24,7 @@ export function SegmentedControl<T extends string>({
   options,
   className,
   size = "default",
+  variant = "segmented",
   ...aria
 }: {
   value: T
@@ -31,13 +32,21 @@ export function SegmentedControl<T extends string>({
   options: SegmentOption<T>[]
   className?: string
   size?: "sm" | "default"
+  /**
+   * "segmented": one track, the selected segment raised (default).
+   * "chips": separate soft chips, the selected one solid primary
+   * (the Home range picker in docs/design/home.png).
+   */
+  variant?: "segmented" | "chips"
 } & ({ "aria-label": string } | { "aria-labelledby": string })) {
+  const chips = variant === "chips"
   return (
     <RadioGroup
       value={value}
       onValueChange={(v) => onValueChange(v as T)}
       className={cn(
-        "inline-flex w-fit items-center gap-0.5 rounded-xl bg-muted p-1",
+        "inline-flex w-fit items-center",
+        chips ? "gap-1.5" : "gap-0.5 rounded-xl bg-muted p-1",
         className
       )}
       {...aria}
@@ -48,8 +57,15 @@ export function SegmentedControl<T extends string>({
           value={o.value}
           disabled={o.disabled}
           className={cn(
-            "inline-flex items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground disabled:pointer-events-none disabled:opacity-50 data-checked:bg-background data-checked:text-foreground data-checked:shadow-sm [&_svg]:size-4 [&_svg]:shrink-0",
-            size === "sm" ? "h-(--control-h-sm) min-h-7" : "h-[calc(var(--control-h)-0.5rem)]"
+            "inline-flex items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+            chips
+              ? "bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft-2 data-checked:bg-primary data-checked:text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground data-checked:bg-background data-checked:text-foreground data-checked:shadow-sm",
+            size === "sm"
+              ? "h-(--control-h-sm) min-h-7"
+              : chips
+                ? "h-(--control-h-sm)"
+                : "h-[calc(var(--control-h)-0.5rem)]"
           )}
         >
           {o.icon}

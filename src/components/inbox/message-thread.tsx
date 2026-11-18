@@ -1015,7 +1015,7 @@ export function MessageThread({
     // root shrink lets the bubbles' break-words / max-w caps apply.
     // Issue #257.
     <div className={cn("flex min-w-0 flex-1 flex-col", DOODLE_BG_CLASSES)}>
-      {/* Header (design/Inbox.png): contact, the 24h window pill, the
+      {/* Header (docs/design/inbox.png): contact, the 24h window pill, the
           status and assign menus. "via <number>" joins the phone line
           once an account can have more than one number. */}
       <div className="@container border-b border-border bg-card">
