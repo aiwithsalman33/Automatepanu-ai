@@ -400,7 +400,7 @@ export function MessageBubble({
           "relative rounded-2xl px-3 py-2",
           isAgent
             ? "rounded-br-md bg-primary text-primary-foreground"
-            : "rounded-bl-md bg-muted text-foreground",
+            : "rounded-bl-md bg-card text-foreground shadow-xs ring-1 ring-border",
         )}
       >
         {reply && (

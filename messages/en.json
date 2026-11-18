@@ -356,7 +356,24 @@
       "clearAll": "Clear all",
       "noConversations": "No conversations found",
       "noMessagesYet": "No messages yet",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "tabWaiting": "Waiting",
+      "tabsLabel": "Conversation views",
+      "filters": "Filters",
+      "filtersWithCount": "Filters, {count} active",
+      "status": "Status",
+      "windowHours": "Window {hours}h",
+      "windowMinutes": "Window {minutes}m",
+      "unassignedChip": "Unassigned",
+      "moreTags": "+{count}",
+      "loadFailed": "Couldn't load conversations",
+      "justNow": "now",
+      "yesterday": "Yesterday",
+      "emptyTitle": "No conversations yet",
+      "emptyDesc": "New WhatsApp messages land here.",
+      "noMatchesDesc": "Try another view or clear the filters.",
+      "unreadCount": "{count} unread",
+      "closeSearch": "Close search"
     },
     "messageThread": {
       "backToConversations": "Back to conversations",
@@ -394,7 +411,13 @@
       "assigneeNoLongerMember": "That teammate is no longer a member of this account",
       "networkError": "network error",
       "documentFallback": "Document",
-      "you": "You"
+      "you": "You",
+      "windowClosesIn": "Window closes in {time}",
+      "windowClosed": "Window closed",
+      "windowTitle": "WhatsApp 24-hour reply window",
+      "contactInfo": "Contact info",
+      "statusLabel": "Status: {status}",
+      "loadFailed": "Couldn't load messages"
     },
     "sessionTimer": {
       "expired": "Expired",
@@ -445,7 +468,16 @@
         "document": "document",
         "audio": "audio"
       },
-      "uploadFailed": "Upload failed."
+      "uploadFailed": "Upload failed.",
+      "toolsLabel": "Message tools",
+      "pillTemplate": "Template",
+      "pillButtons": "Buttons",
+      "pillAiDraft": "AI draft",
+      "pillVoice": "Voice",
+      "pillAttach": "Attach",
+      "messageLabel": "Message",
+      "typeMessageShort": "Type a message…",
+      "enterHint": "Enter to send · Shift+Enter for a new line"
     },
     "bubble": {
       "photo": "Photo",
@@ -526,7 +558,27 @@
       "deals": "Deals",
       "noTags": "No tags",
       "noDeals": "No deals",
-      "addNotePlaceholder": "Add a note..."
+      "addNotePlaceholder": "Add a note...",
+      "tabDetails": "Details",
+      "tabActivity": "Activity",
+      "tabsLabel": "Contact sections",
+      "openDeal": "Open deal",
+      "internalNote": "Internal note",
+      "editTags": "Edit tags",
+      "copyPhone": "Copy {handle}",
+      "loadFailed": "Couldn't load contact details",
+      "noNotes": "No notes yet",
+      "noActivity": "No activity yet",
+      "addNote": "Add note",
+      "activityContactAdded": "Contact added",
+      "activityConversationStarted": "Conversation started",
+      "activityConversationClosed": "Conversation closed",
+      "activityDealCreated": "Deal created: {title}",
+      "activityDealWon": "Deal won: {title}",
+      "activityDealLost": "Deal lost: {title}",
+      "activityNote": "Note added",
+      "statusWon": "Won",
+      "statusLost": "Lost"
     },
     "aiBanner": {
       "pausedTitle": "AI assistant is paused here",
