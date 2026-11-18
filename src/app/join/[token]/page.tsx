@@ -211,7 +211,7 @@ export default function JoinPage() {
   // ----- Loading state (peek pending OR auth not yet resolved) -----
   if (peek === null || authedUserId === undefined) {
     return (
-      <Card className="w-full max-w-md border-border bg-card">
+      <Card className="w-full max-w-md rounded-2xl border-border bg-card px-2 py-7 shadow-soft sm:px-4">
         <CardContent className="flex flex-col items-center gap-3 py-12">
           <Loader2 className="size-6 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">{t('verifying')}</p>
@@ -224,12 +224,12 @@ export default function JoinPage() {
   if (!peek.ok) {
     const failKey = FAIL_KEY[peek.reason];
     return (
-      <Card className="w-full max-w-md border-border bg-card">
+      <Card className="w-full max-w-md rounded-2xl border-border bg-card px-2 py-7 shadow-soft sm:px-4">
         <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10">
-            <MailX className="h-6 w-6 text-red-400" />
+          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-status-critical/10">
+            <MailX className="h-6 w-6 text-status-critical" />
           </div>
-          <CardTitle className="text-xl text-foreground">
+          <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
             {t(`fail.${failKey}Title`)}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -289,7 +289,7 @@ export default function JoinPage() {
       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
         <UsersRound className="h-6 w-6 text-primary" />
       </div>
-      <CardTitle className="text-xl text-foreground">
+      <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
         {t.rich('invitedTo', {
           name: peek.account_name,
           account: (chunks) => <span className="text-primary">{chunks}</span>,
@@ -318,7 +318,7 @@ export default function JoinPage() {
   if (authedUserId) {
     return (
       <>
-        <Card className="w-full max-w-md border-border bg-card">
+        <Card className="w-full max-w-md rounded-2xl border-border bg-card px-2 py-7 shadow-soft sm:px-4">
           {inviteHeader}
           <CardContent className="flex flex-col gap-3">
             <Button
@@ -357,7 +357,7 @@ export default function JoinPage() {
           <DialogContent className="bg-popover border-border sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-popover-foreground">
-                <AlertTriangle className="size-4 text-amber-400" />
+                <AlertTriangle className="size-4 text-status-warning" />
                 {t('conflictTitle', { name: peek.account_name })}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -405,7 +405,7 @@ export default function JoinPage() {
 
   // ----- Not authed: prompt to sign up or sign in -----
   return (
-    <Card className="w-full max-w-md border-border bg-card">
+    <Card className="w-full max-w-md rounded-2xl border-border bg-card px-2 py-7 shadow-soft sm:px-4">
       {inviteHeader}
       <CardContent className="flex flex-col gap-2">
         <Link href={`/signup?invite=${encodeURIComponent(token!)}`}>

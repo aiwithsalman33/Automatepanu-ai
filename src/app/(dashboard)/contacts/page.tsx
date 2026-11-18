@@ -1,6 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { UrlIntent } from '@/components/layout/url-intent';
+import { PageHeader } from '@/components/layout/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PersonAvatar } from '@/components/ui/person-avatar';
+import { SkeletonRow } from '@/components/ui/skeleton';
+import { tagChipStyle } from '@/lib/inbox/display';
 import { createClient } from '@/lib/data/client';
 import { toast } from 'sonner';
 import type { Contact, Tag, ContactTag } from '@/types';
@@ -359,15 +365,16 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Deep links: "+ New → Contact" (?new=1) and search results (?open=<id>). */}
+      <Suspense fallback={null}>
+        <UrlIntent param="new" ready={canEdit} onIntent={openAddForm} />
+        <UrlIntent param="open" onIntent={(id) => openDetail(id)} />
+      </Suspense>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {totalCount > 0 ? t('subtitle', { count: totalCount }) : t('subtitleZero')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader
+        description={totalCount > 0 ? t('subtitle', { count: totalCount }) : t('subtitleZero')}
+        actions={
+        <>
           {canEditSettings && (
             <Button
               variant="outline"
@@ -397,8 +404,9 @@ export default function ContactsPage() {
             <Plus className="size-4" />
             {t('addContactBtn')}
           </GatedButton>
-        </div>
-      </div>
+        </>
+        }
+      />
 
       {/* Search + tag filter */}
       <div className="space-y-2">
@@ -546,7 +554,7 @@ export default function ContactsPage() {
       )}
 
       {/* Table */}
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -570,38 +578,35 @@ export default function ContactsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow className="border-border">
-                <TableCell colSpan={8} className="text-center py-12">
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="size-6 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">{t('loading')}</p>
-                  </div>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableCell colSpan={8} className="p-0" aria-busy="true">
+                  <span className="sr-only">{t('loading')}</span>
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <SkeletonRow key={i} className="border-b border-border last:border-0" />
+                  ))}
                 </TableCell>
               </TableRow>
             ) : contacts.length === 0 ? (
               <TableRow className="border-border">
-                <TableCell colSpan={8} className="text-center py-12">
-                  <div className="flex flex-col items-center gap-2">
-                    <Users className="size-8 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      {hasActiveFilters
-                        ? t('noContactsMatch')
-                        : t('noContactsYet')}
-                    </p>
-                    {!hasActiveFilters && (
-                      <GatedButton
-                        canAct={canEdit}
-                        gateReason={tGate('reasons.addOrImportContacts')}
-                        variant="outline"
-                        size="sm"
-                        onClick={openAddForm}
-                        className="mt-2 border-border text-muted-foreground hover:bg-muted"
-                      >
-                        <Plus className="size-3.5" />
-                        {t('addFirstContact')}
-                      </GatedButton>
-                    )}
-                  </div>
+                <TableCell colSpan={8} className="p-0">
+                  <EmptyState
+                    compact
+                    icon={Users}
+                    title={hasActiveFilters ? t('noContactsMatch') : t('noContactsYet')}
+                    action={
+                      !hasActiveFilters ? (
+                        <GatedButton
+                          canAct={canEdit}
+                          gateReason={tGate('reasons.addOrImportContacts')}
+                          size="sm"
+                          onClick={openAddForm}
+                        >
+                          <Plus className="size-3.5" />
+                          {t('addFirstContact')}
+                        </GatedButton>
+                      ) : null
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -619,7 +624,10 @@ export default function ContactsPage() {
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
-                    {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                    <span className="flex items-center gap-2.5">
+                      <PersonAvatar name={contact.name || contact.phone} src={contact.avatar_url} size="sm" />
+                      {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                    </span>
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     {contact.phone}
@@ -636,11 +644,8 @@ export default function ContactsPage() {
                         contact.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag.id}
-                            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
-                            style={{
-                              backgroundColor: tag.color + '20',
-                              color: tag.color,
-                            }}
+                            className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                            style={tagChipStyle(tag.color)}
                           >
                             {tag.name}
                           </span>

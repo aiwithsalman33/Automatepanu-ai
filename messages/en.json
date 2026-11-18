@@ -16,6 +16,7 @@
     "linkExpired": "That link has expired. For a password reset, use “Forgot password?” to request a new one; if you were confirming your email, sign up again.",
     "linkInvalid": "That link couldn’t be used to sign you in. If you were confirming your email, it may already be verified — just sign in below. For a password reset, request a new link and open it in the same browser you requested it from.",
     "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "accountDisabled": "This account has been disabled. Contact the administrator for help.",
     "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
     "signInFailed": "Invalid email or password."
   },
@@ -32,6 +33,7 @@
     "flows": "Flows",
     "aiAgents": "AI Agents",
     "settings": "Settings",
+    "adminPanel": "Admin panel",
     "beta": "Beta",
     "unreadConversations": "{count} unread {count, plural, =1 {conversation} other {conversations}}",
     "unreadNotifications": "{count} unread {count, plural, =1 {notification} other {notifications}}",
@@ -54,6 +56,8 @@
     "pipelines": "Pipelines",
     "broadcasts": "Broadcasts",
     "automations": "Automations",
+    "flows": "Flows",
+    "aiAgents": "AI Agents",
     "settings": "Settings",
     "openMenu": "Open menu",
     "openAccountMenu": "Open account menu",
@@ -61,7 +65,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Profile",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "adminPanel": "Admin panel"
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
@@ -319,7 +324,9 @@
         },
         "previewTitle": "Your numbers will show up here",
         "previewHint": "Once customers start messaging you, this page shows who is waiting, how fast your team replies, and how your deals and campaigns are doing.",
-        "previewAction": "Open inbox"
+        "previewAction": "Open inbox",
+        "barTitle": "Finish setup · {done} of {total}",
+        "continue": "Continue"
       },
       "duration": {
         "seconds": "{value} s",
@@ -351,7 +358,24 @@
       "clearAll": "Clear all",
       "noConversations": "No conversations found",
       "noMessagesYet": "No messages yet",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "tabWaiting": "Waiting",
+      "tabsLabel": "Conversation views",
+      "filters": "Filters",
+      "filtersWithCount": "Filters, {count} active",
+      "status": "Status",
+      "windowHours": "Window {hours}h",
+      "windowMinutes": "Window {minutes}m",
+      "unassignedChip": "Unassigned",
+      "moreTags": "+{count}",
+      "loadFailed": "Couldn't load conversations",
+      "justNow": "now",
+      "yesterday": "Yesterday",
+      "emptyTitle": "No conversations yet",
+      "emptyDesc": "New WhatsApp messages land here.",
+      "noMatchesDesc": "Try another view or clear the filters.",
+      "unreadCount": "{count} unread",
+      "closeSearch": "Close search"
     },
     "messageThread": {
       "backToConversations": "Back to conversations",
@@ -389,7 +413,13 @@
       "assigneeNoLongerMember": "That teammate is no longer a member of this account",
       "networkError": "network error",
       "documentFallback": "Document",
-      "you": "You"
+      "you": "You",
+      "windowClosesIn": "Window closes in {time}",
+      "windowClosed": "Window closed",
+      "windowTitle": "WhatsApp 24-hour reply window",
+      "contactInfo": "Contact info",
+      "statusLabel": "Status: {status}",
+      "loadFailed": "Couldn't load messages"
     },
     "sessionTimer": {
       "expired": "Expired",
@@ -440,7 +470,16 @@
         "document": "document",
         "audio": "audio"
       },
-      "uploadFailed": "Upload failed."
+      "uploadFailed": "Upload failed.",
+      "toolsLabel": "Message tools",
+      "pillTemplate": "Template",
+      "pillButtons": "Buttons",
+      "pillAiDraft": "AI draft",
+      "pillVoice": "Voice",
+      "pillAttach": "Attach",
+      "messageLabel": "Message",
+      "typeMessageShort": "Type a message…",
+      "enterHint": "Enter to send · Shift+Enter for a new line"
     },
     "bubble": {
       "photo": "Photo",
@@ -521,7 +560,27 @@
       "deals": "Deals",
       "noTags": "No tags",
       "noDeals": "No deals",
-      "addNotePlaceholder": "Add a note..."
+      "addNotePlaceholder": "Add a note...",
+      "tabDetails": "Details",
+      "tabActivity": "Activity",
+      "tabsLabel": "Contact sections",
+      "openDeal": "Open deal",
+      "internalNote": "Internal note",
+      "editTags": "Edit tags",
+      "copyPhone": "Copy {handle}",
+      "loadFailed": "Couldn't load contact details",
+      "noNotes": "No notes yet",
+      "noActivity": "No activity yet",
+      "addNote": "Add note",
+      "activityContactAdded": "Contact added",
+      "activityConversationStarted": "Conversation started",
+      "activityConversationClosed": "Conversation closed",
+      "activityDealCreated": "Deal created: {title}",
+      "activityDealWon": "Deal won: {title}",
+      "activityDealLost": "Deal lost: {title}",
+      "activityNote": "Note added",
+      "statusWon": "Won",
+      "statusLost": "Lost"
     },
     "aiBanner": {
       "pausedTitle": "AI assistant is paused here",
@@ -782,16 +841,30 @@
         "proposalSent": "Proposal Sent",
         "negotiation": "Negotiation",
         "won": "Won"
-      }
+      },
+      "pipelinesLabel": "Pipelines",
+      "pipelineChip": "Pipeline",
+      "stageSettings": "Stage settings",
+      "dealShort": "Deal"
     },
     "board": {
       "dropDealHere": "Drop a deal here",
-      "addDeal": "Add Deal"
+      "addDeal": "Add Deal",
+      "closedColumn": "Won and lost deals",
+      "won": "Won",
+      "lost": "Lost",
+      "closedRecent": "Closed in the last {days} days",
+      "closedAll": "All closed deals",
+      "dropToWin": "Drop a deal here to mark it won",
+      "dropToLose": "Drop a deal here to mark it lost",
+      "viewAllClosed": "View all ({count})",
+      "showRecent": "Show last {days} days"
     },
     "card": {
       "noContact": "No contact",
       "won": "Won",
-      "lost": "Lost"
+      "lost": "Lost",
+      "closedWon": "Closed"
     },
     "form": {
       "editDeal": "Edit Deal",
@@ -874,7 +947,8 @@
       "wonThisMonthTooltip": "Deals marked as Won since the first day of the current month.",
       "lostThisMonth": "Lost This Month",
       "lostThisMonthTooltip": "Deals marked as Lost since the first day of the current month.",
-      "howCalculated": "How {label} is calculated"
+      "howCalculated": "How {label} is calculated",
+      "wonLost": "Won / lost"
     }
   },
   "Broadcasts": {
@@ -895,7 +969,10 @@
       },
       "errorLoad": "Failed to load broadcasts",
       "broadcastInProgress": "Broadcast in progress",
-      "retry": "Retry"
+      "retry": "Retry",
+      "viewsLabel": "Broadcast status",
+      "viewAll": "All",
+      "noneInView": "No broadcasts with this status"
     },
     "status": {
       "draft": "Draft",
@@ -975,7 +1052,8 @@
       "toastDraftSaved": "Draft saved",
       "broadcastFailed": "Broadcast failed",
       "toastSendTakenOver": "Another delivery took over this broadcast, so this tab stopped sending. Open the broadcast to follow its progress.",
-      "toastSendInterrupted": "Sending stopped because the connection to the server dropped. Open the broadcast and select Resume sending to reach the remaining recipients. The button appears within 5 minutes."
+      "toastSendInterrupted": "Sending stopped because the connection to the server dropped. Open the broadcast and select Resume sending to reach the remaining recipients. The button appears within 5 minutes.",
+      "backToBroadcasts": "Back to broadcasts"
     },
     "wizard": {
       "next": "Next",
@@ -1981,7 +2059,8 @@
     },
     "groups": {
       "account": "Account",
-      "workspace": "Workspace"
+      "workspace": "Workspace",
+      "developer": "Developer"
     },
     "profile": {
       "title": "Your profile",
@@ -2235,7 +2314,8 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
-    }
+    },
+    "allSettings": "All settings"
   },
   "SignupPage": {
     "passwordsMismatch": "Passwords do not match",
@@ -2340,7 +2420,13 @@
     "retry": "Retry",
     "emptyTitle": "No notifications yet",
     "emptyDesc": "You'll see an alert here when someone assigns you a conversation.",
-    "unread": "Unread"
+    "unread": "Unread",
+    "filterLabel": "Show",
+    "filterAll": "All",
+    "groupToday": "Today",
+    "groupEarlier": "Earlier",
+    "allCaughtUp": "You are all caught up",
+    "loadFailed": "Could not load notifications"
   },
   "Agents": {
     "title": "AI Agents",
@@ -2409,7 +2495,12 @@
     "loading": "Loading..."
   },
   "UiPrimitives": {
-    "close": "Close"
+    "close": "Close",
+    "removeItem": "Remove {item}",
+    "errorTitle": "Couldn't load this",
+    "errorDescription": "Something went wrong on our side. Check your connection and try again.",
+    "retry": "Try again",
+    "loading": "Loading…"
   },
   "GatedButton": {
     "readOnly": "Read-only — your role can't {action}",
@@ -3320,6 +3411,79 @@
       "rights": "All rights reserved.",
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
+    }
+  },
+  "Shell": {
+    "nav": {
+      "home": "Home",
+      "inbox": "Inbox",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "broadcasts": "Broadcasts",
+      "automate": "Automate",
+      "flows": "Flows",
+      "aiAgent": "AI Agent",
+      "settings": "Settings",
+      "notifications": "Alerts",
+      "more": "More"
+    },
+    "title": {
+      "home": "Home",
+      "inbox": "Inbox",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "broadcasts": "Broadcasts",
+      "automations": "Automations",
+      "flows": "Flows",
+      "aiAgent": "AI Agent",
+      "notifications": "Notifications",
+      "settings": "Settings"
+    },
+    "primaryNav": "Main",
+    "mobileNav": "Main (mobile)",
+    "skipToContent": "Skip to content",
+    "homeLink": "Home",
+    "unreadChats": "{count} unread {count, plural, =1 {chat} other {chats}}",
+    "search": {
+      "open": "Search",
+      "placeholder": "Search chats, contacts, deals, pages…",
+      "dialogTitle": "Search everything",
+      "chats": "Chats",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "pages": "Pages",
+      "noResults": "No matches for “{query}”",
+      "failed": "Search is unavailable right now. Pages still work.",
+      "hintMove": "↑↓ to move",
+      "hintOpen": "Enter to open",
+      "hintClose": "Esc to close",
+      "untitledChat": "Conversation",
+      "placeholderShort": "Search chats, contacts, deals"
+    },
+    "new": {
+      "button": "New",
+      "menuLabel": "Create new",
+      "contact": "Contact",
+      "deal": "Deal",
+      "broadcast": "Broadcast",
+      "automation": "Automation",
+      "flow": "Flow"
+    },
+    "bell": {
+      "label": "Notifications",
+      "labelUnread": "Notifications, {count} unread",
+      "viewAll": "View all"
+    },
+    "numbers": {
+      "label": "WhatsApp number",
+      "all": "All numbers"
+    },
+    "more": {
+      "title": "More"
+    },
+    "profile": {
+      "menu": "Your account",
+      "workspace": "Workspace"
     }
   }
 }

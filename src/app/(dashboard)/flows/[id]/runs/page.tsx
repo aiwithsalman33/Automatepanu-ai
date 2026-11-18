@@ -66,7 +66,7 @@ const STATUS_META: Record<
   { classes: string; icon: typeof Clock }
 > = {
   active: {
-    classes: "border-emerald-600/40 bg-emerald-500/10 text-emerald-300",
+    classes: "border-status-good/40 bg-status-good/12 text-status-good-text",
     icon: PlayCircle,
   },
   completed: {
@@ -74,7 +74,7 @@ const STATUS_META: Record<
     icon: CircleCheck,
   },
   handed_off: {
-    classes: "border-amber-600/40 bg-amber-500/10 text-amber-300",
+    classes: "border-status-warning/40 bg-status-warning-bg text-status-warning",
     icon: UserPlus,
   },
   timed_out: {
@@ -90,7 +90,7 @@ const STATUS_META: Record<
     icon: CircleSlash,
   },
   failed: {
-    classes: "border-red-600/40 bg-red-500/10 text-red-300",
+    classes: "border-status-critical/40 bg-status-critical/10 text-status-critical",
     icon: CircleAlert,
   },
 };
@@ -311,15 +311,15 @@ function RunCard({
 }
 
 const EVENT_COLOR: Record<string, string> = {
-  started: "text-emerald-300",
+  started: "text-status-good-text",
   node_entered: "text-muted-foreground",
-  message_sent: "text-sky-300",
+  message_sent: "text-sky-700",
   reply_received: "text-primary",
-  fallback_fired: "text-amber-300",
-  handoff: "text-amber-300",
+  fallback_fired: "text-status-warning",
+  handoff: "text-status-warning",
   timeout: "text-muted-foreground",
-  error: "text-red-300",
-  completed: "text-emerald-300",
+  error: "text-status-critical",
+  completed: "text-status-good-text",
 };
 
 function EventLine({ ev }: { ev: EventRow }) {

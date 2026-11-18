@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { IntlProvider } from "@/components/intl-provider";
+import { SurfaceSync } from "@/components/layout/surface-sync";
 
 // Shared metadata for auth pages (login / signup / forgot-password).
 // None of these should be indexed — they'd compete with the marketing
@@ -21,5 +22,10 @@ export const metadata: Metadata = {
 };
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
-  return <IntlProvider>{children}</IntlProvider>;
+  return (
+    <IntlProvider>
+      <SurfaceSync value="app" />
+      {children}
+    </IntlProvider>
+  );
 }

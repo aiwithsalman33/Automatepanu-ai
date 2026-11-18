@@ -22,7 +22,7 @@ SMTP_PORT=587                       # 465 → also set SMTP_SECURE=true
 SMTP_SECURE=false
 SMTP_USER=...
 SMTP_PASSWORD=...
-SMTP_FROM="Automate Panu AI <no-reply@chat.axxeler.in>"
+SMTP_FROM="Automate Panu AI <helpaxxeler@gmail.com>"
 ```
 
 - **Production refuses to run without SMTP.** Without `SMTP_HOST`, a production server fails each send loudly instead of silently dropping it, so nobody can verify their email. Development (`next dev`) logs each email, link included, to the server console instead.

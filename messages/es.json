@@ -16,6 +16,7 @@
     "linkExpired": "Ese enlace expiró. Para restablecer la contraseña, usa “¿Olvidaste tu contraseña?” y pide uno nuevo; si estabas confirmando tu correo, regístrate de nuevo.",
     "linkInvalid": "No se pudo iniciar sesión con ese enlace. Si estabas confirmando tu correo, es posible que ya esté verificado; inicia sesión abajo. Para restablecer la contraseña, pide un enlace nuevo y ábrelo en el mismo navegador desde el que lo solicitaste.",
     "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "accountDisabled": "This account has been disabled. Contact the administrator for help.",
     "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
     "signInFailed": "Invalid email or password."
   },
@@ -32,6 +33,7 @@
     "flows": "Flujos",
     "aiAgents": "Agentes de IA",
     "settings": "Configuración",
+    "adminPanel": "Admin panel",
     "beta": "Beta",
     "unreadConversations": "{count} {count, plural, =1 {conversación sin leer} other {conversaciones sin leer}}",
     "unreadNotifications": "{count} {count, plural, =1 {notificación sin leer} other {notificaciones sin leer}}",
@@ -54,6 +56,8 @@
     "pipelines": "Pipelines",
     "broadcasts": "Difusiones",
     "automations": "Automatizaciones",
+    "flows": "Flujos",
+    "aiAgents": "Agentes de IA",
     "settings": "Configuración",
     "openMenu": "Abrir menú",
     "openAccountMenu": "Abrir menú de la cuenta",
@@ -61,7 +65,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configuración",
-    "menuSignOut": "Cerrar sesión"
+    "menuSignOut": "Cerrar sesión",
+    "adminPanel": "Admin panel"
   },
   "ModeToggle": {
     "switchMode": "Cambiar al modo {mode}"
@@ -319,7 +324,9 @@
         },
         "previewTitle": "Aquí aparecerán tus cifras",
         "previewHint": "Cuando los clientes empiecen a escribirte, esta página mostrará quién espera, lo rápido que responde tu equipo y cómo van tus negocios y campañas.",
-        "previewAction": "Abrir bandeja de entrada"
+        "previewAction": "Abrir bandeja de entrada",
+        "barTitle": "Termina la configuración · {done} de {total}",
+        "continue": "Continuar"
       },
       "duration": {
         "seconds": "{value} s",
@@ -351,7 +358,24 @@
       "clearAll": "Limpiar todo",
       "noConversations": "No se encontraron conversaciones",
       "noMessagesYet": "Aún no hay mensajes",
-      "unknown": "Desconocido"
+      "unknown": "Desconocido",
+      "tabWaiting": "En espera",
+      "tabsLabel": "Vistas de conversaciones",
+      "filters": "Filtros",
+      "filtersWithCount": "Filtros, {count} activos",
+      "status": "Estado",
+      "windowHours": "Ventana {hours} h",
+      "windowMinutes": "Ventana {minutes} min",
+      "unassignedChip": "Sin asignar",
+      "moreTags": "+{count}",
+      "loadFailed": "No se pudieron cargar las conversaciones",
+      "justNow": "ahora",
+      "yesterday": "Ayer",
+      "emptyTitle": "Aún no hay conversaciones",
+      "emptyDesc": "Los nuevos mensajes de WhatsApp llegan aquí.",
+      "noMatchesDesc": "Prueba otra vista o borra los filtros.",
+      "unreadCount": "{count} sin leer",
+      "closeSearch": "Cerrar búsqueda"
     },
     "messageThread": {
       "backToConversations": "Volver a las conversaciones",
@@ -389,7 +413,13 @@
       "assigneeNoLongerMember": "Ese compañero ya no es miembro de esta cuenta",
       "networkError": "error de red",
       "documentFallback": "Documento",
-      "you": "Tú"
+      "you": "Tú",
+      "windowClosesIn": "La ventana cierra en {time}",
+      "windowClosed": "Ventana cerrada",
+      "windowTitle": "Ventana de respuesta de 24 horas de WhatsApp",
+      "contactInfo": "Información del contacto",
+      "statusLabel": "Estado: {status}",
+      "loadFailed": "No se pudieron cargar los mensajes"
     },
     "sessionTimer": {
       "expired": "Expirada",
@@ -440,7 +470,16 @@
         "document": "documento",
         "audio": "audio"
       },
-      "uploadFailed": "Falló la carga."
+      "uploadFailed": "Falló la carga.",
+      "toolsLabel": "Herramientas de mensaje",
+      "pillTemplate": "Plantilla",
+      "pillButtons": "Botones",
+      "pillAiDraft": "Borrador IA",
+      "pillVoice": "Voz",
+      "pillAttach": "Adjuntar",
+      "messageLabel": "Mensaje",
+      "typeMessageShort": "Escribe un mensaje…",
+      "enterHint": "Enter para enviar · Shift+Enter para una nueva línea"
     },
     "bubble": {
       "photo": "Foto",
@@ -521,7 +560,27 @@
       "deals": "Negocios",
       "noTags": "Sin etiquetas",
       "noDeals": "Sin negocios",
-      "addNotePlaceholder": "Agregar una nota..."
+      "addNotePlaceholder": "Agregar una nota...",
+      "tabDetails": "Detalles",
+      "tabActivity": "Actividad",
+      "tabsLabel": "Secciones del contacto",
+      "openDeal": "Negocio abierto",
+      "internalNote": "Nota interna",
+      "editTags": "Editar etiquetas",
+      "copyPhone": "Copiar {handle}",
+      "loadFailed": "No se pudieron cargar los detalles del contacto",
+      "noNotes": "Aún no hay notas",
+      "noActivity": "Aún no hay actividad",
+      "addNote": "Añadir nota",
+      "activityContactAdded": "Contacto añadido",
+      "activityConversationStarted": "Conversación iniciada",
+      "activityConversationClosed": "Conversación cerrada",
+      "activityDealCreated": "Negocio creado: {title}",
+      "activityDealWon": "Negocio ganado: {title}",
+      "activityDealLost": "Negocio perdido: {title}",
+      "activityNote": "Nota añadida",
+      "statusWon": "Ganado",
+      "statusLost": "Perdido"
     },
     "aiBanner": {
       "pausedTitle": "El asistente de IA está en pausa aquí",
@@ -782,16 +841,30 @@
         "proposalSent": "Propuesta enviada",
         "negotiation": "Negociación",
         "won": "Ganado"
-      }
+      },
+      "pipelinesLabel": "Pipelines",
+      "pipelineChip": "Pipeline",
+      "stageSettings": "Ajustes de etapas",
+      "dealShort": "Negocio"
     },
     "board": {
       "dropDealHere": "Suelta un negocio aquí",
-      "addDeal": "Agregar negocio"
+      "addDeal": "Agregar negocio",
+      "closedColumn": "Negocios ganados y perdidos",
+      "won": "Ganados",
+      "lost": "Perdidos",
+      "closedRecent": "Cerrados en los últimos {days} días",
+      "closedAll": "Todos los negocios cerrados",
+      "dropToWin": "Suelta un negocio aquí para marcarlo como ganado",
+      "dropToLose": "Suelta un negocio aquí para marcarlo como perdido",
+      "viewAllClosed": "Ver todos ({count})",
+      "showRecent": "Mostrar últimos {days} días"
     },
     "card": {
       "noContact": "Sin contacto",
       "won": "Ganado",
-      "lost": "Perdido"
+      "lost": "Perdido",
+      "closedWon": "Cerrado"
     },
     "form": {
       "editDeal": "Editar negocio",
@@ -874,7 +947,8 @@
       "wonThisMonthTooltip": "Negocios marcados como ganados desde el primer día del mes actual.",
       "lostThisMonth": "Perdidos este mes",
       "lostThisMonthTooltip": "Negocios marcados como perdidos desde el primer día del mes actual.",
-      "howCalculated": "Cómo se calcula {label}"
+      "howCalculated": "Cómo se calcula {label}",
+      "wonLost": "Ganados / perdidos"
     }
   },
   "Broadcasts": {
@@ -895,7 +969,10 @@
       },
       "errorLoad": "Error al cargar las difusiones",
       "broadcastInProgress": "Difusión en curso",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "viewsLabel": "Estado de la difusión",
+      "viewAll": "Todas",
+      "noneInView": "No hay difusiones con este estado"
     },
     "status": {
       "draft": "Borrador",
@@ -975,7 +1052,8 @@
       "toastDraftSaved": "Borrador guardado",
       "broadcastFailed": "Falló la difusión",
       "toastSendTakenOver": "Otro envío tomó el control de esta difusión, así que esta pestaña dejó de enviar. Abre la difusión para seguir su progreso.",
-      "toastSendInterrupted": "El envío se detuvo porque se perdió la conexión con el servidor. Abre la difusión y usa Reanudar envío para enviar a los destinatarios restantes. El botón aparece en un máximo de 5 minutos."
+      "toastSendInterrupted": "El envío se detuvo porque se perdió la conexión con el servidor. Abre la difusión y usa Reanudar envío para enviar a los destinatarios restantes. El botón aparece en un máximo de 5 minutos.",
+      "backToBroadcasts": "Volver a difusiones"
     },
     "wizard": {
       "next": "Siguiente",
@@ -1981,7 +2059,8 @@
     },
     "groups": {
       "account": "Cuenta",
-      "workspace": "Espacio de trabajo"
+      "workspace": "Espacio de trabajo",
+      "developer": "Desarrolladores"
     },
     "profile": {
       "title": "Tu perfil",
@@ -2235,7 +2314,8 @@
       "textPlaceholder": "El texto del mensaje que se insertará",
       "cancel": "Cancelar",
       "save": "Guardar"
-    }
+    },
+    "allSettings": "Todos los ajustes"
   },
   "SignupPage": {
     "passwordsMismatch": "Las contraseñas no coinciden",
@@ -2340,7 +2420,13 @@
     "retry": "Reintentar",
     "emptyTitle": "Aún no hay notificaciones",
     "emptyDesc": "Verás una alerta aquí cuando alguien te asigne una conversación.",
-    "unread": "Sin leer"
+    "unread": "Sin leer",
+    "filterLabel": "Mostrar",
+    "filterAll": "Todas",
+    "groupToday": "Hoy",
+    "groupEarlier": "Anteriores",
+    "allCaughtUp": "Estás al día",
+    "loadFailed": "No se pudieron cargar las notificaciones"
   },
   "Agents": {
     "title": "Agentes de IA",
@@ -2409,7 +2495,12 @@
     "loading": "Cargando..."
   },
   "UiPrimitives": {
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "removeItem": "Quitar {item}",
+    "errorTitle": "No se pudo cargar",
+    "errorDescription": "Algo salió mal. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "loading": "Cargando…"
   },
   "GatedButton": {
     "readOnly": "Solo lectura: tu rol no puede {action}",
@@ -3320,6 +3411,79 @@
       "rights": "All rights reserved.",
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
+    }
+  },
+  "Shell": {
+    "nav": {
+      "home": "Inicio",
+      "inbox": "Bandeja",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "broadcasts": "Difusiones",
+      "automate": "Automatizar",
+      "flows": "Flujos",
+      "aiAgent": "Agente IA",
+      "settings": "Ajustes",
+      "notifications": "Avisos",
+      "more": "Más"
+    },
+    "title": {
+      "home": "Inicio",
+      "inbox": "Bandeja de entrada",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "broadcasts": "Difusiones",
+      "automations": "Automatizaciones",
+      "flows": "Flujos",
+      "aiAgent": "Agente de IA",
+      "notifications": "Notificaciones",
+      "settings": "Configuración"
+    },
+    "primaryNav": "Principal",
+    "mobileNav": "Principal (móvil)",
+    "skipToContent": "Saltar al contenido",
+    "homeLink": "Inicio",
+    "unreadChats": "{count} {count, plural, =1 {chat sin leer} other {chats sin leer}}",
+    "search": {
+      "open": "Buscar",
+      "placeholder": "Busca chats, contactos, negocios, páginas…",
+      "dialogTitle": "Buscar en todo",
+      "chats": "Chats",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "pages": "Páginas",
+      "noResults": "Sin resultados para «{query}»",
+      "failed": "La búsqueda no está disponible ahora. Las páginas siguen funcionando.",
+      "hintMove": "↑↓ para moverte",
+      "hintOpen": "Enter para abrir",
+      "hintClose": "Esc para cerrar",
+      "untitledChat": "Conversación",
+      "placeholderShort": "Busca chats, contactos, negocios"
+    },
+    "new": {
+      "button": "Nuevo",
+      "menuLabel": "Crear",
+      "contact": "Contacto",
+      "deal": "Negocio",
+      "broadcast": "Difusión",
+      "automation": "Automatización",
+      "flow": "Flujo"
+    },
+    "bell": {
+      "label": "Notificaciones",
+      "labelUnread": "Notificaciones, {count} sin leer",
+      "viewAll": "Ver todas"
+    },
+    "numbers": {
+      "label": "Número de WhatsApp",
+      "all": "Todos los números"
+    },
+    "more": {
+      "title": "Más"
+    },
+    "profile": {
+      "menu": "Tu cuenta",
+      "workspace": "Espacio de trabajo"
     }
   }
 }

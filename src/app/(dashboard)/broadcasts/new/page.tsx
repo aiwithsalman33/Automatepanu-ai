@@ -7,12 +7,14 @@ import { getCurrentUser } from '@/lib/auth/client';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { MessageTemplate } from '@/types';
+import Link from 'next/link';
+import { ArrowLeft, Check } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
 import { Step1ChooseTemplate } from '@/components/broadcasts/step1-choose-template';
 import { Step2SelectAudience } from '@/components/broadcasts/step2-select-audience';
 import { Step3Personalize } from '@/components/broadcasts/step3-personalize';
 import { Step4ScheduleSend } from '@/components/broadcasts/step4-schedule-send';
 import { useBroadcastSending } from '@/hooks/use-broadcast-sending';
-import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 const steps = [
@@ -132,57 +134,60 @@ export default function NewBroadcastPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('subtitle')}
-        </p>
-      </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader
+        back={
+          <Link
+            href="/broadcasts"
+            aria-label={t('backToBroadcasts')}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" aria-hidden />
+          </Link>
+        }
+        title={t('title')}
+        description={t('subtitle')}
+      />
 
-      {/* Step Indicator */}
-      <div className="flex items-center justify-between">
+      {/* Steps: an ordered list; the current one is aria-current. */}
+      <ol className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-card sm:gap-3 sm:px-5">
         {steps.map((step, index) => {
           const isActive = index === currentStep;
           const isCompleted = index < currentStep;
-
           return (
-            <div key={step.key} className="flex flex-1 items-center">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all ${
-                    isCompleted
-                      ? 'bg-primary text-primary-foreground'
-                      : isActive
-                        ? 'border-2 border-primary bg-primary/10 text-primary'
-                        : 'border border-border bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
-                </div>
-                <span
-                  className={`hidden text-sm font-medium sm:block ${
-                    isActive ? 'text-foreground' : isCompleted ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {t(`steps.${step.label}`)}
-                </span>
-              </div>
-              {index < steps.length - 1 && (
-                <div
-                  className={`mx-3 h-px flex-1 ${
-                    index < currentStep ? 'bg-primary' : 'bg-muted'
-                  }`}
-                />
-              )}
-            </div>
+            <li
+              key={step.key}
+              aria-current={isActive ? 'step' : undefined}
+              className="flex flex-1 items-center gap-2 last:flex-none sm:gap-3"
+            >
+              <span
+                className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
+                  isCompleted
+                    ? 'bg-primary text-primary-foreground'
+                    : isActive
+                      ? 'bg-primary-soft text-primary-soft-foreground ring-2 ring-primary'
+                      : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {isCompleted ? <Check className="size-4" aria-hidden /> : index + 1}
+              </span>
+              <span
+                className={`hidden text-sm font-medium whitespace-nowrap md:block ${
+                  isActive ? 'text-foreground' : isCompleted ? 'text-primary-soft-foreground' : 'text-muted-foreground'
+                }`}
+              >
+                {t(`steps.${step.label}`)}
+              </span>
+              {index < steps.length - 1 ? (
+                <span aria-hidden className={`h-0.5 flex-1 rounded-full ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />
+              ) : null}
+            </li>
           );
         })}
-      </div>
+      </ol>
 
       {/* Step Content */}
-      <div className="relative min-h-[400px]">
+      <div className="relative min-h-[400px] rounded-2xl border border-border bg-card p-5 shadow-card sm:p-6">
         <div
           className="transition-all duration-300 ease-in-out"
           style={{

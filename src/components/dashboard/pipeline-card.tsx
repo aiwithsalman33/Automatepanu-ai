@@ -17,8 +17,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatCurrency } from '@/lib/currency'
 import { ratio, type DashboardOverview } from '@/lib/dashboard/overview'
-import { EmptyState } from './empty-state'
-import { Skeleton } from './skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function PipelineCard({
   data,
@@ -42,9 +42,9 @@ export function PipelineCard({
   const pipelineName = pipelines.find((p) => p.id === pipelineId)?.name
 
   return (
-    <Card className="h-full">
+    <Card className="h-full rounded-2xl">
       <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
+        <CardTitle className="font-semibold">{t('title')}</CardTitle>
         <CardDescription>{t('description')}</CardDescription>
         <CardAction>
           {pipelines.length > 1 ? (
@@ -71,7 +71,7 @@ export function PipelineCard({
         {!data ? (
           <Skeleton className="h-44 w-full" />
         ) : openDeals === 0 ? (
-          <EmptyState icon={GitBranch} title={t('empty')} hint={t('emptyHint')} className="flex-1" />
+          <EmptyState compact icon={GitBranch} title={t('empty')} description={t('emptyHint')} className="flex-1" />
         ) : (
           <ul className="space-y-2.5">
             {stages.map((s) => (

@@ -146,7 +146,7 @@ to `https://chat.axxeler.in`. To change them, set repository **variables**
    - `SEED_USER_EMAIL` / `SEED_USER_PASSWORD`: a normal user with their own
      workspace.
 4. The website contact / demo form (`/contact`) opens each message in
-   WhatsApp to +91 81480 35472 and emails a copy to `CONTACT_EMAIL`
+   WhatsApp to +91 86104 18890 and emails a copy to `CONTACT_EMAIL`
    (helpaxxeler@gmail.com). The email copy needs SMTP. Send a test.
 
    Both are created once, already verified, on first start. A later

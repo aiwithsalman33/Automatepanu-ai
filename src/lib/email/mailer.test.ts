@@ -12,6 +12,11 @@ const msg = verifyEmailMessage(
   'https://app.test/api/auth/verify-email?token=t'
 );
 
+const { sendMail } = vi.hoisted(() => ({ sendMail: vi.fn(async () => ({})) }));
+vi.mock('nodemailer', () => ({
+  default: { createTransport: () => ({ sendMail }) },
+}));
+
 afterEach(() => vi.restoreAllMocks());
 
 describe('createMailer without SMTP', () => {
@@ -28,6 +33,34 @@ describe('createMailer without SMTP', () => {
     await expect(
       createMailer({ NODE_ENV: 'production' } as NodeJS.ProcessEnv).send(msg)
     ).rejects.toBeInstanceOf(MailerNotConfiguredError);
+  });
+});
+
+describe('createMailer with SMTP', () => {
+  it('sends from helpaxxeler@gmail.com by default and passes replyTo', async () => {
+    sendMail.mockClear();
+    await createMailer({ NODE_ENV: 'test', SMTP_HOST: 'smtp.gmail.com' } as NodeJS.ProcessEnv).send({
+      ...msg,
+      replyTo: 'visitor@x.test',
+    });
+    expect(sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'Automate Panu AI <helpaxxeler@gmail.com>',
+        replyTo: 'visitor@x.test',
+      })
+    );
+  });
+
+  it('SMTP_FROM overrides the default sender', async () => {
+    sendMail.mockClear();
+    await createMailer({
+      NODE_ENV: 'test',
+      SMTP_HOST: 'smtp.gmail.com',
+      SMTP_FROM: 'Other <other@x.test>',
+    } as NodeJS.ProcessEnv).send(msg);
+    expect(sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({ from: 'Other <other@x.test>' })
+    );
   });
 });
 

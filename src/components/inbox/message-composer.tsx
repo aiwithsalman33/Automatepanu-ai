@@ -19,7 +19,6 @@ import {
   X,
   Loader2,
   Sparkles,
-  Plus,
   MessageSquareDashed,
   Zap,
 } from "lucide-react";
@@ -58,6 +57,9 @@ import { QuickReplyPicker } from "./quick-reply-picker";
 
 /** Media content types an agent can send from the composer. */
 export type ComposerMediaKind = "image" | "video" | "document" | "audio";
+
+/** Composer tool pills: compact, rounded, 40px on touch. */
+const TOOL_PILL = "h-8 shrink-0 rounded-full px-3 text-xs font-medium pointer-coarse:h-10";
 
 /** Supabase Storage bucket holding agent-sent chat attachments (migration 023). */
 export const CHAT_MEDIA_BUCKET = "chat-media";
@@ -553,7 +555,7 @@ export function MessageComposer({
   // ---- Render --------------------------------------------------------
 
   return (
-    <div className="border-t border-border bg-card p-3">
+    <div className="border-t border-border bg-card px-4 py-3 sm:px-5">
       {replyTo && (
         <div className="mb-2">
           <ReplyQuote
@@ -564,14 +566,14 @@ export function MessageComposer({
         </div>
       )}
       {sessionExpired && (
-        <div className="mb-2 flex items-center justify-between rounded-lg bg-amber-500/10 px-3 py-2">
-          <p className="text-xs text-amber-400">
+        <div className="mb-2.5 flex items-center justify-between gap-3 rounded-xl bg-status-warning-bg px-3 py-2">
+          <p className="text-xs font-medium text-status-warning">
             {t("sessionExpiredHint")}
           </p>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-7 text-xs text-amber-400 hover:text-amber-300"
+            className="shrink-0"
             onClick={onOpenTemplates}
           >
             <LayoutTemplate className="mr-1 h-3 w-3" />
@@ -625,7 +627,7 @@ export function MessageComposer({
       ) : recording ? (
         // Recording bar — replaces the composer while the mic is live.
         <div className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-2.5">
-          <span className="flex h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-red-500" />
+          <span className="flex h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-status-critical" />
           <span className="flex-1 text-sm text-foreground">
             {t("recording", { current: formatDuration(recordSeconds), max: formatDuration(MAX_RECORDING_SECONDS) })}
           </span>
@@ -646,152 +648,145 @@ export function MessageComposer({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-wrap items-end gap-2">
-          {/* Action buttons. On mobile this group wraps to its own row
-              below the textarea (basis-full + order-2) so the input gets
-              the full width; on sm+ it sits inline before the textarea. */}
-          <div className="order-2 flex basis-full items-end gap-2 sm:order-1 sm:basis-auto">
-          {/* Attach menu — photo / video / document / voice. */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              disabled={inputsDisabled || busy}
-              title={
-                readOnly
-                  ? t("readOnlyTitle")
-                  : inputsDisabled
-                    ? undefined
-                    : t("attachMedia")
-              }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Paperclip className="h-4 w-4" />
-              )}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="border-border bg-popover">
-              <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
-                <ImageIcon className="mr-2 h-4 w-4" />
-                {t("photo")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => videoInputRef.current?.click()}>
-                <Video className="mr-2 h-4 w-4" />
-                {t("video")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => documentInputRef.current?.click()}>
-                <FileText className="mr-2 h-4 w-4" />
-                {t("document")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void startRecording()}>
-                <Mic className="mr-2 h-4 w-4" />
-                {t("voiceNote")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* + menu — interactive messages + quick replies. Gated on the
-              24h window like free-form text (interactive requires it). */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
+        <div className="space-y-2.5">
+          {/* Tool pills above one input (docs/design/inbox.png). Gated like
+              before: free-form tools need the 24h window, Template and
+              AI draft only need a role that can send. */}
+          <div
+            role="toolbar"
+            aria-label={t("toolsLabel")}
+            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]"
+          >
+            <Button
+              variant="soft"
+              size="sm"
+              className={TOOL_PILL}
               disabled={inputsDisabled}
-              title={
-                readOnly
-                  ? t("readOnlyTitle")
-                  : inputsDisabled
-                    ? undefined
-                    : t("moreActions")
-              }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              title={readOnly ? t("readOnlyTitle") : undefined}
+              onClick={() => setQuickReplyOpen(true)}
             >
-              <Plus className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="border-border bg-popover">
-              <DropdownMenuItem onClick={() => openInteractiveBuilder()}>
-                <MessageSquareDashed className="mr-2 h-4 w-4" />
-                {t("interactiveMessage")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setQuickReplyOpen(true)}>
-                <Zap className="mr-2 h-4 w-4" />
-                {t("quickReplies")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <GatedButton
-            variant="ghost"
-            size="sm"
-            canAct={!readOnly}
-            gateReason={tGate("reasons.sendMessages")}
-            title={readOnly ? undefined : t("sendTemplate")}
-            className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-            onClick={onOpenTemplates}
-          >
-            <LayoutTemplate className="h-4 w-4" />
-          </GatedButton>
-
-          <GatedButton
-            variant="ghost"
-            size="sm"
-            canAct={!readOnly}
-            gateReason={tGate("reasons.sendMessages")}
-            disabled={drafting}
-            title={readOnly ? undefined : t("draftWithAI")}
-            className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-primary"
-            onClick={handleDraft}
-          >
-            {drafting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4" />
-            )}
-          </GatedButton>
+              <Zap aria-hidden />
+              {t("quickReplies")}
+            </Button>
+            <GatedButton
+              variant="soft"
+              size="sm"
+              canAct={!readOnly}
+              gateReason={tGate("reasons.sendMessages")}
+              title={readOnly ? undefined : t("sendTemplate")}
+              className={TOOL_PILL}
+              onClick={onOpenTemplates}
+            >
+              <LayoutTemplate aria-hidden />
+              {t("pillTemplate")}
+            </GatedButton>
+            <Button
+              variant="soft"
+              size="sm"
+              className={TOOL_PILL}
+              disabled={inputsDisabled}
+              title={readOnly ? t("readOnlyTitle") : t("interactiveMessage")}
+              onClick={() => openInteractiveBuilder()}
+            >
+              <MessageSquareDashed aria-hidden />
+              {t("pillButtons")}
+            </Button>
+            <GatedButton
+              size="sm"
+              canAct={!readOnly}
+              gateReason={tGate("reasons.sendMessages")}
+              disabled={drafting}
+              title={readOnly ? undefined : t("draftWithAI")}
+              className={TOOL_PILL}
+              onClick={handleDraft}
+            >
+              {drafting ? <Loader2 className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
+              {t("pillAiDraft")}
+            </GatedButton>
+            <Button
+              variant="soft"
+              size="sm"
+              className={TOOL_PILL}
+              disabled={inputsDisabled || busy}
+              title={readOnly ? t("readOnlyTitle") : t("voiceNote")}
+              onClick={() => void startRecording()}
+            >
+              <Mic aria-hidden />
+              {t("pillVoice")}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                disabled={inputsDisabled || busy}
+                render={
+                  <Button
+                    variant="soft"
+                    size="sm"
+                    className={TOOL_PILL}
+                    title={readOnly ? t("readOnlyTitle") : t("attachMedia")}
+                  />
+                }
+              >
+                {busy ? <Loader2 className="animate-spin" aria-hidden /> : <Paperclip aria-hidden />}
+                {t("pillAttach")}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" sideOffset={6}>
+                <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
+                  <ImageIcon className="size-4" aria-hidden />
+                  {t("photo")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => videoInputRef.current?.click()}>
+                  <Video className="size-4" aria-hidden />
+                  {t("video")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => documentInputRef.current?.click()}>
+                  <FileText className="size-4" aria-hidden />
+                  {t("document")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              readOnly
-                ? t("readOnlyPlaceholder")
-                : sessionExpired
-                  ? t("sessionExpiredPlaceholder")
-                  : t("typeMessagePlaceholder")
-            }
-            disabled={sessionExpired || readOnly}
-            rows={1}
-            // Textarea keeps its own inline title — the GatedButton
-            // wrapping pattern doesn't apply to non-button inputs.
-            // The placeholder text also surfaces the read-only state.
-            title={readOnly ? t("readOnlyTitle") : undefined}
-            className={cn(
-              "order-1 min-w-0 flex-1 resize-none rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-primary/50 sm:order-2",
-              (sessionExpired || readOnly) && "cursor-not-allowed opacity-50"
-            )}
-          />
-
-          <GatedButton
-            size="sm"
-            canAct={!readOnly}
-            gateReason={tGate("reasons.sendMessages")}
-            disabled={!text.trim() || sessionExpired || sending}
-            onClick={handleSend}
-            className="order-1 h-9 w-9 shrink-0 bg-primary p-0 hover:bg-primary/90 disabled:opacity-40 sm:order-3"
-          >
-            <Send className="h-4 w-4" />
-          </GatedButton>
+          <div className="flex items-end gap-2">
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              aria-label={t("messageLabel")}
+              placeholder={
+                readOnly
+                  ? t("readOnlyPlaceholder")
+                  : sessionExpired
+                    ? t("sessionExpiredPlaceholder")
+                    : t("typeMessageShort")
+              }
+              disabled={sessionExpired || readOnly}
+              rows={1}
+              // GatedButton's wrapping pattern doesn't apply to inputs;
+              // the placeholder also states the read-only case.
+              title={readOnly ? t("readOnlyTitle") : undefined}
+              className={cn(
+                "min-h-11 min-w-0 flex-1 resize-none rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-ring",
+                (sessionExpired || readOnly) && "cursor-not-allowed opacity-60"
+              )}
+            />
+            <GatedButton
+              canAct={!readOnly}
+              gateReason={tGate("reasons.sendMessages")}
+              disabled={!text.trim() || sessionExpired || sending}
+              onClick={handleSend}
+              aria-label={t("send")}
+              className="h-11 shrink-0 rounded-xl px-4 disabled:opacity-50 sm:px-5"
+            >
+              <Send aria-hidden />
+              <span className="hidden sm:inline">{t("send")}</span>
+            </GatedButton>
+          </div>
         </div>
       )}
 
-      {/* Hint sits outside the flex row so its height doesn't push
-          `items-end` buttons below the textarea. Indented to line up
-          under the textarea left edge. */}
       {!draft && !recording && (
-        <p className="mt-1 pl-1 text-[10px] text-muted-foreground sm:pl-[5.5rem]">
-          {t("draftHint")}
-        </p>
+        <p className="mt-1.5 hidden text-[11px] text-muted-foreground sm:block">{t("enterHint")}</p>
       )}
 
       {/* Interactive-message builder dialog. */}

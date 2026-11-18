@@ -16,6 +16,7 @@
     "linkExpired": "Esse link expirou. Para redefinir a senha, use “Esqueceu a senha?” para pedir um novo; se estava confirmando seu e-mail, cadastre-se novamente.",
     "linkInvalid": "Não foi possível entrar com esse link. Se estava confirmando seu e-mail, ele já pode estar verificado — basta entrar abaixo. Para redefinir a senha, peça um novo link e abra-o no mesmo navegador em que o solicitou.",
     "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "accountDisabled": "This account has been disabled. Contact the administrator for help.",
     "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
     "signInFailed": "Invalid email or password."
   },
@@ -32,6 +33,7 @@
     "flows": "Fluxos",
     "aiAgents": "Agentes de IA",
     "settings": "Configurações",
+    "adminPanel": "Admin panel",
     "beta": "Beta",
     "unreadConversations": "{count} {count, plural, =1 {conversa não lida} other {conversas não lidas}}",
     "unreadNotifications": "{count} {count, plural, =1 {notificação não lida} other {notificações não lidas}}",
@@ -54,6 +56,8 @@
     "pipelines": "Pipelines",
     "broadcasts": "Disparos",
     "automations": "Automações",
+    "flows": "Fluxos",
+    "aiAgents": "Agentes de IA",
     "settings": "Configurações",
     "openMenu": "Abrir menu",
     "openAccountMenu": "Abrir menu da conta",
@@ -61,7 +65,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "adminPanel": "Admin panel"
   },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
@@ -319,7 +324,9 @@
         },
         "previewTitle": "Seus números vão aparecer aqui",
         "previewHint": "Quando os clientes começarem a escrever, esta página mostra quem está esperando, a rapidez das respostas da equipe e como estão seus negócios e campanhas.",
-        "previewAction": "Abrir caixa de entrada"
+        "previewAction": "Abrir caixa de entrada",
+        "barTitle": "Conclua a configuração · {done} de {total}",
+        "continue": "Continuar"
       },
       "duration": {
         "seconds": "{value} s",
@@ -351,7 +358,24 @@
       "clearAll": "Limpar tudo",
       "noConversations": "Nenhuma conversa encontrada",
       "noMessagesYet": "Nenhuma mensagem ainda",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "tabWaiting": "Aguardando",
+      "tabsLabel": "Visualizações de conversas",
+      "filters": "Filtros",
+      "filtersWithCount": "Filtros, {count} ativos",
+      "status": "Status",
+      "windowHours": "Janela {hours} h",
+      "windowMinutes": "Janela {minutes} min",
+      "unassignedChip": "Não atribuída",
+      "moreTags": "+{count}",
+      "loadFailed": "Não foi possível carregar as conversas",
+      "justNow": "agora",
+      "yesterday": "Ontem",
+      "emptyTitle": "Nenhuma conversa ainda",
+      "emptyDesc": "Novas mensagens do WhatsApp chegam aqui.",
+      "noMatchesDesc": "Tente outra visualização ou limpe os filtros.",
+      "unreadCount": "{count} não lidas",
+      "closeSearch": "Fechar pesquisa"
     },
     "messageThread": {
       "backToConversations": "Voltar às conversas",
@@ -389,7 +413,13 @@
       "assigneeNoLongerMember": "Esse colega não é mais membro desta conta",
       "networkError": "erro de rede",
       "documentFallback": "Documento",
-      "you": "Você"
+      "you": "Você",
+      "windowClosesIn": "A janela fecha em {time}",
+      "windowClosed": "Janela fechada",
+      "windowTitle": "Janela de resposta de 24 horas do WhatsApp",
+      "contactInfo": "Informações do contato",
+      "statusLabel": "Status: {status}",
+      "loadFailed": "Não foi possível carregar as mensagens"
     },
     "sessionTimer": {
       "expired": "Expirada",
@@ -440,7 +470,16 @@
         "document": "documento",
         "audio": "áudio"
       },
-      "uploadFailed": "Falha no upload."
+      "uploadFailed": "Falha no upload.",
+      "toolsLabel": "Ferramentas de mensagem",
+      "pillTemplate": "Modelo",
+      "pillButtons": "Botões",
+      "pillAiDraft": "Rascunho IA",
+      "pillVoice": "Voz",
+      "pillAttach": "Anexar",
+      "messageLabel": "Mensagem",
+      "typeMessageShort": "Digite uma mensagem…",
+      "enterHint": "Enter para enviar · Shift+Enter para nova linha"
     },
     "bubble": {
       "photo": "Foto",
@@ -521,7 +560,27 @@
       "deals": "Negócios",
       "noTags": "Sem tags",
       "noDeals": "Sem negócios",
-      "addNotePlaceholder": "Adicionar uma nota..."
+      "addNotePlaceholder": "Adicionar uma nota...",
+      "tabDetails": "Detalhes",
+      "tabActivity": "Atividade",
+      "tabsLabel": "Seções do contato",
+      "openDeal": "Negócio aberto",
+      "internalNote": "Nota interna",
+      "editTags": "Editar tags",
+      "copyPhone": "Copiar {handle}",
+      "loadFailed": "Não foi possível carregar os detalhes do contato",
+      "noNotes": "Nenhuma nota ainda",
+      "noActivity": "Nenhuma atividade ainda",
+      "addNote": "Adicionar nota",
+      "activityContactAdded": "Contato adicionado",
+      "activityConversationStarted": "Conversa iniciada",
+      "activityConversationClosed": "Conversa encerrada",
+      "activityDealCreated": "Negócio criado: {title}",
+      "activityDealWon": "Negócio ganho: {title}",
+      "activityDealLost": "Negócio perdido: {title}",
+      "activityNote": "Nota adicionada",
+      "statusWon": "Ganho",
+      "statusLost": "Perdido"
     },
     "aiBanner": {
       "pausedTitle": "O assistente de IA está pausado aqui",
@@ -782,16 +841,30 @@
         "proposalSent": "Proposta enviada",
         "negotiation": "Negociação",
         "won": "Ganho"
-      }
+      },
+      "pipelinesLabel": "Pipelines",
+      "pipelineChip": "Pipeline",
+      "stageSettings": "Configurar etapas",
+      "dealShort": "Negócio"
     },
     "board": {
       "dropDealHere": "Solte um negócio aqui",
-      "addDeal": "Adicionar negócio"
+      "addDeal": "Adicionar negócio",
+      "closedColumn": "Negócios ganhos e perdidos",
+      "won": "Ganhos",
+      "lost": "Perdidos",
+      "closedRecent": "Fechados nos últimos {days} dias",
+      "closedAll": "Todos os negócios fechados",
+      "dropToWin": "Solte um negócio aqui para marcá-lo como ganho",
+      "dropToLose": "Solte um negócio aqui para marcá-lo como perdido",
+      "viewAllClosed": "Ver todos ({count})",
+      "showRecent": "Mostrar últimos {days} dias"
     },
     "card": {
       "noContact": "Sem contato",
       "won": "Ganho",
-      "lost": "Perdido"
+      "lost": "Perdido",
+      "closedWon": "Fechado"
     },
     "form": {
       "editDeal": "Editar negócio",
@@ -874,7 +947,8 @@
       "wonThisMonthTooltip": "Negócios marcados como ganhos desde o primeiro dia do mês atual.",
       "lostThisMonth": "Perdidos neste mês",
       "lostThisMonthTooltip": "Negócios marcados como perdidos desde o primeiro dia do mês atual.",
-      "howCalculated": "Como {label} é calculado"
+      "howCalculated": "Como {label} é calculado",
+      "wonLost": "Ganhos / perdidos"
     }
   },
   "Broadcasts": {
@@ -895,7 +969,10 @@
       },
       "errorLoad": "Falha ao carregar os disparos",
       "broadcastInProgress": "Disparo em andamento",
-      "retry": "Tentar novamente"
+      "retry": "Tentar novamente",
+      "viewsLabel": "Status do disparo",
+      "viewAll": "Todos",
+      "noneInView": "Nenhum disparo com este status"
     },
     "status": {
       "draft": "Rascunho",
@@ -975,7 +1052,8 @@
       "toastDraftSaved": "Rascunho salvo",
       "broadcastFailed": "Falha no disparo",
       "toastSendTakenOver": "Outro envio assumiu esta transmissão, então esta aba parou de enviar. Abra a transmissão para acompanhar o progresso.",
-      "toastSendInterrupted": "O envio parou porque a conexão com o servidor caiu. Abra a transmissão e use Retomar envio para enviar aos destinatários restantes. O botão aparece em até 5 minutos."
+      "toastSendInterrupted": "O envio parou porque a conexão com o servidor caiu. Abra a transmissão e use Retomar envio para enviar aos destinatários restantes. O botão aparece em até 5 minutos.",
+      "backToBroadcasts": "Voltar para disparos"
     },
     "wizard": {
       "next": "Avançar",
@@ -1981,7 +2059,8 @@
     },
     "groups": {
       "account": "Conta",
-      "workspace": "Espaço de trabalho"
+      "workspace": "Espaço de trabalho",
+      "developer": "Desenvolvedor"
     },
     "profile": {
       "title": "Seu perfil",
@@ -2235,7 +2314,8 @@
       "textPlaceholder": "O texto da mensagem a inserir",
       "cancel": "Cancelar",
       "save": "Salvar"
-    }
+    },
+    "allSettings": "Todas as configurações"
   },
   "SignupPage": {
     "passwordsMismatch": "As senhas não coincidem",
@@ -2340,7 +2420,13 @@
     "retry": "Tentar novamente",
     "emptyTitle": "Nenhuma notificação ainda",
     "emptyDesc": "Você verá um alerta aqui quando alguém atribuir uma conversa a você.",
-    "unread": "Não lidas"
+    "unread": "Não lidas",
+    "filterLabel": "Mostrar",
+    "filterAll": "Todas",
+    "groupToday": "Hoje",
+    "groupEarlier": "Anteriores",
+    "allCaughtUp": "Você está em dia",
+    "loadFailed": "Não foi possível carregar as notificações"
   },
   "Agents": {
     "title": "Agentes de IA",
@@ -2409,7 +2495,12 @@
     "loading": "Carregando..."
   },
   "UiPrimitives": {
-    "close": "Fechar"
+    "close": "Fechar",
+    "removeItem": "Remover {item}",
+    "errorTitle": "Não foi possível carregar",
+    "errorDescription": "Algo deu errado. Verifique sua conexão e tente novamente.",
+    "retry": "Tentar novamente",
+    "loading": "Carregando…"
   },
   "GatedButton": {
     "readOnly": "Somente leitura — sua função não pode {action}",
@@ -3320,6 +3411,79 @@
       "rights": "All rights reserved.",
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
+    }
+  },
+  "Shell": {
+    "nav": {
+      "home": "Início",
+      "inbox": "Caixa",
+      "contacts": "Contatos",
+      "deals": "Negócios",
+      "broadcasts": "Disparos",
+      "automate": "Automatizar",
+      "flows": "Fluxos",
+      "aiAgent": "Agente IA",
+      "settings": "Ajustes",
+      "notifications": "Avisos",
+      "more": "Mais"
+    },
+    "title": {
+      "home": "Início",
+      "inbox": "Caixa de entrada",
+      "contacts": "Contatos",
+      "deals": "Negócios",
+      "broadcasts": "Disparos",
+      "automations": "Automações",
+      "flows": "Fluxos",
+      "aiAgent": "Agente de IA",
+      "notifications": "Notificações",
+      "settings": "Configurações"
+    },
+    "primaryNav": "Principal",
+    "mobileNav": "Principal (celular)",
+    "skipToContent": "Pular para o conteúdo",
+    "homeLink": "Início",
+    "unreadChats": "{count} {count, plural, =1 {conversa não lida} other {conversas não lidas}}",
+    "search": {
+      "open": "Pesquisar",
+      "placeholder": "Pesquise conversas, contatos, negócios, páginas…",
+      "dialogTitle": "Pesquisar em tudo",
+      "chats": "Conversas",
+      "contacts": "Contatos",
+      "deals": "Negócios",
+      "pages": "Páginas",
+      "noResults": "Nenhum resultado para “{query}”",
+      "failed": "A pesquisa não está disponível agora. As páginas continuam funcionando.",
+      "hintMove": "↑↓ para navegar",
+      "hintOpen": "Enter para abrir",
+      "hintClose": "Esc para fechar",
+      "untitledChat": "Conversa",
+      "placeholderShort": "Pesquise conversas, contatos, negócios"
+    },
+    "new": {
+      "button": "Novo",
+      "menuLabel": "Criar",
+      "contact": "Contato",
+      "deal": "Negócio",
+      "broadcast": "Disparo",
+      "automation": "Automação",
+      "flow": "Fluxo"
+    },
+    "bell": {
+      "label": "Notificações",
+      "labelUnread": "Notificações, {count} não lidas",
+      "viewAll": "Ver todas"
+    },
+    "numbers": {
+      "label": "Número do WhatsApp",
+      "all": "Todos os números"
+    },
+    "more": {
+      "title": "Mais"
+    },
+    "profile": {
+      "menu": "Sua conta",
+      "workspace": "Espaço de trabalho"
     }
   }
 }

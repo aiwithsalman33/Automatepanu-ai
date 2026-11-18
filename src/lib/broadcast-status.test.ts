@@ -28,14 +28,14 @@ describe("getBroadcastStatus", () => {
     expect(getBroadcastStatus("")).toBe(broadcastStatusConfig.draft);
   });
 
-  it("each variant has the dark-theme class triple", () => {
-    // Accept both fixed-shade Tailwind names (bg-red-500/10) and
-    // token-backed names without a shade number (bg-primary/10) since
-    // the brand-accent statuses now ride the active color theme.
+  it("each variant has the tint / text / border class triple", () => {
+    // Accept fixed-shade Tailwind names (bg-blue-500/10) and token
+    // names, with or without hyphens (bg-primary/10,
+    // bg-status-critical/10, bg-muted-foreground/10).
     for (const v of Object.values(broadcastStatusConfig)) {
-      expect(v.classes).toMatch(/bg-[a-z]+(-\d+)?\/10/);
+      expect(v.classes).toMatch(/bg-[a-z-]+(-\d+)?\/10/);
       expect(v.classes).toMatch(/text-[a-z]+(-\d+)?/);
-      expect(v.classes).toMatch(/border-[a-z]+(-\d+)?\/20/);
+      expect(v.classes).toMatch(/border-[a-z-]+(-\d+)?\/20/);
     }
   });
 });

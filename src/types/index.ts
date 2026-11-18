@@ -406,6 +406,8 @@ export interface Deal {
   notes?: string;
   expected_close_date?: string;
   status?: DealStatus;
+  /** Set by the deals trigger when the deal is won or lost; NULL while open. */
+  closed_at?: string | null;
   created_at: string;
   updated_at?: string;
   contact?: Contact;

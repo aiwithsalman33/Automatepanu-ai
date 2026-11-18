@@ -2,15 +2,8 @@
 
 import { useMemo } from "react";
 import type { Deal, PipelineStage } from "@/types";
-import {
-  DollarSign,
-  TrendingUp,
-  Target,
-  BarChart3,
-  Trophy,
-  XCircle,
-  Info,
-} from "lucide-react";
+import { Info } from "lucide-react";
+import { StatTile } from "@/components/ui/stat-tile";
 import {
   Tooltip,
   TooltipContent,
@@ -93,93 +86,63 @@ export function PipelineAnalytics({ stages, deals }: PipelineAnalyticsProps) {
     };
   }, [deals, sortedStages]);
 
+  const info = (label: string, tooltip: string) => (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            aria-label={t("howCalculated", { label })}
+            className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+          />
+        }
+      >
+        <Info className="size-3.5" />
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-left">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
+
+  // Five tiles as in docs/design/deals.png. Same numbers as before; won
+  // and lost this month share one tile.
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-2 gap-3 rounded-xl border border-border bg-card/60 p-4 sm:grid-cols-3 xl:grid-cols-6">
-        <Metric
-          icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <StatTile
           label={t("totalDeals")}
+          info={info(t("totalDeals"), t("totalDealsTooltip"))}
           value={String(stats.totalCount)}
-          tooltip={t("totalDealsTooltip")}
-          t={t}
         />
-        <Metric
-          icon={<DollarSign className="h-4 w-4 text-primary" />}
+        <StatTile
           label={t("pipelineValue")}
+          info={info(t("pipelineValue"), t("pipelineValueTooltip"))}
           value={formatCurrency(stats.totalValue, defaultCurrency)}
-          tooltip={t("pipelineValueTooltip")}
-          t={t}
         />
-        <Metric
-          icon={<Target className="h-4 w-4 text-blue-400" />}
+        <StatTile
           label={t("avgDealSize")}
+          info={info(t("avgDealSize"), t("avgDealSizeTooltip"))}
           value={formatCurrency(stats.avgValue, defaultCurrency)}
-          tooltip={t("avgDealSizeTooltip")}
-          t={t}
         />
-        <Metric
-          icon={<TrendingUp className="h-4 w-4 text-purple-400" />}
+        <StatTile
           label={t("weightedValue")}
+          info={info(t("weightedValue"), t("weightedValueTooltip"))}
           value={formatCurrency(stats.weightedValue, defaultCurrency)}
-          tooltip={t("weightedValueTooltip")}
-          t={t}
         />
-        <Metric
-          icon={<Trophy className="h-4 w-4 text-primary" />}
-          label={t("wonThisMonth")}
-          value={String(stats.wonThisMonth)}
-          tooltip={t("wonThisMonthTooltip")}
-          t={t}
-        />
-        <Metric
-          icon={<XCircle className="h-4 w-4 text-red-400" />}
-          label={t("lostThisMonth")}
-          value={String(stats.lostThisMonth)}
-          tooltip={t("lostThisMonthTooltip")}
-          t={t}
+        <StatTile
+          label={t("wonLost")}
+          info={info(t("wonLost"), `${t("wonThisMonthTooltip")} ${t("lostThisMonthTooltip")}`)}
+          value={
+            <>
+              <span className="text-status-good-text">{stats.wonThisMonth}</span>
+              <span className="text-muted-foreground"> / </span>
+              <span className="text-status-critical">{stats.lostThisMonth}</span>
+            </>
+          }
+          className="col-span-2 sm:col-span-1"
         />
       </div>
     </TooltipProvider>
-  );
-}
-
-function Metric({
-  icon,
-  label,
-  value,
-  tooltip,
-  t,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  tooltip: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
-}) {
-  return (
-    <div className="rounded-lg bg-muted/50 p-3">
-      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {icon}
-        <span>{label}</span>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                aria-label={t("howCalculated", { label })}
-                className="ml-auto text-muted-foreground hover:text-foreground focus:outline-none"
-              />
-            }
-          >
-            <Info className="h-3 w-3" />
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs text-left">
-            {tooltip}
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      <p className="mt-1 text-base font-semibold text-foreground">{value}</p>
-    </div>
   );
 }

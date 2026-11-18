@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card'
 import { ratio, type DashboardOverview } from '@/lib/dashboard/overview'
 import { cn } from '@/lib/utils'
-import { Skeleton } from './skeleton'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useFormatDuration } from './use-format-duration'
 
 type Tone = 'good' | 'warning' | 'critical' | 'muted'
@@ -29,7 +29,7 @@ const STATUS_ICON = {
 } as const
 
 const STATUS_CLASS: Record<Tone, string> = {
-  good: 'text-status-good',
+  good: 'text-status-good-text',
   warning: 'text-status-warning',
   critical: 'text-status-critical',
   muted: 'text-muted-foreground',
@@ -48,7 +48,12 @@ function HealthRow({ label, status, tone }: { label: ReactNode; status: string; 
   )
 }
 
-export function CampaignsCard({ data }: { data: DashboardOverview | null }) {
+/**
+ * Latest broadcast + automation / flow / AI / template health.
+ * `compact` is the version under the pipeline summary on Home: small
+ * card padding, no description line.
+ */
+export function CampaignsCard({ data, compact = false }: { data: DashboardOverview | null; compact?: boolean }) {
   const t = useTranslations('Dashboard.overview.campaigns')
   const format = useFormatter()
   const formatDuration = useFormatDuration()
@@ -60,10 +65,10 @@ export function CampaignsCard({ data }: { data: DashboardOverview | null }) {
   const success = c ? ratio(c.automationRuns - c.automationFailed, c.automationRuns) : null
 
   return (
-    <Card className="h-full">
+    <Card className="h-full rounded-2xl" size={compact ? 'sm' : 'default'}>
       <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
-        <CardDescription>{t('description')}</CardDescription>
+        <CardTitle className="font-semibold">{t('title')}</CardTitle>
+        {compact ? null : <CardDescription>{t('description')}</CardDescription>}
         <CardAction>
           <Link href="/broadcasts" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
             {t('link')}
@@ -72,7 +77,7 @@ export function CampaignsCard({ data }: { data: DashboardOverview | null }) {
       </CardHeader>
       <CardContent>
         {!data || !c ? (
-          <Skeleton className="h-44 w-full" />
+          <Skeleton className={compact ? 'h-32 w-full' : 'h-44 w-full'} />
         ) : (
           <>
             {b ? (

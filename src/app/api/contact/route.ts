@@ -85,6 +85,7 @@ export async function POST(request: Request) {
   try {
     await mailer().send({
       to,
+      replyTo: m.email,
       subject: subject.replace(/[\r\n]+/g, ' ').slice(0, 200),
       text: `${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\n${m.message}\n\nReply directly to ${m.email}.`,
       html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;line-height:1.5;color:#111">

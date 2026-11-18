@@ -15,6 +15,7 @@ import { ConversationList } from "@/components/inbox/conversation-list";
 import { parseInboxFilter } from "@/lib/inbox/inbox-filters";
 import { MessageThread } from "@/components/inbox/message-thread";
 import { ContactSidebar } from "@/components/inbox/contact-sidebar";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,6 +86,10 @@ function InboxPageInner() {
       // localStorage can throw in private-browsing / sandboxed contexts.
     }
   }, []);
+
+  // Below xl the contact panel opens as a drawer instead of a column.
+  const [contactDrawerOpen, setContactDrawerOpen] = useState(false);
+  const tThread = useTranslations("Inbox.messageThread");
 
   const handleToggleContactPanel = useCallback(() => {
     setContactPanelOpen((prev) => {
@@ -566,13 +571,13 @@ function InboxPageInner() {
   const hasActiveConv = !!activeConversation;
 
   return (
-    <div className="-m-4 flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden sm:-m-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* WhatsApp connection banner — in the flex column, not absolute,
           so it pushes the panels down instead of overlapping them. */}
       {whatsappConnected === false && (
-        <div className="flex shrink-0 items-center justify-center gap-2 border-b border-amber-500/20 bg-amber-500/10 px-4 py-2">
-          <WifiOff className="h-4 w-4 text-amber-400" />
-          <p className="text-xs text-amber-400">
+        <div role="status" className="flex shrink-0 items-center justify-center gap-2 border-b border-status-warning/20 bg-status-warning-bg px-4 py-2">
+          <WifiOff className="size-4 text-status-warning" aria-hidden />
+          <p className="text-xs font-medium text-status-warning">
             {t("whatsappNotConnected")}
           </p>
         </div>
@@ -629,19 +634,26 @@ function InboxPageInner() {
             onRefresh={handleManualRefresh}
             contactPanelOpen={contactPanelOpen}
             onToggleContactPanel={handleToggleContactPanel}
+            onOpenContactDrawer={() => setContactDrawerOpen(true)}
           />
         </div>
 
-        {/* Right panel: Contact sidebar — desktop only, and only when the
-            agent hasn't collapsed it via the thread-header toggle (#258).
-            On mobile it's always hidden (the `lg:block` below), so the
-            toggle — which is itself desktop-only — never affects it. */}
+        {/* Right panel: the contact column, from xl up (three panes
+            need the width), unless the agent collapsed it via the
+            thread-header toggle (#258). Below xl it's the drawer below. */}
         {contactPanelOpen && (
-          <div className="hidden lg:block">
-            <ContactSidebar contact={activeContact} />
+          <div className="hidden xl:block">
+            <ContactSidebar contact={activeContact} conversation={activeConversation} />
           </div>
         )}
       </div>
+
+      <Sheet open={contactDrawerOpen && !!activeContact} onOpenChange={setContactDrawerOpen}>
+        <SheetContent side="right" className="w-full gap-0 p-0 data-[side=right]:w-full sm:max-w-sm xl:hidden">
+          <SheetTitle className="sr-only">{tThread("contactInfo")}</SheetTitle>
+          <ContactSidebar contact={activeContact} conversation={activeConversation} variant="drawer" />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

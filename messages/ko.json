@@ -16,6 +16,7 @@
     "linkExpired": "링크가 만료되었습니다. 비밀번호를 재설정하려면 “비밀번호를 잊으셨나요?”에서 새 링크를 요청하세요. 이메일 인증 중이었다면 다시 가입해 주세요.",
     "linkInvalid": "이 링크로는 로그인할 수 없습니다. 이메일 인증 중이었다면 이미 인증이 완료되었을 수 있으니 아래에서 로그인하세요. 비밀번호 재설정은 새 링크를 요청한 뒤 요청한 브라우저에서 열어 주세요.",
     "emailNotVerified": "Please verify your email first. We sent you a link when you signed up — check your inbox (and spam).",
+    "accountDisabled": "This account has been disabled. Contact the administrator for help.",
     "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
     "signInFailed": "Invalid email or password."
   },
@@ -32,6 +33,7 @@
     "flows": "플로우",
     "aiAgents": "AI 에이전트",
     "settings": "설정",
+    "adminPanel": "Admin panel",
     "beta": "베타",
     "unreadConversations": "읽지 않은 대화 {count}건",
     "unreadNotifications": "읽지 않은 알림 {count}건",
@@ -54,6 +56,8 @@
     "pipelines": "파이프라인",
     "broadcasts": "브로드캐스트",
     "automations": "자동화",
+    "flows": "플로우",
+    "aiAgents": "AI 에이전트",
     "settings": "설정",
     "openMenu": "메뉴 열기",
     "openAccountMenu": "계정 메뉴 열기",
@@ -61,7 +65,8 @@
     "defaultAvatar": "아바타",
     "menuProfile": "프로필",
     "menuSettings": "설정",
-    "menuSignOut": "로그아웃"
+    "menuSignOut": "로그아웃",
+    "adminPanel": "Admin panel"
   },
   "ModeToggle": {
     "switchMode": "{mode} 모드로 전환"
@@ -319,7 +324,9 @@
         },
         "previewTitle": "여기에 지표가 표시됩니다",
         "previewHint": "고객이 메시지를 보내기 시작하면 이 페이지에 대기 중인 고객, 팀의 답장 속도, 딜과 캠페인 현황이 표시됩니다.",
-        "previewAction": "인박스 열기"
+        "previewAction": "인박스 열기",
+        "barTitle": "설정 마무리 · {total}개 중 {done}개",
+        "continue": "계속"
       },
       "duration": {
         "seconds": "{value}초",
@@ -351,7 +358,24 @@
       "clearAll": "모두 지우기",
       "noConversations": "대화를 찾을 수 없습니다",
       "noMessagesYet": "아직 메시지가 없습니다",
-      "unknown": "알 수 없음"
+      "unknown": "알 수 없음",
+      "tabWaiting": "대기 중",
+      "tabsLabel": "대화 보기",
+      "filters": "필터",
+      "filtersWithCount": "필터, {count}개 적용됨",
+      "status": "상태",
+      "windowHours": "창 {hours}시간",
+      "windowMinutes": "창 {minutes}분",
+      "unassignedChip": "미배정",
+      "moreTags": "+{count}",
+      "loadFailed": "대화를 불러오지 못했습니다",
+      "justNow": "방금",
+      "yesterday": "어제",
+      "emptyTitle": "아직 대화가 없습니다",
+      "emptyDesc": "새 WhatsApp 메시지가 여기에 표시됩니다.",
+      "noMatchesDesc": "다른 보기를 선택하거나 필터를 지워 보세요.",
+      "unreadCount": "읽지 않음 {count}개",
+      "closeSearch": "검색 닫기"
     },
     "messageThread": {
       "backToConversations": "대화 목록으로 돌아가기",
@@ -389,7 +413,13 @@
       "assigneeNoLongerMember": "해당 팀원은 더 이상 이 계정의 멤버가 아닙니다",
       "networkError": "네트워크 오류",
       "documentFallback": "문서",
-      "you": "나"
+      "you": "나",
+      "windowClosesIn": "{time} 후 창 닫힘",
+      "windowClosed": "창 닫힘",
+      "windowTitle": "WhatsApp 24시간 응답 창",
+      "contactInfo": "연락처 정보",
+      "statusLabel": "상태: {status}",
+      "loadFailed": "메시지를 불러오지 못했습니다"
     },
     "sessionTimer": {
       "expired": "만료됨",
@@ -440,7 +470,16 @@
         "document": "문서",
         "audio": "오디오"
       },
-      "uploadFailed": "업로드에 실패했습니다."
+      "uploadFailed": "업로드에 실패했습니다.",
+      "toolsLabel": "메시지 도구",
+      "pillTemplate": "템플릿",
+      "pillButtons": "버튼",
+      "pillAiDraft": "AI 초안",
+      "pillVoice": "음성",
+      "pillAttach": "첨부",
+      "messageLabel": "메시지",
+      "typeMessageShort": "메시지 입력…",
+      "enterHint": "Enter 전송 · Shift+Enter 줄바꿈"
     },
     "bubble": {
       "photo": "사진",
@@ -521,7 +560,27 @@
       "deals": "딜",
       "noTags": "태그 없음",
       "noDeals": "딜 없음",
-      "addNotePlaceholder": "메모 추가..."
+      "addNotePlaceholder": "메모 추가...",
+      "tabDetails": "상세",
+      "tabActivity": "활동",
+      "tabsLabel": "연락처 섹션",
+      "openDeal": "진행 중인 딜",
+      "internalNote": "내부 메모",
+      "editTags": "태그 편집",
+      "copyPhone": "{handle} 복사",
+      "loadFailed": "연락처 정보를 불러오지 못했습니다",
+      "noNotes": "아직 메모가 없습니다",
+      "noActivity": "아직 활동이 없습니다",
+      "addNote": "메모 추가",
+      "activityContactAdded": "연락처 추가됨",
+      "activityConversationStarted": "대화 시작",
+      "activityConversationClosed": "대화 종료",
+      "activityDealCreated": "딜 생성: {title}",
+      "activityDealWon": "딜 성사: {title}",
+      "activityDealLost": "딜 실패: {title}",
+      "activityNote": "메모 추가됨",
+      "statusWon": "성사",
+      "statusLost": "실패"
     },
     "aiBanner": {
       "pausedTitle": "이 대화에서 AI 어시스턴트가 일시 중지됨",
@@ -782,16 +841,30 @@
         "proposalSent": "제안서 발송",
         "negotiation": "협상",
         "won": "성사"
-      }
+      },
+      "pipelinesLabel": "파이프라인",
+      "pipelineChip": "파이프라인",
+      "stageSettings": "단계 설정",
+      "dealShort": "딜"
     },
     "board": {
       "dropDealHere": "여기에 딜을 놓으세요",
-      "addDeal": "딜 추가"
+      "addDeal": "딜 추가",
+      "closedColumn": "성사 및 실패한 딜",
+      "won": "성사",
+      "lost": "실패",
+      "closedRecent": "최근 {days}일 동안 종료",
+      "closedAll": "종료된 모든 딜",
+      "dropToWin": "딜을 여기에 놓으면 성사로 표시됩니다",
+      "dropToLose": "딜을 여기에 놓으면 실패로 표시됩니다",
+      "viewAllClosed": "모두 보기 ({count})",
+      "showRecent": "최근 {days}일만 보기"
     },
     "card": {
       "noContact": "연락처 없음",
       "won": "성사",
-      "lost": "실패"
+      "lost": "실패",
+      "closedWon": "종료"
     },
     "form": {
       "editDeal": "딜 수정",
@@ -874,7 +947,8 @@
       "wonThisMonthTooltip": "이번 달 1일 이후 성사로 표시된 딜입니다.",
       "lostThisMonth": "이번 달 실패",
       "lostThisMonthTooltip": "이번 달 1일 이후 실패로 표시된 딜입니다.",
-      "howCalculated": "{label} 계산 방법"
+      "howCalculated": "{label} 계산 방법",
+      "wonLost": "성사 / 실패"
     }
   },
   "Broadcasts": {
@@ -895,7 +969,10 @@
       },
       "errorLoad": "브로드캐스트를 불러오지 못했습니다",
       "broadcastInProgress": "브로드캐스트 진행 중",
-      "retry": "다시 시도"
+      "retry": "다시 시도",
+      "viewsLabel": "브로드캐스트 상태",
+      "viewAll": "전체",
+      "noneInView": "이 상태의 브로드캐스트가 없습니다"
     },
     "status": {
       "draft": "초안",
@@ -975,7 +1052,8 @@
       "toastDraftSaved": "초안이 저장되었습니다",
       "broadcastFailed": "브로드캐스트 실패",
       "toastSendTakenOver": "다른 전송 작업이 이 브로드캐스트를 넘겨받아 이 탭에서는 전송을 중단했습니다. 브로드캐스트를 열어 진행 상황을 확인하세요.",
-      "toastSendInterrupted": "서버 연결이 끊겨 전송이 중단되었습니다. 브로드캐스트를 열고 이어서 발송을 눌러 남은 수신자에게 보내세요. 버튼은 5분 이내에 표시됩니다."
+      "toastSendInterrupted": "서버 연결이 끊겨 전송이 중단되었습니다. 브로드캐스트를 열고 이어서 발송을 눌러 남은 수신자에게 보내세요. 버튼은 5분 이내에 표시됩니다.",
+      "backToBroadcasts": "브로드캐스트로 돌아가기"
     },
     "wizard": {
       "next": "다음",
@@ -1981,7 +2059,8 @@
     },
     "groups": {
       "account": "계정",
-      "workspace": "워크스페이스"
+      "workspace": "워크스페이스",
+      "developer": "개발자"
     },
     "profile": {
       "title": "내 프로필",
@@ -2235,7 +2314,8 @@
       "textPlaceholder": "삽입할 메시지 텍스트",
       "cancel": "취소",
       "save": "저장"
-    }
+    },
+    "allSettings": "전체 설정"
   },
   "SignupPage": {
     "passwordsMismatch": "비밀번호가 일치하지 않습니다",
@@ -2340,7 +2420,13 @@
     "retry": "다시 시도",
     "emptyTitle": "아직 알림이 없습니다",
     "emptyDesc": "누군가 대화를 배정하면 여기에 알림이 표시됩니다.",
-    "unread": "읽지 않음"
+    "unread": "읽지 않음",
+    "filterLabel": "보기",
+    "filterAll": "전체",
+    "groupToday": "오늘",
+    "groupEarlier": "이전",
+    "allCaughtUp": "모두 확인했습니다",
+    "loadFailed": "알림을 불러오지 못했습니다"
   },
   "Agents": {
     "title": "AI 에이전트",
@@ -2409,7 +2495,12 @@
     "loading": "불러오는 중..."
   },
   "UiPrimitives": {
-    "close": "닫기"
+    "close": "닫기",
+    "removeItem": "{item} 제거",
+    "errorTitle": "불러오지 못했습니다",
+    "errorDescription": "문제가 발생했습니다. 연결을 확인한 뒤 다시 시도해 주세요.",
+    "retry": "다시 시도",
+    "loading": "불러오는 중…"
   },
   "GatedButton": {
     "readOnly": "읽기 전용 — 현재 역할로는 {action} 수 없습니다",
@@ -3320,6 +3411,79 @@
       "rights": "All rights reserved.",
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
+    }
+  },
+  "Shell": {
+    "nav": {
+      "home": "홈",
+      "inbox": "인박스",
+      "contacts": "연락처",
+      "deals": "딜",
+      "broadcasts": "브로드캐스트",
+      "automate": "자동화",
+      "flows": "플로우",
+      "aiAgent": "AI 에이전트",
+      "settings": "설정",
+      "notifications": "알림",
+      "more": "더보기"
+    },
+    "title": {
+      "home": "홈",
+      "inbox": "인박스",
+      "contacts": "연락처",
+      "deals": "딜",
+      "broadcasts": "브로드캐스트",
+      "automations": "자동화",
+      "flows": "플로우",
+      "aiAgent": "AI 에이전트",
+      "notifications": "알림",
+      "settings": "설정"
+    },
+    "primaryNav": "주 메뉴",
+    "mobileNav": "주 메뉴 (모바일)",
+    "skipToContent": "본문으로 건너뛰기",
+    "homeLink": "홈",
+    "unreadChats": "읽지 않은 채팅 {count}개",
+    "search": {
+      "open": "검색",
+      "placeholder": "채팅, 연락처, 딜, 페이지 검색…",
+      "dialogTitle": "전체 검색",
+      "chats": "채팅",
+      "contacts": "연락처",
+      "deals": "딜",
+      "pages": "페이지",
+      "noResults": "“{query}”에 대한 결과가 없습니다",
+      "failed": "지금은 검색을 사용할 수 없습니다. 페이지 이동은 가능합니다.",
+      "hintMove": "↑↓ 이동",
+      "hintOpen": "Enter 열기",
+      "hintClose": "Esc 닫기",
+      "untitledChat": "대화",
+      "placeholderShort": "채팅, 연락처, 딜 검색"
+    },
+    "new": {
+      "button": "새로 만들기",
+      "menuLabel": "새로 만들기",
+      "contact": "연락처",
+      "deal": "딜",
+      "broadcast": "브로드캐스트",
+      "automation": "자동화",
+      "flow": "플로우"
+    },
+    "bell": {
+      "label": "알림",
+      "labelUnread": "알림, 읽지 않음 {count}개",
+      "viewAll": "모두 보기"
+    },
+    "numbers": {
+      "label": "WhatsApp 번호",
+      "all": "모든 번호"
+    },
+    "more": {
+      "title": "더보기"
+    },
+    "profile": {
+      "menu": "내 계정",
+      "workspace": "워크스페이스"
     }
   }
 }
