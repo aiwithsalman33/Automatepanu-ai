@@ -28,7 +28,7 @@ function CardBody({ label, value, meta, tone }: { label: string; value: number; 
     <>
       <span className="line-clamp-2 text-sm text-muted-foreground">{label}</span>
       <span className="mt-1 text-3xl leading-tight font-bold text-foreground tabular-nums">{value}</span>
-      <span className={cn('mt-1 truncate text-sm font-medium', META_TONE[tone])}>{meta}</span>
+      <span className={cn('mt-1 line-clamp-2 text-sm font-medium', META_TONE[tone])}>{meta}</span>
     </>
   )
 }
@@ -53,7 +53,7 @@ export function AttentionRow({
 
   if (!data) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4" aria-busy="true">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-busy="true">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-[116px] rounded-2xl bg-card" />
         ))}
@@ -65,7 +65,7 @@ export function AttentionRow({
   const oldest = a.oldestWaitingSince ? formatDuration(minutesBetween(a.oldestWaitingSince, now)) : null
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       <Link href="/inbox?filter=waiting" className={CARD_CLASS}>
         <CardBody
           label={t('waiting')}

@@ -27,7 +27,7 @@ export function DeltaPill({ delta }: { delta: StatDelta }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
+        "inline-flex shrink-0 items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap tabular-nums",
         TONE[delta.tone]
       )}
     >
