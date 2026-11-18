@@ -841,16 +841,30 @@
         "proposalSent": "제안서 발송",
         "negotiation": "협상",
         "won": "성사"
-      }
+      },
+      "pipelinesLabel": "파이프라인",
+      "pipelineChip": "파이프라인",
+      "stageSettings": "단계 설정",
+      "dealShort": "딜"
     },
     "board": {
       "dropDealHere": "여기에 딜을 놓으세요",
-      "addDeal": "딜 추가"
+      "addDeal": "딜 추가",
+      "closedColumn": "성사 및 실패한 딜",
+      "won": "성사",
+      "lost": "실패",
+      "closedRecent": "최근 {days}일 동안 종료",
+      "closedAll": "종료된 모든 딜",
+      "dropToWin": "딜을 여기에 놓으면 성사로 표시됩니다",
+      "dropToLose": "딜을 여기에 놓으면 실패로 표시됩니다",
+      "viewAllClosed": "모두 보기 ({count})",
+      "showRecent": "최근 {days}일만 보기"
     },
     "card": {
       "noContact": "연락처 없음",
       "won": "성사",
-      "lost": "실패"
+      "lost": "실패",
+      "closedWon": "종료"
     },
     "form": {
       "editDeal": "딜 수정",
@@ -933,7 +947,8 @@
       "wonThisMonthTooltip": "이번 달 1일 이후 성사로 표시된 딜입니다.",
       "lostThisMonth": "이번 달 실패",
       "lostThisMonthTooltip": "이번 달 1일 이후 실패로 표시된 딜입니다.",
-      "howCalculated": "{label} 계산 방법"
+      "howCalculated": "{label} 계산 방법",
+      "wonLost": "성사 / 실패"
     }
   },
   "Broadcasts": {

@@ -17,16 +17,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GitBranch, Plus, ChevronDown, Settings } from "lucide-react";
+import { GitBranch, Plus, Settings } from "lucide-react";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  applyDrop,
+  optimisticDeal,
+  type DealsDb,
+  type DropAction,
+} from "@/lib/pipelines/board-drop";
 import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
@@ -51,6 +52,7 @@ const SPEC_DEFAULT_STAGES = [
 
 export default function PipelinesPage() {
   const t = useTranslations("Pipelines.page");
+  const tForm = useTranslations("Pipelines.form");
   const tGate = useTranslations("GatedButton");
   const supabase = createClient();
   const canEditSettings = useCan("edit-settings");
@@ -221,22 +223,28 @@ export default function PipelinesPage() {
     setDeals(await loadDeals(selectedPipelineId));
   }, [loadDeals, selectedPipelineId]);
 
-  const handleDealMoved = useCallback(
-    async (dealId: string, newStageId: string) => {
-      // Optimistic update — board already animated; just persist.
-      setDeals((prev) =>
-        prev.map((d) => (d.id === dealId ? { ...d, stage_id: newStageId } : d)),
-      );
-      const { error } = await supabase
-        .from("deals")
-        .update({ stage_id: newStageId })
-        .eq("id", dealId);
-      if (error) {
-        toast.error(t("toastFailedMoveDeal"));
+  // A drop on the board: move between stages, mark won/lost on the end
+  // column, or reopen a closed deal onto a stage. Optimistic, rolled
+  // back by a refetch on failure. The updates are the ones the board
+  // and the deal drawer already ran (lib/pipelines/board-drop.ts).
+  const handleDrop = useCallback(
+    async (action: DropAction) => {
+      setDeals((prev) => prev.map((d) => (d.id === action.dealId ? optimisticDeal(d, action) : d)));
+      const ok = await applyDrop(supabase as unknown as DealsDb, action);
+      if (!ok) {
+        toast.error(action.kind === "move" ? t("toastFailedMoveDeal") : tForm("toastFailedStatus"));
         refreshDeals();
+        return;
       }
+      if (action.kind === "status") {
+        toast.success(action.status === "won" ? tForm("toastMarkedWon") : tForm("toastMarkedLost"));
+      } else if (action.kind === "reopen") {
+        toast.success(tForm("toastReopened"));
+      }
+      // Pick up closed_at from the deals trigger.
+      if (action.kind !== "move") refreshDeals();
     },
-    [supabase, refreshDeals, t],
+    [supabase, refreshDeals, t, tForm],
   );
 
   const handleAddDeal = useCallback(
@@ -349,108 +357,76 @@ export default function PipelinesPage() {
           }}
         />
       </Suspense>
-      {/* Header */}
+      {/* Header (docs/design/deals.png): pipeline chips and "+ Pipeline"
+          on the left; Stage settings and "+ Deal" on the right. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {/* Pipeline selector dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors data-[popup-open]:bg-muted"
-            >
-              <GitBranch className="h-4 w-4 text-primary" />
-              <span className="font-semibold">
-                {selectedPipeline?.name ?? t("selectPipeline")}
-              </span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              className="w-64 border-border bg-popover text-popover-foreground"
-            >
-              {pipelines.length === 0 && (
-                <DropdownMenuItem disabled className="text-muted-foreground">
-                  {t("noPipelinesYet")}
-                </DropdownMenuItem>
-              )}
-              {pipelines.map((p) => (
-                <DropdownMenuItem
-                  key={p.id}
-                  onClick={() => setSelectedPipelineId(p.id)}
-                  className={
-                    p.id === selectedPipelineId
-                      ? "text-primary"
-                      : "text-popover-foreground"
-                  }
-                >
-                  <GitBranch className="mr-2 h-3.5 w-3.5" />
-                  {p.name}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator className="bg-border" />
-              {selectedPipeline && (
-                <DropdownMenuItem
-                  onClick={() => setSettingsOpen(true)}
-                  className="text-popover-foreground"
-                >
-                  <Settings className="mr-2 h-3.5 w-3.5" />
-                  {t("managePipelines")}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <div className="flex items-center gap-2">
+        <div className="-mx-1 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none]">
+          {pipelines.length > 0 ? (
+            <SegmentedControl
+              variant="chips"
+              aria-label={t("pipelinesLabel")}
+              value={selectedPipelineId}
+              onValueChange={setSelectedPipelineId}
+              options={pipelines.map((p) => ({ value: p.id, label: p.name }))}
+              className="shrink-0"
+            />
+          ) : null}
           <GatedButton
-            variant="outline"
+            variant="soft"
+            size="sm"
             canAct={canEditSettings}
             gateReason={tGate("reasons.createPipelines")}
             onClick={() => setNewPipelineOpen(true)}
-            className="border-border bg-card text-foreground hover:bg-muted"
+            className="shrink-0"
           >
-            <Plus className="mr-1 h-4 w-4" />
-            {t("addPipeline")}
+            <Plus aria-hidden />
+            {t("pipelineChip")}
           </GatedButton>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {selectedPipeline ? (
+            <Button variant="outline" onClick={() => setSettingsOpen(true)}>
+              <Settings aria-hidden />
+              {t("stageSettings")}
+            </Button>
+          ) : null}
           <GatedButton
             canAct={canCreateDeals}
             gateReason={tGate("reasons.createDeals")}
             disabled={!selectedPipelineId || stages.length === 0}
             onClick={() => handleAddDeal()}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <Plus className="mr-1 h-4 w-4" />
-            {t("addDeal")}
+            <Plus aria-hidden />
+            {t("dealShort")}
           </GatedButton>
         </div>
       </div>
 
       {/* Board */}
       {pipelines.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20">
-          <GitBranch className="h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">
-            {t("noPipelinesYet")}
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {t("createToStartTracking")}
-          </p>
-          <GatedButton
-            canAct={canEditSettings}
-            gateReason={tGate("reasons.createPipelines")}
-            onClick={() => setNewPipelineOpen(true)}
-            className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            {t("createPipeline")}
-          </GatedButton>
-        </div>
+        <EmptyState
+          icon={GitBranch}
+          title={t("noPipelinesYet")}
+          description={t("createToStartTracking")}
+          action={
+            <GatedButton
+              canAct={canEditSettings}
+              gateReason={tGate("reasons.createPipelines")}
+              onClick={() => setNewPipelineOpen(true)}
+            >
+              <Plus aria-hidden />
+              {t("createPipeline")}
+            </GatedButton>
+          }
+        />
       ) : (
         <>
           <PipelineAnalytics stages={stages} deals={deals} />
           <PipelineBoard
             stages={stages}
             deals={deals}
-            onDealMoved={handleDealMoved}
+            onDrop={handleDrop}
             onAddDeal={handleAddDeal}
             onEditDeal={handleEditDeal}
           />

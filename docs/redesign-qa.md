@@ -31,4 +31,19 @@ Manual (local stack):
 3. Press Refresh in the thread header. The message appears in the thread and the list row shows it as the preview.
 4. Switch to another tab and back. The list and thread refetch.
 
-When SSE realtime lands, add: the message appears within a few seconds without pressing Refresh.
+**Re-test after checkpoint 1e (realtime moves to SSE).** Live updates must be checked again then, on every page that subscribes: Inbox (list and open thread), Home (refreshes its numbers on new messages), the rail's unread badge, and the bell's unread count. Expected: a new customer message appears within a few seconds without pressing Refresh or switching tabs.
+
+## 4. Deals board: Won | Lost column
+
+Won and lost are deal statuses, not stages. The board shows them in an end column driven by status, with a Won | Lost toggle in its header. There is no sixth column.
+
+Automated: `src/lib/pipelines/board-drop.test.ts` (drop on Won and Lost, reopen by dragging onto a stage, no-op drops, failure handling, the 30-day window).
+
+Manual:
+1. Drag an open deal onto the end column while it shows Won. The deal leaves its stage column and appears under Won. The toast reads "Marked as won", the same as the drawer's Mark as won button. The update is the same too. There is no confirmation step: the drawer's button has none today either.
+2. Switch the toggle to Lost and drop a deal. It is marked lost ("Marked as lost").
+3. Drag a won deal onto a stage. It reopens in that stage ("Deal reopened") and leaves the Won list.
+4. Repeat 1 and 3 with the keyboard: focus a card, Space to pick it up, arrow keys to move, Space to drop, Escape to cancel.
+5. The end column shows deals closed in the last 30 days. "View all (N)" shows every closed deal on that side; "Show last 30 days" goes back.
+6. The analytics strip shows the same numbers as before the redesign. Won and lost this month now share one tile.
+7. As a Viewer, dropping changes nothing: the update is refused and the board refetches.

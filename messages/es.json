@@ -841,16 +841,30 @@
         "proposalSent": "Propuesta enviada",
         "negotiation": "Negociación",
         "won": "Ganado"
-      }
+      },
+      "pipelinesLabel": "Pipelines",
+      "pipelineChip": "Pipeline",
+      "stageSettings": "Ajustes de etapas",
+      "dealShort": "Negocio"
     },
     "board": {
       "dropDealHere": "Suelta un negocio aquí",
-      "addDeal": "Agregar negocio"
+      "addDeal": "Agregar negocio",
+      "closedColumn": "Negocios ganados y perdidos",
+      "won": "Ganados",
+      "lost": "Perdidos",
+      "closedRecent": "Cerrados en los últimos {days} días",
+      "closedAll": "Todos los negocios cerrados",
+      "dropToWin": "Suelta un negocio aquí para marcarlo como ganado",
+      "dropToLose": "Suelta un negocio aquí para marcarlo como perdido",
+      "viewAllClosed": "Ver todos ({count})",
+      "showRecent": "Mostrar últimos {days} días"
     },
     "card": {
       "noContact": "Sin contacto",
       "won": "Ganado",
-      "lost": "Perdido"
+      "lost": "Perdido",
+      "closedWon": "Cerrado"
     },
     "form": {
       "editDeal": "Editar negocio",
@@ -933,7 +947,8 @@
       "wonThisMonthTooltip": "Negocios marcados como ganados desde el primer día del mes actual.",
       "lostThisMonth": "Perdidos este mes",
       "lostThisMonthTooltip": "Negocios marcados como perdidos desde el primer día del mes actual.",
-      "howCalculated": "Cómo se calcula {label}"
+      "howCalculated": "Cómo se calcula {label}",
+      "wonLost": "Ganados / perdidos"
     }
   },
   "Broadcasts": {
