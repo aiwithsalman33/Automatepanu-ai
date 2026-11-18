@@ -3376,7 +3376,8 @@
       "hintMove": "↑↓ 이동",
       "hintOpen": "Enter 열기",
       "hintClose": "Esc 닫기",
-      "untitledChat": "대화"
+      "untitledChat": "대화",
+      "placeholderShort": "채팅, 연락처, 딜 검색"
     },
     "new": {
       "button": "새로 만들기",

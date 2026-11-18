@@ -1,13 +1,13 @@
 import {
   Bell,
-  Bot,
-  Handshake,
-  Home,
+  Kanban,
+  LayoutGrid,
+  Megaphone,
   MessageSquare,
-  Radio,
+  Route,
   Settings,
-  Users,
-  Workflow,
+  Sparkle,
+  User,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -28,14 +28,14 @@ export interface NavEntry {
 }
 
 export const PRIMARY_NAV: NavEntry[] = [
-  { href: "/dashboard", nav: "home", title: "home", icon: Home },
+  { href: "/dashboard", nav: "home", title: "home", icon: LayoutGrid },
   { href: "/inbox", nav: "inbox", title: "inbox", icon: MessageSquare },
-  { href: "/contacts", nav: "contacts", title: "contacts", icon: Users },
-  { href: "/pipelines", nav: "deals", title: "deals", icon: Handshake },
-  { href: "/broadcasts", nav: "broadcasts", title: "broadcasts", icon: Radio },
+  { href: "/contacts", nav: "contacts", title: "contacts", icon: User },
+  { href: "/pipelines", nav: "deals", title: "deals", icon: Kanban },
+  { href: "/broadcasts", nav: "broadcasts", title: "broadcasts", icon: Megaphone },
   { href: "/automations", nav: "automate", title: "automations", icon: Zap },
-  { href: "/flows", nav: "flows", title: "flows", icon: Workflow },
-  { href: "/agents", nav: "aiAgent", title: "aiAgent", icon: Bot },
+  { href: "/flows", nav: "flows", title: "flows", icon: Route },
+  { href: "/agents", nav: "aiAgent", title: "aiAgent", icon: Sparkle },
 ];
 
 export const SETTINGS_NAV: NavEntry = {

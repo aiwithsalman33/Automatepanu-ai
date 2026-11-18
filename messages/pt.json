@@ -3376,7 +3376,8 @@
       "hintMove": "↑↓ para navegar",
       "hintOpen": "Enter para abrir",
       "hintClose": "Esc para fechar",
-      "untitledChat": "Conversa"
+      "untitledChat": "Conversa",
+      "placeholderShort": "Pesquise conversas, contatos, negócios"
     },
     "new": {
       "button": "Novo",

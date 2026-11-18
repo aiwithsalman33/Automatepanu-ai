@@ -17,21 +17,22 @@ function RailLink({ entry, pathname, badge }: { entry: NavEntry; pathname: strin
     <Link
       href={entry.href}
       aria-current={active ? "page" : undefined}
-      className="group flex w-full flex-col items-center gap-1 rounded-xl py-1.5 text-center"
+      className={cn(
+        "group flex w-full flex-col items-center gap-1 rounded-2xl py-2 text-center transition-colors",
+        active ? "bg-primary-soft" : "hover:bg-muted"
+      )}
     >
       <span
         className={cn(
-          "relative flex h-8 w-14 items-center justify-center rounded-full transition-colors",
-          active
-            ? "bg-primary-soft text-primary-soft-foreground"
-            : "text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
+          "relative flex h-7 w-10 items-center justify-center",
+          active ? "text-primary-soft-foreground" : "text-muted-foreground group-hover:text-foreground"
         )}
       >
         <Icon className="size-5" aria-hidden />
         {badge ? (
           <span
             aria-hidden
-            className="absolute -top-1 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-none font-semibold text-primary-foreground ring-2 ring-sidebar"
+            className="absolute -top-1 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-none font-semibold text-primary-foreground ring-2 ring-background"
           >
             {badge > 99 ? "99+" : badge}
           </span>
@@ -53,8 +54,8 @@ function RailLink({ entry, pathname, badge }: { entry: NavEntry; pathname: strin
 /**
  * Desktop navigation (lg+): a slim 88px rail. Logo mark, the eight
  * sections with their labels under the icons, then Settings and the
- * profile menu at the bottom. The active section gets the soft purple
- * pill. Hidden below lg, where the bottom tab bar takes over.
+ * profile menu at the bottom. The active section is a soft purple
+ * tile around icon and label (design/Inbox.png). Hidden below lg, where the bottom tab bar takes over.
  * `unread` (chats) comes from the shell, which subscribes once.
  */
 export function Rail({ unread }: { unread: number }) {

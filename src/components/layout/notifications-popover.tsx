@@ -100,6 +100,7 @@ export function NotificationsPopover({ unread }: { unread: number }) {
           <IconButton
             label={unread > 0 ? t("bell.labelUnread", { count: unread }) : t("bell.label")}
             icon={<Bell />}
+            variant="outline"
             badge={unread > 0 ? unread : undefined}
           />
         }

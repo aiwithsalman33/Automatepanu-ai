@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Handshake, Plus, Radio, User, Workflow, Zap } from "lucide-react";
+import { Kanban, Megaphone, Plus, Route, User, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { useCan } from "@/hooks/use-can";
@@ -30,10 +30,10 @@ export function NewMenu({ compact = false }: { compact?: boolean }) {
 
   const items = [
     { href: "/contacts?new=1", label: t("new.contact"), icon: User, reason: "addOrImportContacts" },
-    { href: "/pipelines?new=1", label: t("new.deal"), icon: Handshake, reason: "createDeals" },
-    { href: "/broadcasts/new", label: t("new.broadcast"), icon: Radio, reason: "createBroadcasts" },
+    { href: "/pipelines?new=1", label: t("new.deal"), icon: Kanban, reason: "createDeals" },
+    { href: "/broadcasts/new", label: t("new.broadcast"), icon: Megaphone, reason: "createBroadcasts" },
     { href: "/automations/new", label: t("new.automation"), icon: Zap, reason: "createAutomations" },
-    { href: "/flows?new=1", label: t("new.flow"), icon: Workflow, reason: "createFlows" },
+    { href: "/flows?new=1", label: t("new.flow"), icon: Route, reason: "createFlows" },
   ];
 
   return (
@@ -48,12 +48,7 @@ export function NewMenu({ compact = false }: { compact?: boolean }) {
         }
       >
         <Plus aria-hidden />
-        {compact ? null : (
-          <>
-            {t("new.button")}
-            <ChevronDown className="size-3.5 opacity-80" aria-hidden />
-          </>
-        )}
+        {compact ? null : t("new.button")}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-56">
         <DropdownMenuGroup>

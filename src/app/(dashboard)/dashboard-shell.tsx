@@ -61,7 +61,7 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <NumberFilterProvider numbers={NO_NUMBERS}>
-      <div className="min-h-dvh bg-background lg:pl-(--rail-w)">
+      <div className="min-h-dvh bg-card-2 lg:pl-(--rail-w)">
         <a
           href="#main"
           className="sr-only z-50 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
