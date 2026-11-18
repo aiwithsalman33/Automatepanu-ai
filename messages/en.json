@@ -2059,7 +2059,8 @@
     },
     "groups": {
       "account": "Account",
-      "workspace": "Workspace"
+      "workspace": "Workspace",
+      "developer": "Developer"
     },
     "profile": {
       "title": "Your profile",
@@ -2313,7 +2314,8 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
-    }
+    },
+    "allSettings": "All settings"
   },
   "SignupPage": {
     "passwordsMismatch": "Passwords do not match",
@@ -2418,7 +2420,13 @@
     "retry": "Retry",
     "emptyTitle": "No notifications yet",
     "emptyDesc": "You'll see an alert here when someone assigns you a conversation.",
-    "unread": "Unread"
+    "unread": "Unread",
+    "filterLabel": "Show",
+    "filterAll": "All",
+    "groupToday": "Today",
+    "groupEarlier": "Earlier",
+    "allCaughtUp": "You are all caught up",
+    "loadFailed": "Could not load notifications"
   },
   "Agents": {
     "title": "AI Agents",

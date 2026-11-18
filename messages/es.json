@@ -2059,7 +2059,8 @@
     },
     "groups": {
       "account": "Cuenta",
-      "workspace": "Espacio de trabajo"
+      "workspace": "Espacio de trabajo",
+      "developer": "Desarrolladores"
     },
     "profile": {
       "title": "Tu perfil",
@@ -2313,7 +2314,8 @@
       "textPlaceholder": "El texto del mensaje que se insertará",
       "cancel": "Cancelar",
       "save": "Guardar"
-    }
+    },
+    "allSettings": "Todos los ajustes"
   },
   "SignupPage": {
     "passwordsMismatch": "Las contraseñas no coinciden",
@@ -2418,7 +2420,13 @@
     "retry": "Reintentar",
     "emptyTitle": "Aún no hay notificaciones",
     "emptyDesc": "Verás una alerta aquí cuando alguien te asigne una conversación.",
-    "unread": "Sin leer"
+    "unread": "Sin leer",
+    "filterLabel": "Mostrar",
+    "filterAll": "Todas",
+    "groupToday": "Hoy",
+    "groupEarlier": "Anteriores",
+    "allCaughtUp": "Estás al día",
+    "loadFailed": "No se pudieron cargar las notificaciones"
   },
   "Agents": {
     "title": "Agentes de IA",
