@@ -14,10 +14,10 @@ import { cn } from '@/lib/utils';
 export type ChipVariant = 'owner' | 'admin' | 'ok' | 'warn' | 'muted';
 
 const VARIANTS: Record<ChipVariant, string> = {
-  owner: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300',
+  owner: 'border-status-warning/40 bg-status-warning-bg text-status-warning dark:text-status-warning',
   admin: 'border-primary-soft-2 bg-primary-soft text-primary',
-  ok: 'border-emerald-500/35 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
-  warn: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300',
+  ok: 'border-status-good/35 bg-status-good/12 text-status-good-text dark:text-status-good-text',
+  warn: 'border-status-warning/40 bg-status-warning-bg text-status-warning dark:text-status-warning',
   muted: 'border-border bg-muted text-muted-foreground',
 };
 
@@ -56,7 +56,7 @@ export function StatusDot({
       aria-hidden
       className={cn(
         'inline-block size-1.5 shrink-0 rounded-full',
-        tone === 'ok' ? 'bg-emerald-500' : 'bg-muted-foreground',
+        tone === 'ok' ? 'bg-status-good' : 'bg-muted-foreground',
         className,
       )}
     />

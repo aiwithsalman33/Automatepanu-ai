@@ -3,6 +3,9 @@
 import { Suspense, useMemo, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { ArrowLeft } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
+import { cn } from '@/lib/utils';
 
 import { useAuth } from '@/hooks/use-auth';
 import { SettingsRail } from '@/components/settings/settings-rail';
@@ -49,6 +52,8 @@ function SettingsPageInner() {
   // app sidebar/header working. Legacy tab values (tags, custom-fields)
   // resolve onto their new home; unknown/empty → the Overview landing.
   const section = resolveSection(searchParams.get('tab'));
+  // Phones: /settings is the section list; ?tab= opens one section.
+  const hasTab = !!searchParams.get('tab');
 
   const go = (next: SettingsSection) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -81,19 +86,26 @@ function SettingsPageInner() {
   };
 
   return (
-    <div>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('pageTitle')}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('pageDesc')}
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageHeader description={t('pageDesc')} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
-        <SettingsRail active={section} onSelect={go} hints={hints} />
-        <div className="min-w-0">{panel[section]}</div>
+      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
+        <div className={cn(hasTab && 'max-lg:hidden')}>
+          <SettingsRail active={section} onSelect={go} hints={hints} />
+        </div>
+        <div className={cn('min-w-0', !hasTab && 'max-lg:hidden')}>
+          {hasTab ? (
+            <button
+              type="button"
+              onClick={() => router.replace('/settings', { scroll: false })}
+              className="mb-4 inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-sm font-medium text-primary-soft-foreground hover:bg-primary-soft lg:hidden"
+            >
+              <ArrowLeft className="size-4" aria-hidden />
+              {t('allSettings')}
+            </button>
+          ) : null}
+          {panel[section]}
+        </div>
       </div>
     </div>
   );

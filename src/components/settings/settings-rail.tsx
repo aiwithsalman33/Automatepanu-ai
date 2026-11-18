@@ -50,9 +50,10 @@ export function SettingsRail({
     <nav
       aria-label={t('sectionsNav')}
       className={cn(
-        'flex gap-1 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-        'border-b border-border',
-        'lg:sticky lg:top-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:pb-0',
+        // A grouped vertical list everywhere: the page shows it alone on
+        // phones (tap a section to open it) and beside the panel on lg+.
+        'flex flex-col gap-1 rounded-2xl border border-border bg-card p-2 shadow-card',
+        'lg:sticky lg:top-[calc(var(--topbar-h)+1.5rem)]',
       )}
     >
       {RAIL_GROUPS.map(({ label, group }) => {
@@ -62,10 +63,10 @@ export function SettingsRail({
         return (
           <div
             key={group}
-            className="flex shrink-0 gap-1 lg:flex-col lg:gap-0.5"
+            className="flex flex-col gap-0.5"
           >
             {label ? (
-              <div className="hidden px-3 pt-3.5 pb-1.5 text-[11px] font-semibold tracking-[0.09em] text-muted-foreground uppercase lg:block">
+              <div className="px-3 pt-3.5 pb-1.5 text-[11px] font-semibold tracking-[0.09em] text-muted-foreground uppercase">
                 {t(`groups.${group}`)}
               </div>
             ) : null}
@@ -81,10 +82,9 @@ export function SettingsRail({
                   onClick={() => onSelect(s)}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors',
-                    'lg:w-full',
+                    'flex w-full items-center gap-2.5 rounded-xl px-3 py-3 text-left text-sm font-medium whitespace-nowrap transition-colors lg:py-2',
                     isActive
-                      ? 'bg-primary-soft text-primary'
+                      ? 'bg-primary-soft text-primary-soft-foreground'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   )}
                 >
@@ -94,7 +94,7 @@ export function SettingsRail({
                     <span
                       className={cn(
                         'hidden items-center gap-1.5 text-xs lg:inline-flex',
-                        isActive ? 'text-primary' : 'text-muted-foreground',
+                        isActive ? 'text-primary-soft-foreground' : 'text-muted-foreground',
                       )}
                     >
                       {hints[s]}

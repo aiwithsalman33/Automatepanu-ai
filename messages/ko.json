@@ -969,7 +969,10 @@
       },
       "errorLoad": "브로드캐스트를 불러오지 못했습니다",
       "broadcastInProgress": "브로드캐스트 진행 중",
-      "retry": "다시 시도"
+      "retry": "다시 시도",
+      "viewsLabel": "브로드캐스트 상태",
+      "viewAll": "전체",
+      "noneInView": "이 상태의 브로드캐스트가 없습니다"
     },
     "status": {
       "draft": "초안",
@@ -1049,7 +1052,8 @@
       "toastDraftSaved": "초안이 저장되었습니다",
       "broadcastFailed": "브로드캐스트 실패",
       "toastSendTakenOver": "다른 전송 작업이 이 브로드캐스트를 넘겨받아 이 탭에서는 전송을 중단했습니다. 브로드캐스트를 열어 진행 상황을 확인하세요.",
-      "toastSendInterrupted": "서버 연결이 끊겨 전송이 중단되었습니다. 브로드캐스트를 열고 이어서 발송을 눌러 남은 수신자에게 보내세요. 버튼은 5분 이내에 표시됩니다."
+      "toastSendInterrupted": "서버 연결이 끊겨 전송이 중단되었습니다. 브로드캐스트를 열고 이어서 발송을 눌러 남은 수신자에게 보내세요. 버튼은 5분 이내에 표시됩니다.",
+      "backToBroadcasts": "브로드캐스트로 돌아가기"
     },
     "wizard": {
       "next": "다음",
@@ -2055,7 +2059,8 @@
     },
     "groups": {
       "account": "계정",
-      "workspace": "워크스페이스"
+      "workspace": "워크스페이스",
+      "developer": "개발자"
     },
     "profile": {
       "title": "내 프로필",
@@ -2309,7 +2314,8 @@
       "textPlaceholder": "삽입할 메시지 텍스트",
       "cancel": "취소",
       "save": "저장"
-    }
+    },
+    "allSettings": "전체 설정"
   },
   "SignupPage": {
     "passwordsMismatch": "비밀번호가 일치하지 않습니다",
@@ -2414,7 +2420,13 @@
     "retry": "다시 시도",
     "emptyTitle": "아직 알림이 없습니다",
     "emptyDesc": "누군가 대화를 배정하면 여기에 알림이 표시됩니다.",
-    "unread": "읽지 않음"
+    "unread": "읽지 않음",
+    "filterLabel": "보기",
+    "filterAll": "전체",
+    "groupToday": "오늘",
+    "groupEarlier": "이전",
+    "allCaughtUp": "모두 확인했습니다",
+    "loadFailed": "알림을 불러오지 못했습니다"
   },
   "Agents": {
     "title": "AI 에이전트",

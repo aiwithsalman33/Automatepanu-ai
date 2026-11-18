@@ -86,7 +86,7 @@ export function isThemeId(value: unknown): value is ThemeId {
  *
  * "app" (the signed-in user panel) gets the purple light palette in
  * globals.css (:root[data-surface="app"]). Everything else (admin,
- * marketing, auth until its redesign) keeps the MODE/ACCENT tokens.
+ * marketing) keeps the MODE/ACCENT tokens.
  * The boot script applies it from the path before first paint; the
  * <SurfaceSync> component keeps it right across client navigation.
  */
@@ -102,6 +102,12 @@ export const APP_SURFACE_PREFIXES = [
   "/notifications",
   "/settings",
   "/dev",
+  // Auth and invite pages (redesign phase G).
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/join",
 ] as const;
 
 export function isAppSurfacePath(pathname: string): boolean {

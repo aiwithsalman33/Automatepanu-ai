@@ -969,7 +969,10 @@
       },
       "errorLoad": "Failed to load broadcasts",
       "broadcastInProgress": "Broadcast in progress",
-      "retry": "Retry"
+      "retry": "Retry",
+      "viewsLabel": "Broadcast status",
+      "viewAll": "All",
+      "noneInView": "No broadcasts with this status"
     },
     "status": {
       "draft": "Draft",
@@ -1049,7 +1052,8 @@
       "toastDraftSaved": "Draft saved",
       "broadcastFailed": "Broadcast failed",
       "toastSendTakenOver": "Another delivery took over this broadcast, so this tab stopped sending. Open the broadcast to follow its progress.",
-      "toastSendInterrupted": "Sending stopped because the connection to the server dropped. Open the broadcast and select Resume sending to reach the remaining recipients. The button appears within 5 minutes."
+      "toastSendInterrupted": "Sending stopped because the connection to the server dropped. Open the broadcast and select Resume sending to reach the remaining recipients. The button appears within 5 minutes.",
+      "backToBroadcasts": "Back to broadcasts"
     },
     "wizard": {
       "next": "Next",
@@ -2055,7 +2059,8 @@
     },
     "groups": {
       "account": "Account",
-      "workspace": "Workspace"
+      "workspace": "Workspace",
+      "developer": "Developer"
     },
     "profile": {
       "title": "Your profile",
@@ -2309,7 +2314,8 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
-    }
+    },
+    "allSettings": "All settings"
   },
   "SignupPage": {
     "passwordsMismatch": "Passwords do not match",
@@ -2414,7 +2420,13 @@
     "retry": "Retry",
     "emptyTitle": "No notifications yet",
     "emptyDesc": "You'll see an alert here when someone assigns you a conversation.",
-    "unread": "Unread"
+    "unread": "Unread",
+    "filterLabel": "Show",
+    "filterAll": "All",
+    "groupToday": "Today",
+    "groupEarlier": "Earlier",
+    "allCaughtUp": "You are all caught up",
+    "loadFailed": "Could not load notifications"
   },
   "Agents": {
     "title": "AI Agents",

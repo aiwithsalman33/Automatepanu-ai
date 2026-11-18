@@ -47,3 +47,15 @@ Manual:
 5. The end column shows deals closed in the last 30 days. "View all (N)" shows every closed deal on that side; "Show last 30 days" goes back.
 6. The analytics strip shows the same numbers as before the redesign. Won and lost this month now share one tile.
 7. As a Viewer, dropping changes nothing: the update is refused and the board refetches.
+
+## 5. Full-screen editors and the shell
+
+The automation builder (`/automations/new`, `/automations/<id>/edit`) is a full-screen editor. Its toolbar (back, name, Active, Save) must be fully visible above the rail and top bar. Phase B regressed this; phase F2 fixed it.
+
+## 6. Settings on phones
+
+At 390 px, `/settings` shows only the grouped section list. Tapping a section opens it on its own with "All settings" above it. "All settings" returns to the list. Deep links such as `/settings?tab=profile` open that section directly.
+
+## 7. Auth and invite pages
+
+`/login`, `/signup`, `/forgot-password`, `/reset-password` and `/join/<token>` render on the light purple surface with Inter. Each shows a centred card with the logo at the top, and nothing scrolls sideways at 390 px.

@@ -969,7 +969,10 @@
       },
       "errorLoad": "Error al cargar las difusiones",
       "broadcastInProgress": "Difusión en curso",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "viewsLabel": "Estado de la difusión",
+      "viewAll": "Todas",
+      "noneInView": "No hay difusiones con este estado"
     },
     "status": {
       "draft": "Borrador",
@@ -1049,7 +1052,8 @@
       "toastDraftSaved": "Borrador guardado",
       "broadcastFailed": "Falló la difusión",
       "toastSendTakenOver": "Otro envío tomó el control de esta difusión, así que esta pestaña dejó de enviar. Abre la difusión para seguir su progreso.",
-      "toastSendInterrupted": "El envío se detuvo porque se perdió la conexión con el servidor. Abre la difusión y usa Reanudar envío para enviar a los destinatarios restantes. El botón aparece en un máximo de 5 minutos."
+      "toastSendInterrupted": "El envío se detuvo porque se perdió la conexión con el servidor. Abre la difusión y usa Reanudar envío para enviar a los destinatarios restantes. El botón aparece en un máximo de 5 minutos.",
+      "backToBroadcasts": "Volver a difusiones"
     },
     "wizard": {
       "next": "Siguiente",
@@ -2055,7 +2059,8 @@
     },
     "groups": {
       "account": "Cuenta",
-      "workspace": "Espacio de trabajo"
+      "workspace": "Espacio de trabajo",
+      "developer": "Desarrolladores"
     },
     "profile": {
       "title": "Tu perfil",
@@ -2309,7 +2314,8 @@
       "textPlaceholder": "El texto del mensaje que se insertará",
       "cancel": "Cancelar",
       "save": "Guardar"
-    }
+    },
+    "allSettings": "Todos los ajustes"
   },
   "SignupPage": {
     "passwordsMismatch": "Las contraseñas no coinciden",
@@ -2414,7 +2420,13 @@
     "retry": "Reintentar",
     "emptyTitle": "Aún no hay notificaciones",
     "emptyDesc": "Verás una alerta aquí cuando alguien te asigne una conversación.",
-    "unread": "Sin leer"
+    "unread": "Sin leer",
+    "filterLabel": "Mostrar",
+    "filterAll": "Todas",
+    "groupToday": "Hoy",
+    "groupEarlier": "Anteriores",
+    "allCaughtUp": "Estás al día",
+    "loadFailed": "No se pudieron cargar las notificaciones"
   },
   "Agents": {
     "title": "Agentes de IA",

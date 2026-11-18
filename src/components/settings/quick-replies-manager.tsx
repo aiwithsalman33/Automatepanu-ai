@@ -174,7 +174,7 @@ export function QuickRepliesManager() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => remove(qr.id)}
-                  className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  className="text-status-critical hover:bg-status-critical/10 hover:text-status-critical"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
