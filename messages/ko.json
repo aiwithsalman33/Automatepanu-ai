@@ -3331,5 +3331,77 @@
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
     }
+  },
+  "Shell": {
+    "nav": {
+      "home": "홈",
+      "inbox": "인박스",
+      "contacts": "연락처",
+      "deals": "딜",
+      "broadcasts": "브로드캐스트",
+      "automate": "자동화",
+      "flows": "플로우",
+      "aiAgent": "AI 에이전트",
+      "settings": "설정",
+      "notifications": "알림",
+      "more": "더보기"
+    },
+    "title": {
+      "home": "홈",
+      "inbox": "인박스",
+      "contacts": "연락처",
+      "deals": "딜",
+      "broadcasts": "브로드캐스트",
+      "automations": "자동화",
+      "flows": "플로우",
+      "aiAgent": "AI 에이전트",
+      "notifications": "알림",
+      "settings": "설정"
+    },
+    "primaryNav": "주 메뉴",
+    "mobileNav": "주 메뉴 (모바일)",
+    "skipToContent": "본문으로 건너뛰기",
+    "homeLink": "홈",
+    "unreadChats": "읽지 않은 채팅 {count}개",
+    "search": {
+      "open": "검색",
+      "placeholder": "채팅, 연락처, 딜, 페이지 검색…",
+      "dialogTitle": "전체 검색",
+      "chats": "채팅",
+      "contacts": "연락처",
+      "deals": "딜",
+      "pages": "페이지",
+      "noResults": "“{query}”에 대한 결과가 없습니다",
+      "failed": "지금은 검색을 사용할 수 없습니다. 페이지 이동은 가능합니다.",
+      "hintMove": "↑↓ 이동",
+      "hintOpen": "Enter 열기",
+      "hintClose": "Esc 닫기",
+      "untitledChat": "대화"
+    },
+    "new": {
+      "button": "새로 만들기",
+      "menuLabel": "새로 만들기",
+      "contact": "연락처",
+      "deal": "딜",
+      "broadcast": "브로드캐스트",
+      "automation": "자동화",
+      "flow": "플로우"
+    },
+    "bell": {
+      "label": "알림",
+      "labelUnread": "알림, 읽지 않음 {count}개",
+      "viewAll": "모두 보기"
+    },
+    "numbers": {
+      "label": "WhatsApp 번호",
+      "all": "모든 번호"
+    },
+    "more": {
+      "title": "더보기"
+    },
+    "profile": {
+      "menu": "내 계정",
+      "workspace": "워크스페이스"
+    }
   }
 }

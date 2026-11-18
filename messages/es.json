@@ -3331,5 +3331,77 @@
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
     }
+  },
+  "Shell": {
+    "nav": {
+      "home": "Inicio",
+      "inbox": "Bandeja",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "broadcasts": "Difusiones",
+      "automate": "Automatizar",
+      "flows": "Flujos",
+      "aiAgent": "Agente IA",
+      "settings": "Ajustes",
+      "notifications": "Avisos",
+      "more": "Más"
+    },
+    "title": {
+      "home": "Inicio",
+      "inbox": "Bandeja de entrada",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "broadcasts": "Difusiones",
+      "automations": "Automatizaciones",
+      "flows": "Flujos",
+      "aiAgent": "Agente de IA",
+      "notifications": "Notificaciones",
+      "settings": "Configuración"
+    },
+    "primaryNav": "Principal",
+    "mobileNav": "Principal (móvil)",
+    "skipToContent": "Saltar al contenido",
+    "homeLink": "Inicio",
+    "unreadChats": "{count} {count, plural, =1 {chat sin leer} other {chats sin leer}}",
+    "search": {
+      "open": "Buscar",
+      "placeholder": "Busca chats, contactos, negocios, páginas…",
+      "dialogTitle": "Buscar en todo",
+      "chats": "Chats",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "pages": "Páginas",
+      "noResults": "Sin resultados para «{query}»",
+      "failed": "La búsqueda no está disponible ahora. Las páginas siguen funcionando.",
+      "hintMove": "↑↓ para moverte",
+      "hintOpen": "Enter para abrir",
+      "hintClose": "Esc para cerrar",
+      "untitledChat": "Conversación"
+    },
+    "new": {
+      "button": "Nuevo",
+      "menuLabel": "Crear",
+      "contact": "Contacto",
+      "deal": "Negocio",
+      "broadcast": "Difusión",
+      "automation": "Automatización",
+      "flow": "Flujo"
+    },
+    "bell": {
+      "label": "Notificaciones",
+      "labelUnread": "Notificaciones, {count} sin leer",
+      "viewAll": "Ver todas"
+    },
+    "numbers": {
+      "label": "Número de WhatsApp",
+      "all": "Todos los números"
+    },
+    "more": {
+      "title": "Más"
+    },
+    "profile": {
+      "menu": "Tu cuenta",
+      "workspace": "Espacio de trabajo"
+    }
   }
 }

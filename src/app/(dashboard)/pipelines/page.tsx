@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Suspense, useState, useEffect, useRef, useCallback } from "react";
+import { UrlIntent } from "@/components/layout/url-intent";
 import { createClient } from "@/lib/data/client";
 import { getCurrentUser } from "@/lib/auth/client";
 import type { Pipeline, PipelineStage, Deal } from "@/types";
@@ -61,6 +62,9 @@ export default function PipelinesPage() {
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  // A deal to open once its pipeline's deals are loaded (?deal=<id>
+  // from the command palette).
+  const [pendingDealId, setPendingDealId] = useState<string | null>(null);
 
   // Dialog / sheet state
   const [newPipelineOpen, setNewPipelineOpen] = useState(false);
@@ -250,6 +254,15 @@ export default function PipelinesPage() {
     setDealFormOpen(true);
   }, []);
 
+  useEffect(() => {
+    if (!pendingDealId) return;
+    const deal = deals.find((d) => d.id === pendingDealId);
+    if (!deal) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPendingDealId(null);
+    handleEditDeal(deal);
+  }, [pendingDealId, deals, handleEditDeal]);
+
   async function handleCreatePipeline() {
     const name = newPipelineName.trim();
     if (!name) return;
@@ -317,6 +330,25 @@ export default function PipelinesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Deep links: "+ New → Deal" (?new=1) and search results
+          (?pipeline=<id>&deal=<id>). */}
+      <Suspense fallback={null}>
+        <UrlIntent
+          param="new"
+          ready={canCreateDeals && !loading && !!selectedPipelineId && stages.length > 0}
+          onIntent={() => handleAddDeal()}
+        />
+        <UrlIntent
+          param="deal"
+          clear={["pipeline"]}
+          ready={!loading}
+          onIntent={(dealId, params) => {
+            const pid = params.get("pipeline");
+            if (pid && pipelines.some((p) => p.id === pid)) setSelectedPipelineId(pid);
+            setPendingDealId(dealId);
+          }}
+        />
+      </Suspense>
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">

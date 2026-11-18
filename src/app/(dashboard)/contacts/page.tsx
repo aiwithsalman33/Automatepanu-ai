@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { UrlIntent } from '@/components/layout/url-intent';
 import { createClient } from '@/lib/data/client';
 import { toast } from 'sonner';
 import type { Contact, Tag, ContactTag } from '@/types';
@@ -359,6 +360,11 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Deep links: "+ New → Contact" (?new=1) and search results (?open=<id>). */}
+      <Suspense fallback={null}>
+        <UrlIntent param="new" ready={canEdit} onIntent={openAddForm} />
+        <UrlIntent param="open" onIntent={(id) => openDetail(id)} />
+      </Suspense>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

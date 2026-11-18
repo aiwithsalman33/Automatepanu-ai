@@ -3331,5 +3331,77 @@
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
     }
+  },
+  "Shell": {
+    "nav": {
+      "home": "Home",
+      "inbox": "Inbox",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "broadcasts": "Broadcasts",
+      "automate": "Automate",
+      "flows": "Flows",
+      "aiAgent": "AI Agent",
+      "settings": "Settings",
+      "notifications": "Alerts",
+      "more": "More"
+    },
+    "title": {
+      "home": "Home",
+      "inbox": "Inbox",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "broadcasts": "Broadcasts",
+      "automations": "Automations",
+      "flows": "Flows",
+      "aiAgent": "AI Agent",
+      "notifications": "Notifications",
+      "settings": "Settings"
+    },
+    "primaryNav": "Main",
+    "mobileNav": "Main (mobile)",
+    "skipToContent": "Skip to content",
+    "homeLink": "Home",
+    "unreadChats": "{count} unread {count, plural, =1 {chat} other {chats}}",
+    "search": {
+      "open": "Search",
+      "placeholder": "Search chats, contacts, deals, pages…",
+      "dialogTitle": "Search everything",
+      "chats": "Chats",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "pages": "Pages",
+      "noResults": "No matches for “{query}”",
+      "failed": "Search is unavailable right now. Pages still work.",
+      "hintMove": "↑↓ to move",
+      "hintOpen": "Enter to open",
+      "hintClose": "Esc to close",
+      "untitledChat": "Conversation"
+    },
+    "new": {
+      "button": "New",
+      "menuLabel": "Create new",
+      "contact": "Contact",
+      "deal": "Deal",
+      "broadcast": "Broadcast",
+      "automation": "Automation",
+      "flow": "Flow"
+    },
+    "bell": {
+      "label": "Notifications",
+      "labelUnread": "Notifications, {count} unread",
+      "viewAll": "View all"
+    },
+    "numbers": {
+      "label": "WhatsApp number",
+      "all": "All numbers"
+    },
+    "more": {
+      "title": "More"
+    },
+    "profile": {
+      "menu": "Your account",
+      "workspace": "Workspace"
+    }
   }
 }
