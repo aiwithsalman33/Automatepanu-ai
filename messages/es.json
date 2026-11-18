@@ -356,7 +356,24 @@
       "clearAll": "Limpiar todo",
       "noConversations": "No se encontraron conversaciones",
       "noMessagesYet": "Aún no hay mensajes",
-      "unknown": "Desconocido"
+      "unknown": "Desconocido",
+      "tabWaiting": "En espera",
+      "tabsLabel": "Vistas de conversaciones",
+      "filters": "Filtros",
+      "filtersWithCount": "Filtros, {count} activos",
+      "status": "Estado",
+      "windowHours": "Ventana {hours} h",
+      "windowMinutes": "Ventana {minutes} min",
+      "unassignedChip": "Sin asignar",
+      "moreTags": "+{count}",
+      "loadFailed": "No se pudieron cargar las conversaciones",
+      "justNow": "ahora",
+      "yesterday": "Ayer",
+      "emptyTitle": "Aún no hay conversaciones",
+      "emptyDesc": "Los nuevos mensajes de WhatsApp llegan aquí.",
+      "noMatchesDesc": "Prueba otra vista o borra los filtros.",
+      "unreadCount": "{count} sin leer",
+      "closeSearch": "Cerrar búsqueda"
     },
     "messageThread": {
       "backToConversations": "Volver a las conversaciones",
@@ -394,7 +411,13 @@
       "assigneeNoLongerMember": "Ese compañero ya no es miembro de esta cuenta",
       "networkError": "error de red",
       "documentFallback": "Documento",
-      "you": "Tú"
+      "you": "Tú",
+      "windowClosesIn": "La ventana cierra en {time}",
+      "windowClosed": "Ventana cerrada",
+      "windowTitle": "Ventana de respuesta de 24 horas de WhatsApp",
+      "contactInfo": "Información del contacto",
+      "statusLabel": "Estado: {status}",
+      "loadFailed": "No se pudieron cargar los mensajes"
     },
     "sessionTimer": {
       "expired": "Expirada",
@@ -445,7 +468,16 @@
         "document": "documento",
         "audio": "audio"
       },
-      "uploadFailed": "Falló la carga."
+      "uploadFailed": "Falló la carga.",
+      "toolsLabel": "Herramientas de mensaje",
+      "pillTemplate": "Plantilla",
+      "pillButtons": "Botones",
+      "pillAiDraft": "Borrador IA",
+      "pillVoice": "Voz",
+      "pillAttach": "Adjuntar",
+      "messageLabel": "Mensaje",
+      "typeMessageShort": "Escribe un mensaje…",
+      "enterHint": "Enter para enviar · Shift+Enter para una nueva línea"
     },
     "bubble": {
       "photo": "Foto",
@@ -526,7 +558,27 @@
       "deals": "Negocios",
       "noTags": "Sin etiquetas",
       "noDeals": "Sin negocios",
-      "addNotePlaceholder": "Agregar una nota..."
+      "addNotePlaceholder": "Agregar una nota...",
+      "tabDetails": "Detalles",
+      "tabActivity": "Actividad",
+      "tabsLabel": "Secciones del contacto",
+      "openDeal": "Negocio abierto",
+      "internalNote": "Nota interna",
+      "editTags": "Editar etiquetas",
+      "copyPhone": "Copiar {handle}",
+      "loadFailed": "No se pudieron cargar los detalles del contacto",
+      "noNotes": "Aún no hay notas",
+      "noActivity": "Aún no hay actividad",
+      "addNote": "Añadir nota",
+      "activityContactAdded": "Contacto añadido",
+      "activityConversationStarted": "Conversación iniciada",
+      "activityConversationClosed": "Conversación cerrada",
+      "activityDealCreated": "Negocio creado: {title}",
+      "activityDealWon": "Negocio ganado: {title}",
+      "activityDealLost": "Negocio perdido: {title}",
+      "activityNote": "Nota añadida",
+      "statusWon": "Ganado",
+      "statusLost": "Perdido"
     },
     "aiBanner": {
       "pausedTitle": "El asistente de IA está en pausa aquí",
@@ -3330,6 +3382,79 @@
       "rights": "All rights reserved.",
       "status": "Status",
       "disclaimer": "WhatsApp is a trademark of WhatsApp LLC. Automate Panu AI is not affiliated with or endorsed by Meta."
+    }
+  },
+  "Shell": {
+    "nav": {
+      "home": "Inicio",
+      "inbox": "Bandeja",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "broadcasts": "Difusiones",
+      "automate": "Automatizar",
+      "flows": "Flujos",
+      "aiAgent": "Agente IA",
+      "settings": "Ajustes",
+      "notifications": "Avisos",
+      "more": "Más"
+    },
+    "title": {
+      "home": "Inicio",
+      "inbox": "Bandeja de entrada",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "broadcasts": "Difusiones",
+      "automations": "Automatizaciones",
+      "flows": "Flujos",
+      "aiAgent": "Agente de IA",
+      "notifications": "Notificaciones",
+      "settings": "Configuración"
+    },
+    "primaryNav": "Principal",
+    "mobileNav": "Principal (móvil)",
+    "skipToContent": "Saltar al contenido",
+    "homeLink": "Inicio",
+    "unreadChats": "{count} {count, plural, =1 {chat sin leer} other {chats sin leer}}",
+    "search": {
+      "open": "Buscar",
+      "placeholder": "Busca chats, contactos, negocios, páginas…",
+      "dialogTitle": "Buscar en todo",
+      "chats": "Chats",
+      "contacts": "Contactos",
+      "deals": "Negocios",
+      "pages": "Páginas",
+      "noResults": "Sin resultados para «{query}»",
+      "failed": "La búsqueda no está disponible ahora. Las páginas siguen funcionando.",
+      "hintMove": "↑↓ para moverte",
+      "hintOpen": "Enter para abrir",
+      "hintClose": "Esc para cerrar",
+      "untitledChat": "Conversación",
+      "placeholderShort": "Busca chats, contactos, negocios"
+    },
+    "new": {
+      "button": "Nuevo",
+      "menuLabel": "Crear",
+      "contact": "Contacto",
+      "deal": "Negocio",
+      "broadcast": "Difusión",
+      "automation": "Automatización",
+      "flow": "Flujo"
+    },
+    "bell": {
+      "label": "Notificaciones",
+      "labelUnread": "Notificaciones, {count} sin leer",
+      "viewAll": "Ver todas"
+    },
+    "numbers": {
+      "label": "Número de WhatsApp",
+      "all": "Todos los números"
+    },
+    "more": {
+      "title": "Más"
+    },
+    "profile": {
+      "menu": "Tu cuenta",
+      "workspace": "Espacio de trabajo"
     }
   }
 }
